@@ -24,7 +24,7 @@ export default function Header() {
         <div className="container mx-auto flex h-16 items-center justify-between px-4">
           {/* Logo */}
           <Link href="/" className="text-2xl font-bold text-blue-600 hover:opacity-80 transition">
-            MiTienda
+            La <br />Perla Vinos
           </Link>
 
           {/* Navegación Simple */}
