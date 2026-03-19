@@ -3,7 +3,7 @@
 import { Dialog, Transition } from '@headlessui/react';
 import { Fragment } from 'react';
 import { useCartStore } from '../../store/useCartStore';
-import { XMarkIcon, TrashIcon } from '@heroicons/react/24/outline'; // Necesitas instalar @heroicons/react
+import { XMarkIcon, TrashIcon, ShoppingBagIcon } from '@heroicons/react/24/outline';
 
 interface CartDrawerProps {
   isOpen: boolean;
@@ -11,29 +11,30 @@ interface CartDrawerProps {
 }
 
 export default function CartDrawer({ isOpen, setIsOpen }: CartDrawerProps) {
-  const { cart, removeFromCart, addToCart, decreaseQuantity, clearCart } = useCartStore();
+  const { cart, removeFromCart, addToCart, decreaseQuantity } = useCartStore();
 
   const subtotal = cart.reduce((acc: number, item) => acc + (item.price * item.quantity), 0);
 
   return (
     <Transition.Root show={isOpen} as={Fragment}>
-      <Dialog as="div" className="relative z-[60]" onClose={setIsOpen}>
-        {/* Fondo oscuro con desenfoque */}
+      <Dialog as="div" className="relative z-[70]" onClose={setIsOpen}>
+        
+        {/* Overlay con desenfoque profundo */}
         <Transition.Child
           as={Fragment}
-          enter="ease-in-out duration-300"
+          enter="ease-in-out duration-500"
           enterFrom="opacity-0"
           enterTo="opacity-100"
-          leave="ease-in-out duration-200"
+          leave="ease-in-out duration-400"
           leaveFrom="opacity-100"
           leaveTo="opacity-0"
         >
-          <div className="fixed inset-0 bg-black/30  transition-opacity" aria-hidden="true" />
+          <div className="fixed inset-0 bg-[#1a1a1a]/60 backdrop-blur-sm transition-opacity" />
         </Transition.Child>
 
         <div className="fixed inset-0 overflow-hidden">
           <div className="absolute inset-0 overflow-hidden">
-            <div className="pointer-events-none fixed inset-y-0 right-0 flex max-w-full pl-0">
+            <div className="pointer-events-none fixed inset-y-0 right-0 flex max-w-full">
               <Transition.Child
                 as={Fragment}
                 enter="transform transition ease-in-out duration-500"
@@ -43,86 +44,102 @@ export default function CartDrawer({ isOpen, setIsOpen }: CartDrawerProps) {
                 leaveFrom="translate-x-0"
                 leaveTo="translate-x-full"
               >
-                <Dialog.Panel className="pointer-events-auto w-screen sm:max-w-md">
-                  <div className="flex h-full flex-col overflow-y-scroll bg-white shadow-xl">
-                    <div className="flex-1 overflow-y-auto px-4 py-6 sm:px-6">
-                      <div className="flex items-start justify-between border-b pb-4">
-                        <Dialog.Title className="text-lg font-bold text-gray-900">Carrito de Compras</Dialog.Title>
+                <Dialog.Panel className="pointer-events-auto w-screen max-w-md">
+                  {/* Contenedor Principal con estilo de marca */}
+                  <div className="flex h-full flex-col bg-[#3c3c3b] shadow-2xl border-l border-[#beb9b1]/10">
+                    
+                    {/* Header del Carrito */}
+                    <div className="px-6 py-6 border-b border-[#beb9b1]/10">
+                      <div className="flex items-start justify-between">
+                        <Dialog.Title className="text-xl font-serif tracking-widest uppercase text-[#beb9b1]">
+                          Tu Selección
+                        </Dialog.Title>
                         <button
                           type="button"
-                          className="text-gray-400 hover:text-gray-500"
+                          className="rounded-full p-1 text-[#beb9b1] hover:bg-[#beb9b1]/10 transition-colors"
                           onClick={() => setIsOpen(false)}
                         >
-                          <span className="sr-only">Cerrar panel</span>
-                          <XMarkIcon className="h-6 w-6" />
+                          <XMarkIcon className="h-6 w-6" strokeWidth={1.5} />
                         </button>
-                      </div>
-
-                      <div className="mt-8">
-                        {cart.length === 0 ? (
-                          <p className="text-center text-gray-500 mt-10">Tu carrito está vacío</p>
-                        ) : (
-                          <ul role="list" className="-my-6 divide-y divide-gray-200">
-                            {cart.map((product) => (
-                              <li key={product.id} className="flex py-6">
-                                <div className="h-24 w-24 flex-shrink-0 overflow-hidden rounded-md border border-gray-200">
-                                  <img src={product.image} alt={product.name} className="h-full w-full object-cover" />
-                                </div>
-                                <div className="ml-4 flex flex-1 flex-col">
-                                  <div>
-                                    <div className="flex justify-between text-base font-medium text-gray-900">
-                                      <h3>{product.name}</h3>
-                                      <p className="ml-4">${(product.price * product.quantity).toLocaleString('es-AR')}</p>
-                                    </div>
-                                  </div>
-                                  <div className="flex flex-1 items-end justify-between text-sm">
-                                    {/* Selector de cantidad profesional */}
-                                    <div className="flex items-center border border-gray-200 rounded-lg">
-                                      <button
-                                        onClick={() => decreaseQuantity(product.id)}
-                                        className="px-3 py-1 hover:bg-gray-100 transition text-gray-600 font-bold"
-                                      >
-                                        −
-                                      </button>
-                                      <span className="px-3 py-1 font-medium text-gray-900 border-x border-gray-200">
-                                        {product.quantity}
-                                      </span>
-                                      <button
-                                        onClick={() => addToCart(product)}
-                                        className="px-3 py-1 hover:bg-gray-100 transition text-gray-600 font-bold"
-                                      >
-                                        +
-                                      </button>
-                                    </div>
-                                    <button
-                                      type="button"
-                                      onClick={() => removeFromCart(product.id)}
-                                      className="font-medium text-red-600 hover:text-red-500 flex items-center gap-1 ml-2"
-                                      title="Eliminar todo"
-                                    >
-                                      <TrashIcon className="h-4 w-4" />
-                                    </button>
-                                  </div>
-                                </div>
-                              </li>
-                            ))}
-                          </ul>
-                        )}
                       </div>
                     </div>
 
-                    {cart.length > 0 && (
-                      <div className="border-t border-gray-200 px-4 py-6 sm:px-6 bg-gray-50">
-                        <div className="flex justify-between text-base font-bold text-gray-900">
-                          <p>Subtotal</p>
-                          <p>${subtotal.toLocaleString('es-AR')}</p>
+                    {/* Lista de Productos */}
+                    <div className="flex-1 overflow-y-auto px-6 py-4 custom-scrollbar">
+                      {cart.length === 0 ? (
+                        <div className="flex flex-col items-center justify-center h-60 text-[#beb9b1]/40">
+                          <ShoppingBagIcon className="h-12 w-12 mb-4 stroke-1" />
+                          <p className="text-sm font-light italic">Tu cava está vacía</p>
                         </div>
-                        <p className="mt-0.5 text-sm text-gray-500 font-medium">Envío calculado en el checkout.</p>
-                        <div className="mt-6">
+                      ) : (
+                        <ul role="list" className="divide-y divide-[#beb9b1]/5">
+                          {cart.map((product) => (
+                            <li key={product.id} className="flex py-6 transition-opacity">
+                              {/* Imagen del producto */}
+                              <div className="h-24 w-20 flex-shrink-0 overflow-hidden rounded-sm bg-[#1a1a1a] border border-[#beb9b1]/10">
+                                <img src={product.image} alt={product.name} className="h-full w-full object-cover" />
+                              </div>
+
+                              <div className="ml-4 flex flex-1 flex-col">
+                                <div>
+                                  <div className="flex justify-between text-sm font-serif tracking-tight text-[#beb9b1]">
+                                    <h3 className="line-clamp-1 uppercase">{product.name}</h3>
+                                    <p className="ml-4 text-[#a68a5c]">${(product.price * product.quantity).toLocaleString('es-AR')}</p>
+                                  </div>
+                                </div>
+                                
+                                <div className="flex flex-1 items-end justify-between text-xs">
+                                  {/* Selector de cantidad minimalista */}
+                                  <div className="flex items-center border border-[#beb9b1]/20 rounded-sm">
+                                    <button
+                                      onClick={() => decreaseQuantity(product.id)}
+                                      className="px-3 py-1 text-[#beb9b1] hover:bg-[#beb9b1]/10 transition"
+                                    >
+                                      −
+                                    </button>
+                                    <span className="px-3 py-1 text-[#beb9b1] border-x border-[#beb9b1]/20 min-w-[32px] text-center">
+                                      {product.quantity}
+                                    </span>
+                                    <button
+                                      onClick={() => addToCart(product)}
+                                      className="px-3 py-1 text-[#beb9b1] hover:bg-[#beb9b1]/10 transition"
+                                    >
+                                      +
+                                    </button>
+                                  </div>
+
+                                  <button
+                                    type="button"
+                                    onClick={() => removeFromCart(product.id)}
+                                    className="text-[#d03416]/70 hover:text-[#d03416] transition-colors flex items-center gap-1"
+                                  >
+                                    <TrashIcon className="h-4 w-4" />
+                                    <span className="uppercase text-[10px] tracking-tighter">Quitar</span>
+                                  </button>
+                                </div>
+                              </div>
+                            </li>
+                          ))}
+                        </ul>
+                      )}
+                    </div>
+
+                    {/* Footer con totales */}
+                    {cart.length > 0 && (
+                      <div className="border-t border-[#beb9b1]/10 px-6 py-8 bg-[#1a1a1a]/30 backdrop-blur-md">
+                        <div className="flex justify-between text-sm font-serif tracking-[0.2em] uppercase text-[#beb9b1]">
+                          <p>Total Estimado</p>
+                          <p className="text-lg text-[#a68a5c] tracking-normal">${subtotal.toLocaleString('es-AR')}</p>
+                        </div>
+                        <p className="mt-2 text-[10px] text-[#beb9b1]/40 uppercase tracking-widest italic">
+                          Impuestos y envíos calculados al finalizar.
+                        </p>
+                        <div className="mt-8">
                           <button
-                            className="w-full flex items-center justify-center rounded-xl border border-transparent bg-blue-600 px-6 py-3 text-base font-bold text-white shadow-sm hover:bg-blue-700 transition-all active:scale-95"
+                            className="group relative w-full flex items-center justify-center overflow-hidden border border-[#a68a5c] bg-transparent px-6 py-4 text-xs font-bold uppercase tracking-[0.3em] text-[#a68a5c] transition-all hover:text-[#3c3c3b]"
                           >
-                            Ir a Pagar con Mercado Pago
+                            <span className="absolute inset-0 z-0 bg-[#a68a5c] transition-transform duration-500 translate-y-full group-hover:translate-y-0" />
+                            <span className="relative z-10">Finalizar Pedido</span>
                           </button>
                         </div>
                       </div>
