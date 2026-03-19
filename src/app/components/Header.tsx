@@ -49,7 +49,7 @@ export default function Header() {
                 strokeWidth="2" 
                 strokeLinecap="round" 
                 strokeLinejoin="round"
-                className="text-gray-700 group-hover:text-blue-600"
+                className="text-gray-700 group-hover:text-[#de9906]"
               >
                 <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/>
                 <path d="M3 6h18"/>
@@ -57,7 +57,7 @@ export default function Header() {
               </svg>
               
               {mounted && totalItems > 0 && (
-                <span className="absolute top-0 right-0 flex h-4 w-4 items-center justify-center rounded-full bg-blue-600 text-[10px] font-bold text-white animate-in zoom-in shadow-sm">
+                <span className="absolute top-0 right-0 flex h-4 w-4 items-center justify-center rounded-full bg-[#d03416] text-[10px] font-bold text-white animate-in zoom-in shadow-sm">
                   {totalItems}
                 </span>
               )}
