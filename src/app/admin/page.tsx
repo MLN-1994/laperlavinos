@@ -13,7 +13,7 @@ export default function AdminPage() {
     <main className="min-h-screen bg-slate-50 text-slate-900 pb-20">
       <header className="bg-white border-b border-slate-200 mb-8">
         <div className="container mx-auto px-4 py-6">
-          <h1 className="text-2xl font-bold text-slate-800">Panel de Administración</h1>
+          <h1 className="text-2xl font-bold  text-slate-800">Panel de Administración</h1>
           <p className="text-slate-500 text-sm font-medium">Gestión profesional de catálogo de productos.</p>
         </div>
       </header>
@@ -23,7 +23,7 @@ export default function AdminPage() {
         <section className="lg:col-span-4">
           <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 sticky top-8">
             <h2 className="text-lg font-semibold mb-6 flex items-center gap-2">
-              <GoPlus className="text-indigo-600" /> Añadir Producto
+              <GoPlus className="text-indigo-600 " /> Cargar Producto
             </h2>
             <AdminProductForm onSubmit={handleAltaProducto} subiendo={subiendo} mensaje={mensaje} />
           </div>

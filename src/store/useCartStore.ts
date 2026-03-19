@@ -1,16 +1,24 @@
+
 import { create } from 'zustand';
-import { Product } from '../data/products';
+
 
 // Definimos qué tiene cada producto en el carrito (el producto + la cantidad)
-interface CartItem extends Product {
+interface CartItem {
+  id: string;
+  name: string;
+  price: number;
+  description: string;
+  image: string;
+  category: string;
   quantity: number;
 }
 
+
 interface CartState {
   cart: CartItem[];
-  addToCart: (product: Product) => void;
-  decreaseQuantity: (id: number) => void;
-  removeFromCart: (id: number) => void;
+  addToCart: (product: Omit<CartItem, 'quantity'>) => void;
+  decreaseQuantity: (id: string) => void;
+  removeFromCart: (id: string) => void;
   clearCart: () => void;
 }
 

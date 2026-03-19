@@ -39,6 +39,7 @@ export function useAdminProductos() {
     else {
       setMensaje("¡Producto guardado!");
       fetchProductos();
+      setTimeout(() => setMensaje("") , 2500);
     }
     setSubiendo(false);
   };

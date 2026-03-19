@@ -20,21 +20,70 @@ export default function AdminProductForm({ onSubmit, subiendo, mensaje }: Props)
   };
 
   return (
-    <form onSubmit={handleSubmit}>
-      <input type="text" placeholder="Nombre" className="w-full bg-slate-50 border p-2.5 rounded-lg outline-none focus:ring-2 focus:ring-indigo-500 transition" value={nombre} onChange={e => setNombre(e.target.value)} required />
-      <textarea placeholder="Descripción" className="w-full bg-slate-50 border p-2.5 rounded-lg outline-none focus:ring-2 focus:ring-indigo-500 h-24 resize-none transition" value={descripcion} onChange={e => setDescripcion(e.target.value)} required />
-      <input type="number" placeholder="Precio" className="w-full bg-slate-50 border p-2.5 rounded-lg outline-none focus:ring-2 focus:ring-indigo-500 transition" value={precio} onChange={e => setPrecio(e.target.value)} required step="0.01" />
-      
-      {/* INPUT IMAGEN ESTILIZADO */}
-      <div className="relative">
-        <label htmlFor="file-upload" className="flex items-center justify-center gap-2 w-full bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold py-2.5 px-4 rounded-lg cursor-pointer transition text-sm">
-          <GoUpload /> {imagen ? "Imagen seleccionada" : "Cargar Imagen"}
-        </label>
-        <input id="file-upload" type="file" accept="image/*" className="hidden" onChange={e => setImagen(e.target.files ? e.target.files[0] : null)} />
-        {imagen && <p className="text-[10px] text-indigo-600 mt-1 text-center truncate">{imagen.name}</p>}
+    <form
+      onSubmit={handleSubmit}
+      className="max-w-xl mx-auto bg-white rounded-2xl shadow-xl border px-8 py-8 space-y-6 animate-fade-in"
+    >
+      <div className="mb-2 text-center">
+        <h2 className="text-2xl font-extrabold text-main mb-1">Nuevo Producto</h2>
+        <p className="text-main text-opacity-70 text-sm">Completá los datos para publicar un producto en la tienda</p>
       </div>
 
-      <button type="submit" disabled={subiendo} className="w-full bg-indigo-600 text-white py-3 rounded-xl font-bold hover:bg-indigo-700 transition shadow-lg shadow-indigo-100 disabled:opacity-50 flex items-center justify-center gap-2">
+      <div className="space-y-3">
+        <label className="block text-sm font-semibold text-main mb-1" htmlFor="nombre">Nombre</label>
+        <input
+          id="nombre"
+          type="text"
+          placeholder="Ej: Malbec Reserva"
+          className="w-full bg-main border p-3 rounded-lg outline-none focus:ring-2 focus:ring-indigo-400 focus:border-indigo-400 transition text-base text-main"
+          value={nombre}
+          onChange={e => setNombre(e.target.value)}
+          required
+        />
+      </div>
+
+      <div className="space-y-3">
+        <label className="block text-sm font-semibold text-main mb-1" htmlFor="descripcion">Descripción</label>
+        <textarea
+          id="descripcion"
+          placeholder="Breve descripción del producto"
+          className="w-full bg-main border p-3 rounded-lg outline-none focus:ring-2 focus:ring-indigo-400 focus:border-indigo-400 h-24 resize-none transition text-base text-main"
+          value={descripcion}
+          onChange={e => setDescripcion(e.target.value)}
+          required
+        />
+      </div>
+
+      <div className="space-y-3">
+        <label className="block text-sm font-semibold text-main mb-1" htmlFor="precio">Precio</label>
+        <input
+          id="precio"
+          type="number"
+          placeholder="Ej: 2500"
+          className="w-full bg-main border p-3 rounded-lg outline-none focus:ring-2 focus:ring-indigo-400 focus:border-indigo-400 transition text-base text-main"
+          value={precio}
+          onChange={e => setPrecio(e.target.value)}
+          required
+          step="0.01"
+        />
+      </div>
+
+      <div className="space-y-2">
+        <label className="block text-sm font-semibold text-main mb-1">Imagen</label>
+        <div className="relative">
+          <label htmlFor="file-upload" className="flex items-center justify-center gap-2 w-full bg-main hover:bg-card-alt text-main font-bold py-3 px-4 rounded-lg cursor-pointer transition text-base border">
+            <GoUpload /> {imagen ? "Imagen seleccionada" : "Cargar Imagen"}
+          </label>
+          <input id="file-upload" type="file" accept="image/*" className="hidden" onChange={e => setImagen(e.target.files ? e.target.files[0] : null)} />
+          {imagen && <p className="text-xs text-indigo-600 mt-2 text-center truncate">{imagen.name}</p>}
+        </div>
+      </div>
+
+      <button
+        type="submit"
+        disabled={subiendo}
+        className="w-full bg-[#3c3c3b] text-white py-3 rounded-xl font-bold hover:bg-[#2c2c2b] active:scale-95 transition shadow-lg shadow-indigo-100 disabled:opacity-50 flex items-center justify-center gap-2 text-lg"
+      >
         {subiendo && (
           <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
             <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
@@ -43,7 +92,12 @@ export default function AdminProductForm({ onSubmit, subiendo, mensaje }: Props)
         )}
         {subiendo ? "Guardando..." : "Guardar Producto"}
       </button>
-      {mensaje && <p className="text-sm text-center text-indigo-700 bg-indigo-50 py-2 rounded-lg font-medium">{mensaje}</p>}
+
+      {mensaje && (
+        <p className="text-base text-center text-[#3c3c3b] bg-[#e0e0e0] py-2 rounded-lg font-medium mt-2 animate-fade-in">
+          {mensaje}
+        </p>
+      )}
     </form>
   );
 }
