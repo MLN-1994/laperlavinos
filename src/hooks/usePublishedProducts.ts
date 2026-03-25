@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { supabase } from "../lib/supabaseClient";
 import { ProductoPublicado } from "../types";
 
-export function useProductos() {
+export function usePublishedProducts() {
   const [productos, setProductos] = useState<ProductoPublicado[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -13,7 +13,7 @@ export function useProductos() {
     const { data, error } = await supabase
       .from("productos_publicados")
       .select("*")
-      .order("nombre", { ascending: true }); // Orden alfabético
+      .order("nombre", { ascending: true });
     if (error) {
       setError(error.message);
       setProductos([]);
@@ -25,7 +25,6 @@ export function useProductos() {
 
   useEffect(() => {
     fetchProductos();
-    // eslint-disable-next-line
   }, []);
 
   return { productos, loading, error, refetch: fetchProductos };

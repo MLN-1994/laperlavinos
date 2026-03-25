@@ -3,12 +3,12 @@
 import { useState } from 'react';
 import { useCartStore } from '../../store/useCartStore';
 
-import { useProductos } from '../../hooks/useProductos';
+import { usePublishedProducts } from '../../hooks/usePublishedProducts';
 import ProductCard from "./ProductCard";
 
 export default function ProductList() {
     const addToCart = useCartStore((state) => state.addToCart);
-    const { productos, loading, error } = useProductos();
+    const { productos, loading, error } = usePublishedProducts();
     if (loading) return <p>Cargando productos...</p>;
     if (error) return <p>Error: {error}</p>;
 
