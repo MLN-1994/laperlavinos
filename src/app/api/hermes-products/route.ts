@@ -6,7 +6,7 @@ export async function GET() {
     const products = await getHermesProducts();
     const safeProducts = Array.isArray(products) ? products : [];
     const mapped = safeProducts.map((p: any) => ({
-      hermes_id: p.Codigo,
+      hermes_id: p.Codigo !== undefined && p.Codigo !== null ? parseInt(p.Codigo, 10) : undefined,
       nombre: p.Descripcion,
       descripcion: p.Descripcion,
       precio: p.Precio,
