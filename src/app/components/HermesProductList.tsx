@@ -1,11 +1,9 @@
 
 
-
 import React, { useState } from "react";
 import AdminSearchBar from "./AdminSearchBar";
 import AdminGroupSelect from "./AdminGroupSelect";
-
-
+import AdminNotification from "./AdminNotification";
 import { useHermesProductList } from "../hooks/useHermesProductList";
 
 export default function HermesProductList() {
@@ -31,9 +29,30 @@ export default function HermesProductList() {
     handleUnpublish,
   } = useHermesProductList();
 
+  // Estado para controlar el toast
+  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
+
+  // Mostrar toast personalizado según la acción
+  React.useEffect(() => {
+    if (success) {
+      let customMessage = success;
+      let customTitle = '¡Logrado!';
+      if (success === '¡Producto publicado!') {
+        customMessage = 'El producto fue publicado correctamente.';
+        customTitle = 'Producto publicado';
+      } else if (success === 'Producto despublicado') {
+        customMessage = 'El producto fue quitado de la tienda.';
+        customTitle = 'Producto quitado';
+      }
+      setToast({ message: customMessage, type: 'success', title: customTitle });
+    } else if (error) {
+      setToast({ message: error, type: 'error' });
+    }
+  }, [success, error]);
+
   return (
     <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
-      <h2 className="text-lg font-semibold mb-4">Productos de Hermes</h2>
+      <h2 className="text-lg font-semibold mb-4">Productos</h2>
       {/* Tabs */}
       <div className="flex gap-2 mb-4">
         <button
@@ -69,11 +88,35 @@ export default function HermesProductList() {
             <div className="flex flex-col md:flex-row md:items-center gap-2 mt-2 md:mt-0">
               {!isPublished(product.hermes_id) ? (
                 <>
-                  <input
-                    type="file"
-                    accept="image/*"
-                    onChange={e => setSelectedImage(prev => ({ ...prev, [product.hermes_id]: e.target.files?.[0] || null }))}
-                  />
+                  <div className="flex flex-col gap-1">
+                    <label className="inline-block cursor-pointer bg-slate-200 hover:bg-slate-300 text-slate-700 px-3 py-1 rounded transition">
+                      Seleccionar imagen
+                      <input
+                        type="file"
+                        accept="image/*"
+                        className="hidden"
+                        onChange={e => setSelectedImage(prev => ({ ...prev, [product.hermes_id]: e.target.files?.[0] || null }))}
+                      />
+                    </label>
+                    {(() => {
+                      const imgFile = selectedImage[product.hermes_id];
+                      if (imgFile instanceof File) {
+                        return (
+                          <div className="flex items-center gap-2 mt-1">
+                            <span className="text-xs text-slate-600">
+                              {imgFile.name}
+                            </span>
+                            <img
+                              src={URL.createObjectURL(imgFile)}
+                              alt="Previsualización"
+                              className="w-12 h-12 object-cover rounded border"
+                            />
+                          </div>
+                        );
+                      }
+                      return null;
+                    })()}
+                  </div>
                   <button
                     className="bg-indigo-600 text-white px-3 py-1 rounded hover:bg-indigo-700"
                     onClick={() => handlePublish(product)}
@@ -95,8 +138,15 @@ export default function HermesProductList() {
           </li>
         ))}
       </ul>
-      {error && <div className="text-red-500 mt-2">{error}</div>}
-      {success && <div className="text-green-600 mt-2">{success}</div>}
+      {/* Notificación tipo toast */}
+      {toast && (
+        <AdminNotification
+          message={toast.message}
+          type={toast.type}
+          onClose={() => setToast(null)}
+          title={toast.title}
+        />
+      )}
     </div>
   );
 }
