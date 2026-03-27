@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { GoUpload } from "react-icons/go";
 
-
 type Props = {
   onSubmit: (data: { nombre: string; descripcion: string; precio: string; imagen: File | null }) => void;
   subiendo: boolean;

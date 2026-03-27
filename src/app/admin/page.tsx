@@ -1,5 +1,5 @@
 "use client";
-import HermesProductList from "../components/HermesProductList";
+import HermesProductList from "./components/HermesProductList";
 
 export default function AdminPage() {
   return (

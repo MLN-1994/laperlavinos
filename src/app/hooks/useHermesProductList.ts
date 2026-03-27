@@ -1,9 +1,16 @@
+
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { useHermesProducts } from "../../hooks/useHermesProducts";
 import { usePublishedProducts } from "../../hooks/usePublishedProducts";
 import { useProductPublication } from "../../hooks/useProductPublication";
 
+// Estado de paginación
+// (debe ir dentro del hook, no fuera)
+
 export function useHermesProductList() {
+    // Estado de paginación
+    const [page, setPage] = useState(1);
+    const [pageSize] = useState(10); // Puedes ajustar el tamaño de página
   const { productos: hermesProducts, loading: loadingHermes, error: errorHermes } = useHermesProducts();
   const { productos: publishedProducts, refetch: refetchPublished } = usePublishedProducts();
   const { publishProduct, unpublishProduct, loading, error, success } = useProductPublication();
@@ -57,6 +64,19 @@ export function useHermesProductList() {
       : hermesProducts.filter((p: any) => isPublished(p.hermes_id)).filter(filterFn);
   }, [hermesProducts, tab, filterFn, isPublished]);
 
+  // Total de productos filtrados y total de páginas
+  const totalFiltered = filteredProducts.length;
+  const totalPages = Math.ceil(totalFiltered / pageSize) || 1;
+
+  // Productos paginados
+  const paginatedProducts = useMemo(
+    () => filteredProducts.slice((page - 1) * pageSize, page * pageSize),
+    [filteredProducts, page, pageSize]
+  );
+
+  // Resetear página cuando cambian los filtros
+  useEffect(() => { setPage(1); }, [search, group, tab]);
+
   // Log de control: detectar productos con hermes_id duplicado o faltante
   useEffect(() => {
     if (hermesProducts && hermesProducts.length > 0) {
@@ -88,6 +108,12 @@ export function useHermesProductList() {
     setTab,
     groupOptions,
     filteredProducts,
+    paginatedProducts,
+    page,
+    setPage,
+    pageSize,
+    totalFiltered,
+    totalPages,
     isPublished,
     handlePublish,
     handleUnpublish,

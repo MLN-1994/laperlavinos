@@ -72,3 +72,31 @@ Traes todos los productos desde Hermes (vista_articulos).
 En Supabase guardas los IDs de los productos seleccionados para la web.
 El admin de la web permite elegir qué productos mostrar.
 El frontend pide los productos publicados, y para cada uno consulta los datos frescos a Hermes.
+
+
+## a mejorar panel ADMIN
+Mejorar la experiencia de usuario:
+
+Agrega paginación o scroll infinito si hay muchos productos.
+Muestra loaders claros durante operaciones (publicar/quitar).
+Agrega confirmaciones para acciones destructivas (ej: quitar producto).
+Robustecer validaciones:
+
+Valida los datos antes de publicar (campos requeridos, imagen seleccionada, etc).
+Muestra mensajes de error claros y útiles.
+Modulariza y ordena:
+
+Centraliza hooks en src/hooks/.
+Crea un layout para admin en src/app/admin/layout.tsx.
+Separa lógica de imágenes/publicación en hooks o utils propios.
+Mejora el manejo de estado:
+
+Si el panel crece, considera Zustand o Context para estado global (por ahora, useState está bien si es simple).
+Documenta:
+
+Agrega comentarios y un README para el panel admin.
+Documenta los flujos principales y dependencias.
+Prepara para el futuro:
+
+Deja TODOs o comentarios donde irá la auth/roles.
+Revisa las policies de Supabase antes de producción.
