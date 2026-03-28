@@ -8,10 +8,14 @@ const navItems = [
   { href: "/admin/publicidad", label: "Publicidad" },
 ];
 
-export default function SidebarNav() {
+interface SidebarNavProps {
+  onNavClick?: () => void;
+}
+
+export default function SidebarNav({ onNavClick }: SidebarNavProps) {
   const pathname = usePathname();
   return (
-    <nav className="flex flex-col gap-2 p-4 border-r min-h-screen bg-gray-50">
+    <nav className="flex flex-col gap-2">
       {navItems.map((item) => (
         <Link
           key={item.href}
@@ -21,6 +25,7 @@ export default function SidebarNav() {
               ? "bg-blue-600 text-white font-semibold"
               : "hover:bg-blue-100 text-gray-800"
           }`}
+          onClick={onNavClick}
         >
           {item.label}
         </Link>
