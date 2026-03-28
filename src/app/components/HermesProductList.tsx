@@ -1,4 +1,5 @@
 
+"use client";
 import React, { useState } from "react";
 import AdminSearchBar from "../../app/admin/components/AdminSearchBar";
 import AdminGroupSelect from "../../app/admin/components/AdminGroupSelect";
