@@ -20,7 +20,7 @@ export default function SidebarNav({ onNavClick }: SidebarNavProps) {
         <Link
           key={item.href}
           href={item.href}
-          className={`px-3 py-2 rounded transition-colors ${
+          className={`px-3 py-2 rounded truncate transition-colors ${
             pathname === item.href
               ? "bg-blue-600 text-white font-semibold"
               : "hover:bg-blue-100 text-gray-800"

@@ -1,6 +1,6 @@
 "use client";
 import { useBanners } from '../../hooks/useBanners';
-import BannerComponent from './Banner';
+import BannerCarrousel from './BannerCarrousel';
 
 export default function BannerList() {
   const { banners, loading, error } = useBanners();
@@ -10,11 +10,5 @@ export default function BannerList() {
   if (loading) return <p>Cargando banners...</p>;
   if (error) return <p>Error: {error}</p>;
 
-  return (
-    <div>
-      {banners.map(banner => (
-        <BannerComponent key={banner.id} banner={banner} />
-      ))}
-    </div>
-  );
+  return <BannerCarrousel banners={banners} />;
 }

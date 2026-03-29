@@ -14,9 +14,7 @@ export default function ProductList() {
 
     return (
         <div className="container mx-auto p-6">
-            <h2 className="text-3xl font-bold mb-10 text-gray-900 tracking-tight">
-                Destacados de la semana
-            </h2>
+            
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
                 {productos.map((product) => (
                     <ProductCard
