@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { supabase } from "../lib/supabaseClient";
+import { getSupabaseClient, hasSupabaseBrowserConfig } from "../lib/supabaseClient";
 import { ProductoPublicado } from "../types";
 
 export function usePublishedProducts() {
@@ -10,6 +10,14 @@ export function usePublishedProducts() {
   const fetchProductos = async () => {
     setLoading(true);
     setError(null);
+    if (!hasSupabaseBrowserConfig()) {
+      setError('Faltan NEXT_PUBLIC_SUPABASE_URL y NEXT_PUBLIC_SUPABASE_ANON_KEY.');
+      setProductos([]);
+      setLoading(false);
+      return;
+    }
+
+    const supabase = getSupabaseClient();
     const { data, error } = await supabase
       .from("productos_publicados")
       .select("*")

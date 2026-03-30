@@ -1,7 +1,7 @@
 'use client';
 
 import { Dialog, Transition } from '@headlessui/react';
-import { Fragment } from 'react';
+import { Fragment, useState } from 'react';
 import { useCartStore } from '../../store/useCartStore';
 import { XMarkIcon, TrashIcon, ShoppingBagIcon } from '@heroicons/react/24/outline';
 
@@ -12,8 +12,56 @@ interface CartDrawerProps {
 
 export default function CartDrawer({ isOpen, setIsOpen }: CartDrawerProps) {
   const { cart, removeFromCart, addToCart, decreaseQuantity } = useCartStore();
+  const [checkoutLoading, setCheckoutLoading] = useState(false);
+  const [checkoutError, setCheckoutError] = useState<string | null>(null);
 
   const subtotal = cart.reduce((acc: number, item) => acc + (item.price * item.quantity), 0);
+
+  const handleCheckout = async () => {
+    if (cart.length === 0 || checkoutLoading) {
+      return;
+    }
+
+    setCheckoutLoading(true);
+    setCheckoutError(null);
+
+    try {
+      const response = await fetch('/api/mercadopago/checkout', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          items: cart.map((product) => ({
+            id: product.id,
+            title: product.name,
+            description: product.description,
+            quantity: product.quantity,
+            unit_price: product.price,
+            currency_id: 'ARS',
+            picture_url: product.image,
+            category_id: product.category,
+          })),
+        }),
+      });
+      const data = (await response.json()) as { error?: string; initPoint?: string; sandboxInitPoint?: string };
+
+      if (!response.ok) {
+        throw new Error(data.error ?? 'No se pudo generar el link de pago.');
+      }
+
+      const destination = data.sandboxInitPoint || data.initPoint;
+
+      if (!destination) {
+        throw new Error('Mercado Pago no devolvió una URL de checkout.');
+      }
+
+      window.location.href = destination;
+    } catch (error) {
+      setCheckoutError(error instanceof Error ? error.message : 'No se pudo generar el link de pago.');
+      setCheckoutLoading(false);
+    }
+  };
 
   return (
     <Transition.Root show={isOpen} as={Fragment}>
@@ -134,12 +182,20 @@ export default function CartDrawer({ isOpen, setIsOpen }: CartDrawerProps) {
                         <p className="mt-2 text-[10px] text-[#beb9b1]/40 uppercase tracking-widest italic">
                           Impuestos y envíos calculados al finalizar.
                         </p>
+                        {checkoutError && (
+                          <p className="mt-4 rounded border border-[#d03416]/40 bg-[#d03416]/10 px-3 py-2 text-[11px] uppercase tracking-[0.15em] text-[#f3c3ba]">
+                            {checkoutError}
+                          </p>
+                        )}
                         <div className="mt-8">
                           <button
+                            type="button"
+                            onClick={() => void handleCheckout()}
+                            disabled={checkoutLoading}
                             className="group relative w-full flex items-center justify-center overflow-hidden border border-[#a68a5c] bg-transparent px-6 py-4 text-xs font-bold uppercase tracking-[0.3em] text-[#a68a5c] transition-all hover:text-[#3c3c3b]"
                           >
                             <span className="absolute inset-0 z-0 bg-[#a68a5c] transition-transform duration-500 translate-y-full group-hover:translate-y-0" />
-                            <span className="relative z-10">Finalizar Pedido</span>
+                            <span className="relative z-10">{checkoutLoading ? 'Generando Link...' : 'Finalizar Pedido'}</span>
                           </button>
                         </div>
                       </div>

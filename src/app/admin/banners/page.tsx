@@ -1,6 +1,6 @@
 "use client";
 import React, { useState } from 'react';
-import { supabase } from '../../../lib/supabaseClient';
+import { getSupabaseClient, hasSupabaseBrowserConfig } from '../../../lib/supabaseClient';
 import AdminBannerList from '../components/AdminBannerList';
 import AdminBannerForm from '../components/AdminBannerForm';
 import { Banner } from '../../../types/banner';
@@ -17,6 +17,14 @@ export default function BannersPage() {
   const fetchBanners = async () => {
     setLoading(true);
     setError(null);
+    if (!hasSupabaseBrowserConfig()) {
+      setError('Faltan NEXT_PUBLIC_SUPABASE_URL y NEXT_PUBLIC_SUPABASE_ANON_KEY.');
+      setBanners([]);
+      setLoading(false);
+      return;
+    }
+
+    const supabase = getSupabaseClient();
     const { data, error } = await supabase
       .from('banners')
       .select('*')
@@ -39,7 +47,13 @@ export default function BannersPage() {
   // Eliminar
   const handleDelete = async (id: string) => {
     if (!window.confirm('¿Seguro que quieres eliminar este banner?')) return;
+    if (!hasSupabaseBrowserConfig()) {
+      alert('Faltan NEXT_PUBLIC_SUPABASE_URL y NEXT_PUBLIC_SUPABASE_ANON_KEY.');
+      return;
+    }
+
     setActionLoading(true);
+    const supabase = getSupabaseClient();
     const { error } = await supabase.from('banners').delete().eq('id', id);
     if (error) alert('Error al eliminar: ' + error.message);
     await fetchBanners();
@@ -48,7 +62,13 @@ export default function BannersPage() {
 
   // Activar/desactivar
   const handleToggleActive = async (id: string, active: boolean) => {
+    if (!hasSupabaseBrowserConfig()) {
+      alert('Faltan NEXT_PUBLIC_SUPABASE_URL y NEXT_PUBLIC_SUPABASE_ANON_KEY.');
+      return;
+    }
+
     setActionLoading(true);
+    const supabase = getSupabaseClient();
     const { error } = await supabase.from('banners').update({ activo: active }).eq('id', id);
     if (error) alert('Error al actualizar: ' + error.message);
     await fetchBanners();
@@ -57,7 +77,13 @@ export default function BannersPage() {
 
   // Crear o editar
   const handleFormSubmit = async (banner: Partial<Banner>) => {
+    if (!hasSupabaseBrowserConfig()) {
+      alert('Faltan NEXT_PUBLIC_SUPABASE_URL y NEXT_PUBLIC_SUPABASE_ANON_KEY.');
+      return;
+    }
+
     setActionLoading(true);
+    const supabase = getSupabaseClient();
     if (banner.id) {
       // Editar
       const { error } = await supabase

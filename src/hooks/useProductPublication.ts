@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { supabase } from "../lib/supabaseClient";
+import { getSupabaseClient, hasSupabaseBrowserConfig } from "../lib/supabaseClient";
 import { ProductoPublicado } from "../types";
 
 interface PublishOptions {
@@ -22,6 +22,13 @@ export function useProductPublication() {
     setLoading(true);
     setError(null);
     setSuccess(null);
+    if (!hasSupabaseBrowserConfig()) {
+      setError('Faltan NEXT_PUBLIC_SUPABASE_URL y NEXT_PUBLIC_SUPABASE_ANON_KEY.');
+      setLoading(false);
+      return;
+    }
+
+    const supabase = getSupabaseClient();
     let imagen_url = undefined;
     if (options.imagen) {
       const nombreArchivo = `${Date.now()}_${options.imagen.name}`;
@@ -33,7 +40,8 @@ export function useProductPublication() {
       }
       imagen_url = supabase.storage.from("productos").getPublicUrl(nombreArchivo).data.publicUrl;
     }
-    const { error: insertError } = await supabase.from("productos_publicados").insert({
+    const productosPublicadosTable = (supabase as any).from("productos_publicados");
+    const { error: insertError } = await productosPublicadosTable.insert({
       hermes_id: options.hermes_id,
       nombre: options.nombre,
       descripcion: options.descripcion,
@@ -52,7 +60,15 @@ export function useProductPublication() {
     setLoading(true);
     setError(null);
     setSuccess(null);
-    const { error: deleteError } = await supabase.from("productos_publicados").delete().eq("hermes_id", hermes_id);
+    if (!hasSupabaseBrowserConfig()) {
+      setError('Faltan NEXT_PUBLIC_SUPABASE_URL y NEXT_PUBLIC_SUPABASE_ANON_KEY.');
+      setLoading(false);
+      return;
+    }
+
+    const supabase = getSupabaseClient();
+    const productosPublicadosTable = (supabase as any).from("productos_publicados");
+    const { error: deleteError } = await productosPublicadosTable.delete().eq("hermes_id", hermes_id);
     if (deleteError) setError("Error al despublicar producto");
     else setSuccess("Producto despublicado");
     setLoading(false);

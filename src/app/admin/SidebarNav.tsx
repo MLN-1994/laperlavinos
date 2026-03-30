@@ -6,6 +6,7 @@ const navItems = [
   { href: "/admin/productos", label: "Productos" },
   { href: "/admin/banners", label: "Banners" },
   { href: "/admin/publicidad", label: "Publicidad" },
+  { href: "/admin/mercadopago", label: "Mercado Pago" },
 ];
 
 interface SidebarNavProps {

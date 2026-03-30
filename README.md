@@ -1,36 +1,26 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+## Desarrollo
 
-## Getting Started
-
-First, run the development server:
+Instalación y arranque:
 
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+La app corre por defecto en http://localhost:3000.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Mercado Pago
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+La integración implementa configuración manual de cuenta en /admin/mercadopago y generación de checkout link al finalizar el pedido o desde el generador manual del panel.
 
-## Learn More
+Configuración requerida:
 
-To learn more about Next.js, take a look at the following resources:
+1. Para usar una sola cuenta ya mismo, cargar MERCADOPAGO_ACCESS_TOKEN y NEXT_PUBLIC_MERCADOPAGO_PUBLIC_KEY en el entorno.
+2. Para permitir configuración manual persistida desde el panel, ejecutar el script [docs/mercadopago-supabase.sql](docs/mercadopago-supabase.sql) en Supabase.
+3. Definir NEXT_PUBLIC_APP_URL con la URL pública real de la tienda.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Notas técnicas:
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- El access token del vendedor se guarda únicamente del lado servidor usando SUPABASE_SERVICE_ROLE_KEY.
+- El frontend nunca accede directo a la tabla de credenciales de Mercado Pago.
+- El panel permite pegar manualmente public key y access token del cliente, sin flujo OAuth.
