@@ -1,17 +1,50 @@
 import Header from './components/Header';
 import ProductList from './components/ProductList';
 import BannerList from './components/BannerList';
+import PublicityHighlights from './components/PublicityHighlights';
+import HomeBrandOrnaments from './components/HomeBrandOrnaments';
 
 export default function Home() {
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="relative z-10 min-h-screen bg-[radial-gradient(circle_at_top,_rgba(222,153,6,0.08),_transparent_24%),linear-gradient(180deg,_#322f2d_0%,_#3c3c3b_18%,_#2c2c2b_100%)] text-[#beb9b1]">
+      <HomeBrandOrnaments />
       <Header />
-      <main>
-        <BannerList />
-        <ProductList />
+      <main className="relative z-10 pb-20">
+        <section className="px-3 pt-4 sm:px-5 md:px-8 lg:px-10 lg:pt-6">
+          <div className="mx-auto max-w-[1440px]">
+            <BannerList />
+          </div>
+        </section>
+
+        <section className="relative z-10 mt-8 px-4 sm:px-6 lg:px-10">
+          <div className="mx-auto max-w-[1220px]">
+            <PublicityHighlights />
+          </div>
+        </section>
+
+        <section className="relative z-10 mt-10 px-4 sm:px-6 lg:px-10">
+          <div className="pointer-events-none absolute inset-x-0 top-0 h-32 bg-[linear-gradient(180deg,_rgba(166,138,92,0.08),_transparent)]" />
+          <div className="mx-auto max-w-[1440px]">
+            <ProductList />
+          </div>
+        </section>
       </main>
-      <footer className="border-t bg-white py-10 text-center text-sm text-gray-500">
-        © {new Date().getFullYear()} MiTienda - Hecho con Next.js
+
+      <footer className="border-t border-[#beb9b1]/10 bg-black/10 px-6 py-12 backdrop-blur-sm">
+        <div className="mx-auto flex max-w-[1440px] flex-col gap-8 md:flex-row md:items-end md:justify-between">
+          <div className="max-w-xl">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#a68a5c]">La Perla Vinos</p>
+            <h2 className="mt-3 text-2xl font-serif tracking-tight text-[#ebe3d2]">Selección cuidada, experiencia simple.</h2>
+            <p className="mt-3 text-sm leading-6 text-[#beb9b1]/70">
+              Catálogo online conectado al negocio real, con una experiencia visual más sobria y enfocada en producto.
+            </p>
+          </div>
+
+          <div className="text-sm text-[#beb9b1]/60 md:text-right">
+            <p>© {new Date().getFullYear()} La Perla Vinos</p>
+            <p className="mt-2">Tienda en desarrollo y gestión interna conectada a Hermes.</p>
+          </div>
+        </div>
       </footer>
     </div>
   );
