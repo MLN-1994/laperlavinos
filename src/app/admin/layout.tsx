@@ -1,64 +1,45 @@
-"use client";
-import React, { useState } from "react";
-import SidebarNav from "./SidebarNav";
+import { redirect } from 'next/navigation';
+import AdminShell from './AdminShell';
+import AdminSignOutButton from './AdminSignOutButton';
+import { getAdminAccessState } from '@/lib/adminAuth';
 
-export default function AdminLayout({ children }: { children: React.ReactNode }) {
-  const [sidebarOpen, setSidebarOpen] = useState(false);
+export default async function AdminLayout({ children }: { children: React.ReactNode }) {
+  const access = await getAdminAccessState();
 
-  const handleNavClick = () => {
-    if (window.innerWidth < 768) setSidebarOpen(false);
-  };
+  if (access.error) {
+    return (
+      <div className="mx-auto flex min-h-screen max-w-xl items-center px-6 py-16">
+        <div className="w-full rounded-2xl border border-amber-200 bg-amber-50 p-6 text-sm text-amber-900 shadow-sm">
+          <h1 className="text-lg font-semibold text-amber-950">Configuracion pendiente</h1>
+          <p className="mt-3">{access.error}</p>
+          <p className="mt-2">Revisa las variables de entorno y la tabla `profiles` antes de usar el panel.</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!access.user) {
+    redirect('/admin-login');
+  }
+
+  if (!access.isAdmin) {
+    return (
+      <div className="mx-auto flex min-h-screen max-w-xl items-center px-6 py-16">
+        <div className="w-full rounded-2xl border border-rose-200 bg-rose-50 p-6 text-sm text-rose-800 shadow-sm">
+          <h1 className="text-lg font-semibold text-rose-950">Acceso denegado</h1>
+          <p className="mt-3">Tu usuario inicio sesion, pero no tiene permisos de administrador.</p>
+          <p className="mt-2">Marca el perfil como admin en Supabase o entra con otro usuario.</p>
+          <div className="mt-5">
+            <AdminSignOutButton />
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className="min-h-screen flex bg-white relative"> {/* Quitamos z-10 innecesario */}
-      
-      {/* BOTÓN: Subimos z-index a 50 y quitamos styles en línea */}
-      <button
-        className="md:hidden fixed top-4 left-4 z-50 bg-white border border-slate-200 rounded-lg p-2 shadow-lg active:scale-95 transition-transform"
-        aria-label="Abrir menú"
-        onClick={() => setSidebarOpen(true)}
-      >
-        <svg className="w-6 h-6 text-slate-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16" />
-        </svg>
-      </button>
-
-      {/* OVERLAY: z-40 está bien */}
-      {sidebarOpen && (
-        <div
-          className="fixed inset-0 bg-black/40 z-40 md:hidden"
-          onClick={() => setSidebarOpen(false)}
-        />
-      )}
-
-      {/* SIDEBAR: Subimos z-index a 50 para que cubra el botón al abrirse */}
-      <aside
-        className={`
-          fixed top-0 left-0 h-full w-64 bg-white border-r border-slate-200 flex flex-col py-8 px-4 z-50
-          transition-transform duration-300 ease-in-out
-          ${sidebarOpen ? "translate-x-0" : "-translate-x-full"}
-          md:static md:translate-x-0 md:w-56
-        `}
-        style={{ minWidth: "14rem" }}
-      >
-        <div className="flex items-center justify-between mb-8">
-          <h1 className="text-xl font-bold text-indigo-700">Panel Admin</h1>
-          <button
-            className="md:hidden p-2 rounded hover:bg-slate-100"
-            onClick={() => setSidebarOpen(false)}
-          >
-            <svg className="w-6 h-6 text-slate-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
-            </svg>
-          </button>
-        </div>
-        <SidebarNav onNavClick={handleNavClick} />
-      </aside>
-
-      {/* MAIN: Añadimos pt-20 para que el contenido no quede debajo del botón en mobile */}
-      <main className="flex-1 p-4 pt-20 md:p-8 md:pt-8 overflow-x-hidden">
-        {children}
-      </main>
-    </div>
+    <AdminShell userEmail={access.user.email}>
+      {children}
+    </AdminShell>
   );
 }

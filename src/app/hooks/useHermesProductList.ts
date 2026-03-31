@@ -84,7 +84,7 @@ export function useHermesProductList() {
       const idsSet = new Set(ids.filter((id: any) => id !== undefined && id !== null));
       if (ids.length !== idsSet.size) {
         console.warn("⚠️ Hay productos con hermes_id duplicado o faltante en Hermes:", hermesProducts.filter((p: any, i: number, arr: any[]) =>
-          arr.findIndex(x => x.hermes_id === p.hermes_id) !== i || !p.hermes_id
+          arr.findIndex(x => x.hermes_id === p.hermes_id) !== i || !Number.isFinite(p.hermes_id)
         ));
       }
     }

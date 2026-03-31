@@ -16,19 +16,19 @@ interface SidebarNavProps {
 export default function SidebarNav({ onNavClick }: SidebarNavProps) {
   const pathname = usePathname();
   return (
-    <nav className="flex flex-col gap-2">
+    <nav className="flex flex-col gap-2.5">
       {navItems.map((item) => (
         <Link
           key={item.href}
           href={item.href}
-          className={`px-3 py-2 rounded truncate transition-colors ${
+          className={`rounded-2xl px-4 py-3 text-sm font-medium tracking-[0.02em] transition-all md:px-4 md:py-3 ${
             pathname === item.href
-              ? "bg-blue-600 text-white font-semibold"
-              : "hover:bg-blue-100 text-gray-800"
+              ? "border border-[#8e7a5c]/25 bg-[#f1e7d7] text-[#2a2520] shadow-sm"
+              : "border border-transparent bg-white/0 text-[#e7dece] hover:border-white/8 hover:bg-white/5 hover:text-white"
           }`}
           onClick={onNavClick}
         >
-          {item.label}
+          <span className="block">{item.label}</span>
         </Link>
       ))}
     </nav>

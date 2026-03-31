@@ -235,24 +235,29 @@ export default function MercadoPagoAdminPage() {
 
   return (
     <section className="mx-auto max-w-4xl space-y-6">
-      <header className="space-y-2">
-        <h1 className="text-3xl font-bold text-slate-900">Mercado Pago</h1>
-        <p className="max-w-3xl text-sm text-slate-600">
-          Vinculá la cuenta del dueño para que cada pedido genere su checkout con esa cuenta y el cobro impacte directo en Mercado Pago.
-        </p>
-      </header>
+      <div className="overflow-hidden rounded-[28px] border border-[#dbd0c2] bg-[linear-gradient(135deg,_rgba(49,44,40,0.98),_rgba(63,56,51,0.94))] p-6 sm:p-8 text-[#f7f0e2] shadow-xl shadow-[#2f2b28]/10">
+        <div className="max-w-3xl">
+          <div className="mb-3 inline-flex rounded-full border border-white/10 bg-white/5 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.24em] text-[#cbbca3]">
+            Cobros y configuración
+          </div>
+          <h1 className="text-3xl font-semibold tracking-tight sm:text-[2.1rem]">Mercado Pago</h1>
+          <p className="mt-4 max-w-2xl text-sm leading-6 text-[#d6cdbf] sm:text-[15px]">
+            Vinculá la cuenta del dueño, gestioná credenciales y generá links manuales para pruebas o cobros puntuales desde el panel.
+          </p>
+        </div>
+      </div>
 
       {flashMessage && (
         <div
           className={flashTone === 'success'
-            ? 'rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700'
-            : 'rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700'}
+            ? 'rounded-2xl border border-[#d4d0c6] bg-[#f4f2ec] px-4 py-3 text-sm text-[#485046]'
+            : 'rounded-2xl border border-[#e2c5c1] bg-[#fbf0ef] px-4 py-3 text-sm text-[#8b4b43]'}
         >
           {flashMessage}
         </div>
       )}
 
-      <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+      <div className="rounded-[28px] border border-[#ddd2c0] bg-[rgba(252,249,244,0.92)] p-6 sm:p-8 shadow-sm backdrop-blur-sm">
         <div className="flex flex-col gap-6 md:flex-row md:items-start md:justify-between">
           <div className="space-y-4">
             <div>
@@ -277,7 +282,7 @@ export default function MercadoPagoAdminPage() {
               )}
             </div>
 
-            <div className="rounded-xl bg-slate-50 p-4 text-sm text-slate-600">
+            <div className="rounded-2xl border border-[#ddd1bf] bg-[#faf6ef] p-4 text-sm text-slate-600">
               {isDirectMode
                 ? 'La cuenta actual está cargada directamente por access token en el entorno. El checkout ya puede generarse con esta cuenta.'
                 : 'La cuenta se administra manualmente desde este panel pegando las credenciales del cliente. El backend usa ese access token para crear links de pago a nombre de esa cuenta.'}
@@ -289,7 +294,7 @@ export default function MercadoPagoAdminPage() {
               type="button"
               onClick={() => void handleDisconnect()}
               disabled={!account.connected || disconnecting || isDirectMode}
-              className="inline-flex items-center justify-center rounded-xl border border-slate-300 px-4 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
+              className="inline-flex items-center justify-center rounded-2xl border border-[#d6c9b7] bg-white px-4 py-3 text-sm font-semibold text-slate-700 transition hover:bg-[#f5eee4] disabled:cursor-not-allowed disabled:opacity-50"
             >
               {disconnecting ? 'Desvinculando...' : isDirectMode ? 'Desvincular desde entorno' : 'Desvincular cuenta'}
             </button>
@@ -297,10 +302,10 @@ export default function MercadoPagoAdminPage() {
         </div>
       </div>
 
-      <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+      <div className="rounded-[28px] border border-[#ddd2c0] bg-[rgba(252,249,244,0.92)] p-6 sm:p-8 shadow-sm backdrop-blur-sm">
         <div className="flex flex-col gap-2 md:flex-row md:items-end md:justify-between">
           <div>
-            <h2 className="text-lg font-semibold text-slate-900">Configuración Manual</h2>
+            <h2 className="text-xl font-semibold tracking-tight text-slate-900">Configuración Manual</h2>
             <p className="mt-1 max-w-3xl text-sm text-slate-600">
               Pegá las API keys del cliente para dejar configurada su cuenta manualmente. El access token se guarda sólo en el backend.
             </p>
@@ -311,7 +316,7 @@ export default function MercadoPagoAdminPage() {
         </div>
 
         <form className="mt-6 grid gap-4" onSubmit={handleSaveConfig}>
-          <div className="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-xs text-slate-600">
+          <div className="rounded-2xl border border-[#ddd1bf] bg-[#faf6ef] px-4 py-3 text-xs text-slate-600">
             La `Public Key` y el `Access Token` se obtienen desde Mercado Pago Developers, dentro de la aplicación del cliente, en la sección de credenciales.
             <div className="mt-2 flex flex-col gap-2 md:flex-row md:items-center">
               <a
@@ -339,7 +344,7 @@ export default function MercadoPagoAdminPage() {
               type="text"
               value={configPublicKey}
               onChange={(event) => setConfigPublicKey(event.target.value)}
-              className="rounded-xl border border-slate-300 px-4 py-3 text-sm outline-none transition focus:border-sky-500 focus:ring-2 focus:ring-sky-100"
+              className="rounded-2xl border border-[#d7ccbc] bg-[#fdfbf7] px-4 py-3 text-sm text-slate-800 shadow-sm outline-none transition focus:border-[#9f8763] focus:ring-2 focus:ring-[#c6b08a]/20"
               placeholder="APP_USR-..."
             />
           </label>
@@ -349,19 +354,19 @@ export default function MercadoPagoAdminPage() {
             <textarea
               value={configAccessToken}
               onChange={(event) => setConfigAccessToken(event.target.value)}
-              className="min-h-28 rounded-xl border border-slate-300 px-4 py-3 text-sm outline-none transition focus:border-sky-500 focus:ring-2 focus:ring-sky-100"
+              className="min-h-28 rounded-2xl border border-[#d7ccbc] bg-[#fdfbf7] px-4 py-3 text-sm text-slate-800 shadow-sm outline-none transition focus:border-[#9f8763] focus:ring-2 focus:ring-[#c6b08a]/20"
               placeholder="APP_USR-..."
             />
           </label>
 
           {configError && (
-            <div className="rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">
+            <div className="rounded-2xl border border-[#e2c5c1] bg-[#fbf0ef] px-4 py-3 text-sm text-[#8b4b43]">
               {configError}
             </div>
           )}
 
           {configSuccess && (
-            <div className="rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700">
+            <div className="rounded-2xl border border-[#d4d0c6] bg-[#f4f2ec] px-4 py-3 text-sm text-[#485046]">
               {configSuccess}
             </div>
           )}
@@ -370,7 +375,7 @@ export default function MercadoPagoAdminPage() {
             <button
               type="submit"
               disabled={configLoading}
-              className="inline-flex items-center justify-center rounded-xl bg-slate-900 px-5 py-3 text-sm font-semibold text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:bg-slate-300"
+              className="inline-flex items-center justify-center rounded-2xl bg-[#312c28] px-5 py-3 text-sm font-semibold text-[#f7f0e2] transition hover:bg-[#403932] disabled:cursor-not-allowed disabled:bg-slate-300"
             >
               {configLoading ? 'Guardando...' : 'Guardar credenciales manualmente'}
             </button>
@@ -382,10 +387,10 @@ export default function MercadoPagoAdminPage() {
         </form>
       </div>
 
-      <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+      <div className="rounded-[28px] border border-[#ddd2c0] bg-[rgba(252,249,244,0.92)] p-6 sm:p-8 shadow-sm backdrop-blur-sm">
         <div className="flex flex-col gap-2 md:flex-row md:items-end md:justify-between">
           <div>
-            <h2 className="text-lg font-semibold text-slate-900">Link de Pago Manual</h2>
+            <h2 className="text-xl font-semibold tracking-tight text-slate-900">Link de Pago Manual</h2>
             <p className="mt-1 max-w-3xl text-sm text-slate-600">
               Usá esta sección para generar links manuales y probar la integración de Mercado Pago sin depender del carrito.
             </p>
@@ -402,7 +407,7 @@ export default function MercadoPagoAdminPage() {
               type="text"
               value={manualTitle}
               onChange={(event) => setManualTitle(event.target.value)}
-              className="rounded-xl border border-slate-300 px-4 py-3 text-sm outline-none transition focus:border-sky-500 focus:ring-2 focus:ring-sky-100"
+              className="rounded-2xl border border-[#d7ccbc] bg-[#fdfbf7] px-4 py-3 text-sm text-slate-800 shadow-sm outline-none transition focus:border-[#9f8763] focus:ring-2 focus:ring-[#c6b08a]/20"
               placeholder="Ej: Reserva degustación"
             />
           </label>
@@ -412,7 +417,7 @@ export default function MercadoPagoAdminPage() {
             <textarea
               value={manualDescription}
               onChange={(event) => setManualDescription(event.target.value)}
-              className="min-h-28 rounded-xl border border-slate-300 px-4 py-3 text-sm outline-none transition focus:border-sky-500 focus:ring-2 focus:ring-sky-100"
+              className="min-h-28 rounded-2xl border border-[#d7ccbc] bg-[#fdfbf7] px-4 py-3 text-sm text-slate-800 shadow-sm outline-none transition focus:border-[#9f8763] focus:ring-2 focus:ring-[#c6b08a]/20"
               placeholder="Detalle opcional del cobro"
             />
           </label>
@@ -425,7 +430,7 @@ export default function MercadoPagoAdminPage() {
               step="0.01"
               value={manualAmount}
               onChange={(event) => setManualAmount(event.target.value)}
-              className="rounded-xl border border-slate-300 px-4 py-3 text-sm outline-none transition focus:border-sky-500 focus:ring-2 focus:ring-sky-100"
+              className="rounded-2xl border border-[#d7ccbc] bg-[#fdfbf7] px-4 py-3 text-sm text-slate-800 shadow-sm outline-none transition focus:border-[#9f8763] focus:ring-2 focus:ring-[#c6b08a]/20"
               placeholder="1500"
             />
           </label>
@@ -438,19 +443,19 @@ export default function MercadoPagoAdminPage() {
               step="1"
               value={manualQuantity}
               onChange={(event) => setManualQuantity(event.target.value)}
-              className="rounded-xl border border-slate-300 px-4 py-3 text-sm outline-none transition focus:border-sky-500 focus:ring-2 focus:ring-sky-100"
+              className="rounded-2xl border border-[#d7ccbc] bg-[#fdfbf7] px-4 py-3 text-sm text-slate-800 shadow-sm outline-none transition focus:border-[#9f8763] focus:ring-2 focus:ring-[#c6b08a]/20"
               placeholder="1"
             />
           </label>
 
           {manualError && (
-            <div className="rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700 md:col-span-2">
+            <div className="rounded-2xl border border-[#e2c5c1] bg-[#fbf0ef] px-4 py-3 text-sm text-[#8b4b43] md:col-span-2">
               {manualError}
             </div>
           )}
 
           {manualSuccess && (
-            <div className="rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700 md:col-span-2">
+            <div className="rounded-2xl border border-[#d4d0c6] bg-[#f4f2ec] px-4 py-3 text-sm text-[#485046] md:col-span-2">
               {manualSuccess}
             </div>
           )}
@@ -459,7 +464,7 @@ export default function MercadoPagoAdminPage() {
             <button
               type="submit"
               disabled={!account.connected || manualLoading}
-              className="inline-flex items-center justify-center rounded-xl bg-slate-900 px-5 py-3 text-sm font-semibold text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:bg-slate-300"
+              className="inline-flex items-center justify-center rounded-2xl bg-[#312c28] px-5 py-3 text-sm font-semibold text-[#f7f0e2] transition hover:bg-[#403932] disabled:cursor-not-allowed disabled:bg-slate-300"
             >
               {manualLoading ? 'Generando link...' : 'Generar link manual'}
             </button>
@@ -471,7 +476,7 @@ export default function MercadoPagoAdminPage() {
         </form>
 
         {manualLink && (
-          <div className="mt-6 rounded-2xl border border-slate-200 bg-slate-50 p-5">
+          <div className="mt-6 rounded-[24px] border border-[#ddd1bf] bg-[#faf6ef] p-5">
             <h3 className="text-sm font-semibold uppercase tracking-[0.2em] text-slate-500">Resultado</h3>
             <div className="mt-4 space-y-3 text-sm text-slate-700">
               <p><span className="font-semibold">Preference ID:</span> {manualLink.id || 'No informado'}</p>
@@ -489,7 +494,7 @@ export default function MercadoPagoAdminPage() {
                 </a>
               </div>
               {!isSandboxManualLink && (
-                <p className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-xs text-amber-800">
+                <p className="rounded-2xl border border-[#ddd1bf] bg-[#f7f1e7] px-4 py-3 text-xs text-[#7b6646]">
                   Mercado Pago no devolvió `sandbox_init_point`. Eso suele pasar cuando la credencial cargada corresponde a una cuenta o entorno de producción y no a prueba.
                 </p>
               )}
@@ -498,7 +503,7 @@ export default function MercadoPagoAdminPage() {
               <button
                 type="button"
                 onClick={() => void handleCopyLink()}
-                className="inline-flex items-center justify-center rounded-xl border border-slate-300 px-4 py-3 text-sm font-semibold text-slate-700 transition hover:bg-white"
+                className="inline-flex items-center justify-center rounded-2xl border border-[#d6c9b7] bg-white px-4 py-3 text-sm font-semibold text-slate-700 transition hover:bg-[#f5eee4]"
               >
                 Copiar link
               </button>
@@ -506,7 +511,7 @@ export default function MercadoPagoAdminPage() {
                 href={preferredManualLink}
                 target="_blank"
                 rel="noreferrer"
-                className="inline-flex items-center justify-center rounded-xl bg-sky-500 px-4 py-3 text-sm font-semibold text-white transition hover:bg-sky-600"
+                className="inline-flex items-center justify-center rounded-2xl bg-[#312c28] px-4 py-3 text-sm font-semibold text-[#f7f0e2] transition hover:bg-[#403932]"
               >
                 Abrir checkout
               </a>

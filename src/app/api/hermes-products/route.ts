@@ -1,7 +1,14 @@
 import { NextResponse } from 'next/server';
+import { requireAdminApiUser } from '@/lib/adminAuth';
 import { getHermesProducts } from '@/lib/hermesClient';
 
 export async function GET() {
+  const authError = await requireAdminApiUser();
+
+  if (authError) {
+    return authError;
+  }
+
   try {
     const products = await getHermesProducts();
     const safeProducts = Array.isArray(products) ? products : [];

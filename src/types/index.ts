@@ -12,10 +12,13 @@ export interface ProductoPublicado {
   nombre: string;
   descripcion: string;
   precio: number;
+  stock?: number | null;
   categoria_id?: string;
   imagen_url?: string;
   destacado?: boolean;
   activo?: boolean;
+  grupo?: string | null;
+  marca?: string | null;
 }
 
 export interface Banner {

@@ -8,9 +8,12 @@ interface AdminGroupSelectProps {
 
 const AdminGroupSelect: React.FC<AdminGroupSelectProps> = ({ value, onChange, options }) => {
 	return (
-		<div className="mb-4">
+		<div className="space-y-2">
+			<label className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">
+				Grupo
+			</label>
 			<select
-				className="w-full border border-slate-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+				className="w-full rounded-2xl border border-[#d7ccbc] bg-[#fdfbf7] px-4 py-3 text-sm text-slate-800 shadow-sm outline-none transition focus:border-[#9f8763] focus:ring-2 focus:ring-[#c6b08a]/20"
 				value={value}
 				onChange={e => onChange(e.target.value)}
 			>

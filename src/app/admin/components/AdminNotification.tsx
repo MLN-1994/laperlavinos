@@ -25,16 +25,16 @@ export default function AdminNotification({ message, type, onClose, title }: Pro
 
   const styles = {
     success: {
-      bg: isRemoved ? "bg-yellow-50" : "bg-emerald-50",
-      border: isRemoved ? "border-yellow-200" : "border-emerald-200",
-      text: isRemoved ? "text-yellow-800" : "text-emerald-800",
-      icon: isRemoved ? null : <CheckCircleIcon className="h-6 w-6 text-emerald-500" />
+      bg: isRemoved ? "bg-[#f7f1e7]" : "bg-[#f4f2ec]",
+      border: isRemoved ? "border-[#dbcdb6]" : "border-[#d4d0c6]",
+      text: isRemoved ? "text-[#7b6646]" : "text-[#485046]",
+      icon: isRemoved ? null : <CheckCircleIcon className="h-6 w-6 text-[#6d776b]" />
     },
     error: {
-      bg: "bg-red-50",
-      border: "border-red-200",
-      text: "text-red-800",
-      icon: <XCircleIcon className="h-6 w-6 text-red-500" />
+      bg: "bg-[#fbf0ef]",
+      border: "border-[#e2c5c1]",
+      text: "text-[#8b4b43]",
+      icon: <XCircleIcon className="h-6 w-6 text-[#b1655a]" />
     }
   };
 
@@ -42,7 +42,7 @@ export default function AdminNotification({ message, type, onClose, title }: Pro
 
   return (
     <div className="fixed bottom-6 right-6 z-50 animate-in fade-in slide-in-from-right-10 duration-300">
-      <div className={`flex items-center gap-4 p-4 rounded-xl border shadow-xl ${current.bg} ${current.border} min-w-[320px]`}>
+      <div className={`flex min-w-[320px] items-center gap-4 rounded-2xl border p-4 shadow-2xl shadow-black/10 backdrop-blur ${current.bg} ${current.border}`}>
         {current.icon && (
           <div className="flex-shrink-0">
             {current.icon}

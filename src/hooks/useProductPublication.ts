@@ -1,6 +1,4 @@
 import { useState } from "react";
-import { getSupabaseClient, hasSupabaseBrowserConfig } from "../lib/supabaseClient";
-import { ProductoPublicado } from "../types";
 
 interface PublishOptions {
   hermes_id: number;
@@ -10,6 +8,10 @@ interface PublishOptions {
   imagen?: File | null;
   destacado?: boolean;
   activo?: boolean;
+}
+
+function isValidHermesId(value: number) {
+  return Number.isFinite(value) && Number.isInteger(value);
 }
 
 export function useProductPublication() {
@@ -22,37 +24,48 @@ export function useProductPublication() {
     setLoading(true);
     setError(null);
     setSuccess(null);
-    if (!hasSupabaseBrowserConfig()) {
-      setError('Faltan NEXT_PUBLIC_SUPABASE_URL y NEXT_PUBLIC_SUPABASE_ANON_KEY.');
+
+    if (!isValidHermesId(options.hermes_id)) {
+      setError('Este producto no tiene un hermes_id valido y no se puede publicar.');
       setLoading(false);
       return;
     }
 
-    const supabase = getSupabaseClient();
-    let imagen_url = undefined;
-    if (options.imagen) {
-      const nombreArchivo = `${Date.now()}_${options.imagen.name}`;
-      const { error: imgError } = await supabase.storage.from("productos").upload(nombreArchivo, options.imagen);
-      if (imgError) {
-        setError("Error al subir imagen");
-        setLoading(false);
-        return;
-      }
-      imagen_url = supabase.storage.from("productos").getPublicUrl(nombreArchivo).data.publicUrl;
+    if (!options.imagen) {
+      setError('Selecciona una imagen antes de publicar el producto.');
+      setLoading(false);
+      return;
     }
-    const productosPublicadosTable = (supabase as any).from("productos_publicados");
-    const { error: insertError } = await productosPublicadosTable.insert({
-      hermes_id: options.hermes_id,
-      nombre: options.nombre,
-      descripcion: options.descripcion,
-      precio: options.precio,
-      imagen_url,
-      destacado: options.destacado ?? false,
-      activo: options.activo ?? true,
-    });
-    if (insertError) setError("Error al publicar producto");
-    else setSuccess("¡Producto publicado!");
-    setLoading(false);
+
+    try {
+      const formData = new FormData();
+      formData.append('hermes_id', String(options.hermes_id));
+      formData.append('nombre', options.nombre);
+      formData.append('descripcion', options.descripcion);
+      formData.append('precio', String(options.precio));
+      formData.append('destacado', String(options.destacado ?? false));
+      formData.append('activo', String(options.activo ?? true));
+
+      if (options.imagen) {
+        formData.append('imagen', options.imagen);
+      }
+
+      const response = await fetch('/api/admin/published-products', {
+        method: 'POST',
+        body: formData,
+      });
+      const data = (await response.json()) as { error?: string };
+
+      if (!response.ok) {
+        throw new Error(data.error ?? 'Error al publicar producto');
+      }
+
+      setSuccess('¡Producto publicado!');
+    } catch (publishError) {
+      setError(publishError instanceof Error ? publishError.message : 'Error al publicar producto');
+    } finally {
+      setLoading(false);
+    }
   };
 
   // Despublicar producto (baja en Supabase)
@@ -60,18 +73,33 @@ export function useProductPublication() {
     setLoading(true);
     setError(null);
     setSuccess(null);
-    if (!hasSupabaseBrowserConfig()) {
-      setError('Faltan NEXT_PUBLIC_SUPABASE_URL y NEXT_PUBLIC_SUPABASE_ANON_KEY.');
+
+    if (!isValidHermesId(hermes_id)) {
+      setError('Este producto no tiene un hermes_id valido y no se puede despublicar.');
       setLoading(false);
       return;
     }
 
-    const supabase = getSupabaseClient();
-    const productosPublicadosTable = (supabase as any).from("productos_publicados");
-    const { error: deleteError } = await productosPublicadosTable.delete().eq("hermes_id", hermes_id);
-    if (deleteError) setError("Error al despublicar producto");
-    else setSuccess("Producto despublicado");
-    setLoading(false);
+    try {
+      const response = await fetch('/api/admin/published-products', {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ hermes_id }),
+      });
+      const data = (await response.json()) as { error?: string };
+
+      if (!response.ok) {
+        throw new Error(data.error ?? 'Error al despublicar producto');
+      }
+
+      setSuccess('Producto despublicado');
+    } catch (unpublishError) {
+      setError(unpublishError instanceof Error ? unpublishError.message : 'Error al despublicar producto');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return {

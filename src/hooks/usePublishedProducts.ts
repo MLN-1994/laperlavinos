@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react";
-import { getSupabaseClient, hasSupabaseBrowserConfig } from "../lib/supabaseClient";
 import { ProductoPublicado } from "../types";
 
 export function usePublishedProducts() {
@@ -10,23 +9,20 @@ export function usePublishedProducts() {
   const fetchProductos = async () => {
     setLoading(true);
     setError(null);
-    if (!hasSupabaseBrowserConfig()) {
-      setError('Faltan NEXT_PUBLIC_SUPABASE_URL y NEXT_PUBLIC_SUPABASE_ANON_KEY.');
-      setProductos([]);
-      setLoading(false);
-      return;
-    }
+    try {
+      const response = await fetch('/api/published-products', {
+        cache: 'no-store',
+      });
+      const data = (await response.json()) as { error?: string } | ProductoPublicado[];
 
-    const supabase = getSupabaseClient();
-    const { data, error } = await supabase
-      .from("productos_publicados")
-      .select("*")
-      .order("nombre", { ascending: true });
-    if (error) {
-      setError(error.message);
-      setProductos([]);
-    } else {
+      if (!response.ok) {
+        throw new Error('error' in data ? data.error : 'No se pudieron cargar los productos.');
+      }
+
       setProductos(data as ProductoPublicado[]);
+    } catch (fetchError) {
+      setError(fetchError instanceof Error ? fetchError.message : 'No se pudieron cargar los productos.');
+      setProductos([]);
     }
     setLoading(false);
   };

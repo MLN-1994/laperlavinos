@@ -20,7 +20,7 @@ const Pagination: React.FC<PaginationProps> = ({
 	if (totalPages <= 1) return null;
 
 	return (
-		<div className={`flex flex-col items-center gap-2 mt-6 ${className}`}>
+		<div className={`mt-8 flex flex-col items-center gap-3 rounded-2xl border border-[#ddd1bf] bg-[#faf6ef] px-4 py-4 shadow-sm ${className}`}>
 			{typeof totalItems === "number" && typeof pageSize === "number" && (
 				<div className="text-sm text-slate-600">
 					Mostrando {Math.min((page - 1) * pageSize + 1, totalItems)} - {Math.min(page * pageSize, totalItems)} de {totalItems} resultados
@@ -28,13 +28,13 @@ const Pagination: React.FC<PaginationProps> = ({
 			)}
 			<div className="flex gap-2">
 				<button
-					className="px-3 py-1 rounded border bg-slate-100 hover:bg-slate-200 disabled:opacity-50"
+					className="rounded-xl border border-[#d6c9b7] bg-white px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-[#f5eee4] disabled:opacity-50"
 					onClick={() => onPageChange(page - 1)}
 					disabled={page === 1}
 				>Anterior</button>
-				<span className="px-2 py-1 text-slate-700">Página {page} de {totalPages}</span>
+				<span className="px-3 py-2 text-sm font-medium text-slate-700">Página {page} de {totalPages}</span>
 				<button
-					className="px-3 py-1 rounded border bg-slate-100 hover:bg-slate-200 disabled:opacity-50"
+					className="rounded-xl border border-[#d6c9b7] bg-white px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-[#f5eee4] disabled:opacity-50"
 					onClick={() => onPageChange(page + 1)}
 					disabled={page === totalPages}
 				>Siguiente</button>
