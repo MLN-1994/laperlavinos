@@ -3,17 +3,12 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { useCartStore } from '../../store/useCartStore';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import CartDrawer from './CartDrawer';
 
 export default function Header() {
   const cart = useCartStore((state) => state.cart);
-  const [mounted, setMounted] = useState(false);
   const [isCartOpen, setIsCartOpen] = useState(false);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
 
   const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
 
@@ -68,7 +63,7 @@ export default function Header() {
                 <path d="M16 10a4 4 0 0 1-8 0"/>
               </svg>
               
-              {mounted && totalItems > 0 && (
+              {totalItems > 0 && (
                 <span className="absolute -top-1.5 -right-1.5 flex h-4 w-4 items-center justify-center rounded-full bg-[#de9906] text-[9px] font-bold text-[#3c3c3b] shadow-sm border border-[#3c3c3b]">
   {totalItems}
 </span>

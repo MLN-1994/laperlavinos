@@ -83,7 +83,7 @@ export async function GET() {
       throw new Error(error.message);
     }
 
-    return NextResponse.json(data satisfies Banner[]);
+    return NextResponse.json((data ?? []) as Banner[]);
   } catch (error) {
     const message = error instanceof Error ? error.message : 'No se pudieron cargar los banners.';
     return NextResponse.json({ error: message }, { status: 500 });
@@ -111,7 +111,7 @@ export async function POST(request: Request) {
       throw new Error(error.message);
     }
 
-    return NextResponse.json(data satisfies Banner);
+    return NextResponse.json(data as Banner);
   } catch (error) {
     const message = error instanceof Error ? error.message : 'No se pudo crear el banner.';
     return NextResponse.json({ error: message }, { status: 400 });
@@ -149,7 +149,7 @@ export async function PATCH(request: Request) {
       throw new Error(error.message);
     }
 
-    return NextResponse.json(data satisfies Banner);
+    return NextResponse.json(data as Banner);
   } catch (error) {
     const message = error instanceof Error ? error.message : 'No se pudo actualizar el banner.';
     return NextResponse.json({ error: message }, { status: 400 });

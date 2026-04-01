@@ -1,13 +1,14 @@
 import React from "react";
 import Spinner from "../../components/Spinner";
+import type { HermesProduct } from "../../../hooks/useHermesProducts";
 
 interface HermesProductItemProps {
-  product: any;
+  product: HermesProduct;
   isPublished: (hermes_id: number) => boolean;
   selectedImage: { [hermes_id: number]: File | null };
   setSelectedImage: React.Dispatch<React.SetStateAction<{ [hermes_id: number]: File | null }>>;
   loading: boolean;
-  onPublish: (product: any) => void;
+  onPublish: (product: HermesProduct) => void;
   onUnpublish: (hermes_id: number) => void;
 }
 

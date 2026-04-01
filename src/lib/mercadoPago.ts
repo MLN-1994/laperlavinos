@@ -65,7 +65,7 @@ async function upsertMercadoPagoAccount(params: {
   userInfo: MercadoPagoUserInfo;
 }) {
   const supabaseAdmin = getSupabaseAdmin();
-  const accountsTable = (supabaseAdmin as any).from(ACCOUNT_TABLE);
+  const accountsTable = supabaseAdmin.from(ACCOUNT_TABLE);
   const sellerId = String(params.userInfo.id ?? '');
 
   if (!sellerId) {
@@ -132,7 +132,7 @@ async function getStoredAccount() {
   }
 
   const supabaseAdmin = getSupabaseAdmin();
-  const accountsTable = (supabaseAdmin as any).from(ACCOUNT_TABLE);
+  const accountsTable = supabaseAdmin.from(ACCOUNT_TABLE);
   const { data, error } = await accountsTable
     .select('*')
     .order('connected_at', { ascending: false })
@@ -187,7 +187,7 @@ export async function getMercadoPagoAccountStatus(): Promise<MercadoPagoAccountS
 export async function disconnectMercadoPagoAccount() {
   if (hasSupabaseAdminConfig()) {
     const supabaseAdmin = getSupabaseAdmin();
-    const accountsTable = (supabaseAdmin as any).from(ACCOUNT_TABLE);
+    const accountsTable = supabaseAdmin.from(ACCOUNT_TABLE);
     const { error } = await accountsTable.delete().neq('seller_id', '');
 
     if (error) {

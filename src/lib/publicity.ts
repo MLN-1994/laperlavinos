@@ -1,5 +1,6 @@
 import { getSupabaseAdmin } from '@/lib/supabaseAdmin';
 import type { PublicityBenefit, PublicityConfig, PublicityIconName } from '@/types/publicity';
+import type { Database, Json } from '@/types/supabase';
 
 export const publicityIconOptions: Array<{ value: PublicityIconName; label: string }> = [
   { value: 'truck', label: 'Envio' },
@@ -100,8 +101,15 @@ export async function getHomePublicityConfig(): Promise<PublicityConfig> {
   }
 }
 
-export function buildPublicityPayload(input: Partial<PublicityConfig>) {
+export function buildPublicityPayload(
+  input: Partial<PublicityConfig>,
+): Database['public']['Tables']['home_publicity']['Insert'] {
   const config = normalizePublicityConfig(input);
+  const benefitItemsJson: Json = config.benefit_items.map((item) => ({
+    title: item.title,
+    description: item.description,
+    icon: item.icon,
+  }));
 
   return {
     id: 'home',
@@ -112,6 +120,6 @@ export function buildPublicityPayload(input: Partial<PublicityConfig>) {
     promo_cta_label: config.promo_cta_label,
     promo_cta_href: config.promo_cta_href || null,
     benefits_active: config.benefits_active,
-    benefit_items: config.benefit_items,
+    benefit_items: benefitItemsJson,
   };
 }

@@ -1,6 +1,5 @@
 "use client";
 
-import { useState } from 'react';
 import { useCartStore } from '../../store/useCartStore';
 
 import { usePublishedProducts } from '../../hooks/usePublishedProducts';

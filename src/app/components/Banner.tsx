@@ -8,13 +8,11 @@ interface BannerProps {
 }
 
 const BannerComponent: React.FC<BannerProps> = ({ banner, isCarousel = false }) => {
-  const [isVisible, setIsVisible] = useState(false);
+  const [isVisible, setIsVisible] = useState(isCarousel);
   const domRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    // Si es carrusel, activamos la animación de inmediato
     if (isCarousel) {
-      setIsVisible(true);
       return;
     }
 

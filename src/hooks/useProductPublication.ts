@@ -10,6 +10,11 @@ interface PublishOptions {
   activo?: boolean;
 }
 
+interface PublicationResult {
+  ok: boolean;
+  message: string;
+}
+
 function isValidHermesId(value: number) {
   return Number.isFinite(value) && Number.isInteger(value);
 }
@@ -20,21 +25,23 @@ export function useProductPublication() {
   const [success, setSuccess] = useState<string | null>(null);
 
   // Publicar producto (alta en Supabase)
-  const publishProduct = async (options: PublishOptions) => {
+  const publishProduct = async (options: PublishOptions): Promise<PublicationResult> => {
     setLoading(true);
     setError(null);
     setSuccess(null);
 
     if (!isValidHermesId(options.hermes_id)) {
-      setError('Este producto no tiene un hermes_id valido y no se puede publicar.');
+      const message = 'Este producto no tiene un hermes_id valido y no se puede publicar.';
+      setError(message);
       setLoading(false);
-      return;
+      return { ok: false, message };
     }
 
     if (!options.imagen) {
-      setError('Selecciona una imagen antes de publicar el producto.');
+      const message = 'Selecciona una imagen antes de publicar el producto.';
+      setError(message);
       setLoading(false);
-      return;
+      return { ok: false, message };
     }
 
     try {
@@ -61,23 +68,27 @@ export function useProductPublication() {
       }
 
       setSuccess('¡Producto publicado!');
+      return { ok: true, message: '¡Producto publicado!' };
     } catch (publishError) {
-      setError(publishError instanceof Error ? publishError.message : 'Error al publicar producto');
+      const message = publishError instanceof Error ? publishError.message : 'Error al publicar producto';
+      setError(message);
+      return { ok: false, message };
     } finally {
       setLoading(false);
     }
   };
 
   // Despublicar producto (baja en Supabase)
-  const unpublishProduct = async (hermes_id: number) => {
+  const unpublishProduct = async (hermes_id: number): Promise<PublicationResult> => {
     setLoading(true);
     setError(null);
     setSuccess(null);
 
     if (!isValidHermesId(hermes_id)) {
-      setError('Este producto no tiene un hermes_id valido y no se puede despublicar.');
+      const message = 'Este producto no tiene un hermes_id valido y no se puede despublicar.';
+      setError(message);
       setLoading(false);
-      return;
+      return { ok: false, message };
     }
 
     try {
@@ -95,8 +106,11 @@ export function useProductPublication() {
       }
 
       setSuccess('Producto despublicado');
+      return { ok: true, message: 'Producto despublicado' };
     } catch (unpublishError) {
-      setError(unpublishError instanceof Error ? unpublishError.message : 'Error al despublicar producto');
+      const message = unpublishError instanceof Error ? unpublishError.message : 'Error al despublicar producto';
+      setError(message);
+      return { ok: false, message };
     } finally {
       setLoading(false);
     }

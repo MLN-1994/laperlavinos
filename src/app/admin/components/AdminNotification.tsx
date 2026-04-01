@@ -1,5 +1,6 @@
 "use client";
 import React, { useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { 
   CheckCircleIcon, 
   XCircleIcon, 
@@ -40,8 +41,12 @@ export default function AdminNotification({ message, type, onClose, title }: Pro
 
   const current = styles[type];
 
-  return (
-    <div className="fixed bottom-6 right-6 z-50 animate-in fade-in slide-in-from-right-10 duration-300">
+  if (typeof document === 'undefined') {
+    return null;
+  }
+
+  return createPortal(
+    <div className="fixed right-6 top-6 z-[200] animate-in fade-in slide-in-from-right-10 duration-300">
       <div className={`flex min-w-[320px] items-center gap-4 rounded-2xl border p-4 shadow-2xl shadow-black/10 backdrop-blur ${current.bg} ${current.border}`}>
         {current.icon && (
           <div className="flex-shrink-0">
@@ -65,6 +70,7 @@ export default function AdminNotification({ message, type, onClose, title }: Pro
           <XMarkIcon className="h-4 w-4" />
         </button>
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 }

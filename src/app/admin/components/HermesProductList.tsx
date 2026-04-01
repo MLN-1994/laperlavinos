@@ -6,6 +6,7 @@ import AdminNotification from "./AdminNotification";
 import Spinner from "../../components/Spinner";
 import HermesProductItem from "./HermesProductItem";
 import { useHermesProductList } from "../../hooks/useHermesProductList";
+import type { HermesProduct } from "../../../hooks/useHermesProducts";
 
 export default function HermesProductList() {
   // Estado para loading individual por producto
@@ -14,7 +15,6 @@ export default function HermesProductList() {
     hermesProducts,
     loadingHermes,
     errorHermes,
-    loading,
     error,
     success,
     selectedImage,
@@ -59,7 +59,7 @@ export default function HermesProductList() {
   }, [success, error]);
 
   // Handler para publicar con loading individual
-  const handlePublishWithLoading = async (product: any) => {
+  const handlePublishWithLoading = async (product: HermesProduct) => {
     setLoadingProduct(prev => ({ ...prev, [product.hermes_id]: true }));
     await handlePublish(product);
     setLoadingProduct(prev => ({ ...prev, [product.hermes_id]: false }));
@@ -103,7 +103,8 @@ export default function HermesProductList() {
         <>
           {hermesProducts.length === 0 && <div>No hay productos disponibles. (¿La API responde bien?)</div>}
           <ul className="divide-y divide-slate-100">
-            {paginatedProducts.map((product: any) => (
+            {errorHermes && <div className="mb-4 rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">{errorHermes}</div>}
+            {paginatedProducts.map((product) => (
               <HermesProductItem
                 key={product.hermes_id ?? 'sinid'}
                 product={product}

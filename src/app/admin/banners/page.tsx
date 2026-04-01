@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import AdminBannerList from '../components/AdminBannerList';
 import AdminBannerForm from '../components/AdminBannerForm';
 import { Banner } from '../../../types/banner';
+import AdminNotification from '../components/AdminNotification';
 
 interface ApiErrorResponse {
   error?: string;
@@ -15,6 +16,11 @@ export default function BannersPage() {
   const [showForm, setShowForm] = useState(false);
   const [editingBanner, setEditingBanner] = useState<Banner | null>(null);
   const [actionLoading, setActionLoading] = useState(false);
+  const [toast, setToast] = useState<{ id: number; message: string; type: 'success' | 'error'; title?: string } | null>(null);
+
+  const showToast = (message: string, type: 'success' | 'error', title?: string) => {
+    setToast({ id: Date.now(), message, type, title });
+  };
 
   // Fetch banners (activos e inactivos para admin)
   const fetchBanners = async () => {
@@ -65,10 +71,13 @@ export default function BannersPage() {
         throw new Error(data.error ?? 'No se pudo eliminar el banner.');
       }
     } catch (deleteError) {
-      alert('Error al eliminar: ' + (deleteError instanceof Error ? deleteError.message : 'No se pudo eliminar el banner.'));
+      showToast(deleteError instanceof Error ? deleteError.message : 'No se pudo eliminar el banner.', 'error', 'Error al eliminar');
+      setActionLoading(false);
+      return;
     }
     await fetchBanners();
     setActionLoading(false);
+    showToast('El banner fue eliminado correctamente.', 'success', 'Banner eliminado');
   };
 
   // Activar/desactivar
@@ -88,10 +97,13 @@ export default function BannersPage() {
         throw new Error(data.error ?? 'No se pudo actualizar el banner.');
       }
     } catch (updateError) {
-      alert('Error al actualizar: ' + (updateError instanceof Error ? updateError.message : 'No se pudo actualizar el banner.'));
+      showToast(updateError instanceof Error ? updateError.message : 'No se pudo actualizar el banner.', 'error', 'Error al actualizar');
+      setActionLoading(false);
+      return;
     }
     await fetchBanners();
     setActionLoading(false);
+    showToast(active ? 'El banner quedó activo en la tienda.' : 'El banner quedó inactivo en la tienda.', 'success', active ? 'Banner activado' : 'Banner desactivado');
   };
 
   // Crear o editar
@@ -119,8 +131,15 @@ export default function BannersPage() {
 
       setShowForm(false);
       setEditingBanner(null);
+      showToast(
+        banner.id ? 'Los cambios del banner fueron guardados.' : 'El banner fue creado correctamente.',
+        'success',
+        banner.id ? 'Banner actualizado' : 'Banner creado',
+      );
     } catch (submitError) {
-      alert('Error: ' + (submitError instanceof Error ? submitError.message : 'No se pudo guardar el banner.'));
+      showToast(submitError instanceof Error ? submitError.message : 'No se pudo guardar el banner.', 'error', 'Error al guardar');
+      setActionLoading(false);
+      return;
     }
     await fetchBanners();
     setActionLoading(false);
@@ -205,6 +224,16 @@ export default function BannersPage() {
           )}
         </div>
       </div>
+
+      {toast && (
+        <AdminNotification
+          key={toast.id}
+          message={toast.message}
+          type={toast.type}
+          title={toast.title}
+          onClose={() => setToast(null)}
+        />
+      )}
     </section>
   );
 }

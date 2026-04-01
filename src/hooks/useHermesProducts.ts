@@ -5,8 +5,12 @@ export interface HermesProduct {
   nombre: string;
   descripcion: string;
   precio: number;
+  stock?: number | null;
+  grupo?: string | null;
+  marca?: string | null;
   categoria?: string;
-  [key: string]: any;
+  categoria_id?: string | null;
+  imagen_url?: string | null;
 }
 
 export function useHermesProducts() {
@@ -21,10 +25,10 @@ export function useHermesProducts() {
       try {
         const res = await fetch("/api/hermes-products");
         if (!res.ok) throw new Error("Error al obtener productos de Hermes");
-        const data = await res.json();
-        setProductos(data);
-      } catch (err: any) {
-        setError(err.message);
+        const data = (await res.json()) as HermesProduct[];
+        setProductos(Array.isArray(data) ? data : []);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "Error al obtener productos de Hermes");
         setProductos([]);
       }
       setLoading(false);

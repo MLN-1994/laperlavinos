@@ -1,16 +1,16 @@
 
 import { useState, useEffect, useCallback, useMemo } from "react";
-import { useHermesProducts } from "../../hooks/useHermesProducts";
+import { useHermesProducts, type HermesProduct } from "../../hooks/useHermesProducts";
 import { usePublishedProducts } from "../../hooks/usePublishedProducts";
 import { useProductPublication } from "../../hooks/useProductPublication";
+import type { ProductoPublicado } from "../../types";
 
 // Estado de paginación
 // (debe ir dentro del hook, no fuera)
 
 export function useHermesProductList() {
-    // Estado de paginación
-    const [page, setPage] = useState(1);
-    const [pageSize] = useState(10); // Puedes ajustar el tamaño de página
+  const [page, setPage] = useState(1);
+  const [pageSize] = useState(10);
   const { productos: hermesProducts, loading: loadingHermes, error: errorHermes } = useHermesProducts();
   const { productos: publishedProducts, refetch: refetchPublished } = usePublishedProducts();
   const { publishProduct, unpublishProduct, loading, error, success } = useProductPublication();
@@ -19,18 +19,22 @@ export function useHermesProductList() {
   const [group, setGroup] = useState("");
   const [tab, setTab] = useState<'todos' | 'publicados'>("todos");
 
-  // Obtener grupos únicos ordenados alfabéticamente
-  const groupOptions = useMemo(() =>
-    Array.from(new Set((hermesProducts || []).map((p: any) => p.grupo).filter(Boolean))).sort(),
-    [hermesProducts]
+  const groupOptions = useMemo(
+    () => Array.from(new Set(
+      hermesProducts
+        .map((product) => product.grupo)
+        .filter((groupName): groupName is string => typeof groupName === 'string' && groupName.length > 0),
+    )).sort(),
+    [hermesProducts],
   );
 
-  // Saber si un producto está publicado
-  const isPublished = useCallback((hermes_id: number) => publishedProducts.some((p: any) => p.hermes_id === hermes_id), [publishedProducts]);
+  const isPublished = useCallback(
+    (hermes_id: number) => publishedProducts.some((product: ProductoPublicado) => product.hermes_id === hermes_id),
+    [publishedProducts],
+  );
 
-  // Handlers
-  const handlePublish = useCallback(async (product: any) => {
-    await publishProduct({
+  const handlePublish = useCallback(async (product: HermesProduct) => {
+    const result = await publishProduct({
       hermes_id: product.hermes_id,
       nombre: product.nombre,
       descripcion: product.descripcion,
@@ -39,53 +43,69 @@ export function useHermesProductList() {
     });
     setSelectedImage((prev) => ({ ...prev, [product.hermes_id]: null }));
     refetchPublished();
+    return result;
   }, [publishProduct, refetchPublished, selectedImage]);
 
   const handleUnpublish = useCallback(async (hermes_id: number) => {
-    await unpublishProduct(hermes_id);
+    const result = await unpublishProduct(hermes_id);
     refetchPublished();
+    return result;
   }, [unpublishProduct, refetchPublished]);
 
-  // Filtrado profesional por descripción, código y grupo (con select)
-  const filterFn = useCallback((p: any) => {
+  const filterFn = useCallback((product: HermesProduct) => {
     const q = search.toLowerCase();
     const matchText =
-      p.nombre?.toLowerCase().includes(q) ||
-      String(p.hermes_id).toLowerCase().includes(q) ||
-      p.grupo?.toLowerCase().includes(q);
-    const matchGroup = group ? p.grupo === group : true;
+      product.nombre.toLowerCase().includes(q) ||
+      String(product.hermes_id).toLowerCase().includes(q) ||
+      product.grupo?.toLowerCase().includes(q);
+    const matchGroup = group ? product.grupo === group : true;
     return matchText && matchGroup;
   }, [search, group]);
 
   const filteredProducts = useMemo(() => {
-    if (!hermesProducts) return [];
     return tab === 'todos'
       ? hermesProducts.filter(filterFn)
-      : hermesProducts.filter((p: any) => isPublished(p.hermes_id)).filter(filterFn);
+      : hermesProducts.filter((product) => isPublished(product.hermes_id)).filter(filterFn);
   }, [hermesProducts, tab, filterFn, isPublished]);
 
   // Total de productos filtrados y total de páginas
   const totalFiltered = filteredProducts.length;
   const totalPages = Math.ceil(totalFiltered / pageSize) || 1;
+  const currentPage = Math.min(page, totalPages);
 
   // Productos paginados
   const paginatedProducts = useMemo(
-    () => filteredProducts.slice((page - 1) * pageSize, page * pageSize),
-    [filteredProducts, page, pageSize]
+    () => filteredProducts.slice((currentPage - 1) * pageSize, currentPage * pageSize),
+    [currentPage, filteredProducts, pageSize]
   );
 
-  // Resetear página cuando cambian los filtros
-  useEffect(() => { setPage(1); }, [search, group, tab]);
+  const setSearchAndResetPage = useCallback((value: string) => {
+    setSearch(value);
+    setPage(1);
+  }, []);
 
-  // Log de control: detectar productos con hermes_id duplicado o faltante
+  const setGroupAndResetPage = useCallback((value: string) => {
+    setGroup(value);
+    setPage(1);
+  }, []);
+
+  const setTabAndResetPage = useCallback((value: 'todos' | 'publicados') => {
+    setTab(value);
+    setPage(1);
+  }, []);
+
   useEffect(() => {
-    if (hermesProducts && hermesProducts.length > 0) {
-      const ids = hermesProducts.map((p: any) => p.hermes_id);
-      const idsSet = new Set(ids.filter((id: any) => id !== undefined && id !== null));
+    if (hermesProducts.length > 0) {
+      const ids = hermesProducts.map((product) => product.hermes_id);
+      const idsSet = new Set(ids.filter((id) => id !== undefined && id !== null));
       if (ids.length !== idsSet.size) {
-        console.warn("⚠️ Hay productos con hermes_id duplicado o faltante en Hermes:", hermesProducts.filter((p: any, i: number, arr: any[]) =>
-          arr.findIndex(x => x.hermes_id === p.hermes_id) !== i || !Number.isFinite(p.hermes_id)
-        ));
+        console.warn(
+          "⚠️ Hay productos con hermes_id duplicado o faltante en Hermes:",
+          hermesProducts.filter((product, index, items) =>
+            items.findIndex((candidate) => candidate.hermes_id === product.hermes_id) !== index
+            || !Number.isFinite(product.hermes_id),
+          ),
+        );
       }
     }
   }, [hermesProducts]);
@@ -101,15 +121,15 @@ export function useHermesProductList() {
     selectedImage,
     setSelectedImage,
     search,
-    setSearch,
+    setSearch: setSearchAndResetPage,
     group,
-    setGroup,
+    setGroup: setGroupAndResetPage,
     tab,
-    setTab,
+    setTab: setTabAndResetPage,
     groupOptions,
     filteredProducts,
     paginatedProducts,
-    page,
+    page: currentPage,
     setPage,
     pageSize,
     totalFiltered,

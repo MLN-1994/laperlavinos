@@ -1,6 +1,16 @@
 import { NextResponse } from 'next/server';
 import { requireAdminApiUser } from '@/lib/adminAuth';
 import { getHermesProducts } from '@/lib/hermesClient';
+import type { HermesProduct } from '@/hooks/useHermesProducts';
+
+interface HermesRawProduct {
+  Codigo?: number | string | null;
+  Descripcion?: string | null;
+  Precio?: number | string | null;
+  Stock?: number | string | null;
+  Grupo?: string | null;
+  Marca?: string | null;
+}
 
 export async function GET() {
   const authError = await requireAdminApiUser();
@@ -11,18 +21,18 @@ export async function GET() {
 
   try {
     const products = await getHermesProducts();
-    const safeProducts = Array.isArray(products) ? products : [];
-    const mapped = safeProducts.map((p: any) => ({
-      hermes_id: p.Codigo !== undefined && p.Codigo !== null ? parseInt(p.Codigo, 10) : undefined,
-      nombre: p.Descripcion,
-      descripcion: p.Descripcion,
-      precio: p.Precio,
-      stock: p.Stock,
-      grupo: p.Grupo,
-      marca: p.Marca,
+    const safeProducts = Array.isArray(products) ? (products as HermesRawProduct[]) : [];
+    const mapped: HermesProduct[] = safeProducts.map((product) => ({
+      hermes_id: product.Codigo !== undefined && product.Codigo !== null ? parseInt(String(product.Codigo), 10) : 0,
+      nombre: product.Descripcion?.trim() || 'Sin nombre',
+      descripcion: product.Descripcion?.trim() || 'Sin descripcion',
+      precio: Number(product.Precio) || 0,
+      stock: product.Stock !== undefined && product.Stock !== null ? Number(product.Stock) : null,
+      grupo: product.Grupo ?? null,
+      marca: product.Marca ?? null,
     }));
     return NextResponse.json(mapped);
-  } catch (error) {
+  } catch {
     return NextResponse.json({ error: 'Error fetching products' }, { status: 500 });
   }
 }

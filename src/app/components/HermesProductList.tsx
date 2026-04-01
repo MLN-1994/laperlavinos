@@ -8,6 +8,7 @@ import AdminNotification from "../../app/admin/components/AdminNotification";
 import Spinner from "./Spinner";
 import HermesProductItem from "../../app/admin/components/HermesProductItem";
 import { useHermesProductList } from "../hooks/useHermesProductList";
+import type { HermesProduct } from "../../hooks/useHermesProducts";
 
 export default function HermesProductList() {
   // Estado para loading individual por producto
@@ -17,9 +18,6 @@ export default function HermesProductList() {
     publishedProducts,
     loadingHermes,
     errorHermes,
-    loading,
-    error,
-    success,
     selectedImage,
     setSelectedImage,
     search,
@@ -41,40 +39,40 @@ export default function HermesProductList() {
   } = useHermesProductList();
 
   // Estado para controlar el toast
-  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error'; title?: string } | null>(null);
+  const [toast, setToast] = useState<{ id: number; message: string; type: 'success' | 'error'; title?: string } | null>(null);
   const publishedCount = publishedProducts.length;
-  const availableCount = hermesProducts.filter((product: any) => Number(product.stock) > 0).length;
+  const availableCount = hermesProducts.filter((product) => Number(product.stock) > 0).length;
 
-  // Mostrar toast personalizado según la acción
-  React.useEffect(() => {
-    if (success) {
-      let customMessage = success;
-      let customTitle = '¡Logrado!';
-      if (success === '¡Producto publicado!') {
-        customMessage = 'El producto fue publicado correctamente.';
-        customTitle = 'Producto publicado';
-      } else if (success === 'Producto despublicado') {
-        customMessage = 'El producto fue quitado de la tienda.';
-        customTitle = 'Producto quitado';
-      }
-      setToast({ message: customMessage, type: 'success', title: customTitle });
-    } else if (error) {
-      setToast({ message: error, type: 'error' });
-    }
-  }, [success, error]);
+  const showToast = React.useCallback((message: string, type: 'success' | 'error', title?: string) => {
+    setToast({ id: Date.now(), message, type, title });
+  }, []);
 
   // Handler para publicar con loading individual
-  const handlePublishWithLoading = async (product: any) => {
+  const handlePublishWithLoading = async (product: HermesProduct) => {
     setLoadingProduct(prev => ({ ...prev, [product.hermes_id]: true }));
-    await handlePublish(product);
+    const result = await handlePublish(product);
     setLoadingProduct(prev => ({ ...prev, [product.hermes_id]: false }));
+
+    if (result.ok) {
+      showToast('El producto fue publicado correctamente.', 'success', 'Producto publicado');
+      return;
+    }
+
+    showToast(result.message, 'error');
   };
 
   // Handler para quitar con loading individual
   const handleUnpublishWithLoading = async (hermes_id: number) => {
     setLoadingProduct(prev => ({ ...prev, [hermes_id]: true }));
-    await handleUnpublish(hermes_id);
+    const result = await handleUnpublish(hermes_id);
     setLoadingProduct(prev => ({ ...prev, [hermes_id]: false }));
+
+    if (result.ok) {
+      showToast('El producto fue quitado de la tienda.', 'success', 'Producto quitado');
+      return;
+    }
+
+    showToast(result.message, 'error');
   };
 
   return (
@@ -152,7 +150,7 @@ export default function HermesProductList() {
           {errorHermes && <div className="rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">{errorHermes}</div>}
           {hermesProducts.length === 0 && <div className="rounded-2xl border border-slate-200 bg-white px-4 py-6 text-sm text-slate-500">No hay productos disponibles. (¿La API responde bien?)</div>}
           <ul className="space-y-3">
-            {paginatedProducts.map((product: any) => (
+            {paginatedProducts.map((product) => (
               <HermesProductItem
                 key={product.hermes_id ?? 'sinid'}
                 product={product}
@@ -179,6 +177,7 @@ export default function HermesProductList() {
       {/* Notificación tipo toast */}
       {toast && (
         <AdminNotification
+          key={toast.id}
           message={toast.message}
           type={toast.type}
           onClose={() => setToast(null)}

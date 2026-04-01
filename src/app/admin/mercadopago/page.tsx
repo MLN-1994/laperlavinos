@@ -15,6 +15,14 @@ type ViewState = MercadoPagoAccountStatus & {
   error: string | null;
 };
 
+function isMercadoPagoAccountStatus(value: unknown): value is MercadoPagoAccountStatus {
+  if (!value || typeof value !== 'object') {
+    return false;
+  }
+
+  return typeof (value as { connected?: unknown }).connected === 'boolean';
+}
+
 const initialState: ViewState = {
   connected: false,
   loading: true,
@@ -50,14 +58,19 @@ export default function MercadoPagoAdminPage() {
       const response = await fetch('/api/mercadopago/account', { cache: 'no-store' });
       const contentType = response.headers.get('content-type') || '';
       const data = contentType.includes('application/json')
-        ? (await response.json()) as MercadoPagoAccountStatus & { error?: string }
+        ? (await response.json()) as MercadoPagoAccountStatus | { error?: string }
         : { error: 'La API de Mercado Pago devolvió una respuesta inválida.' };
 
       if (!response.ok) {
-        throw new Error(data.error ?? 'No se pudo cargar la configuración de Mercado Pago.');
+        throw new Error(('error' in data ? data.error : null) ?? 'No se pudo cargar la configuración de Mercado Pago.');
+      }
+
+      if (!isMercadoPagoAccountStatus(data)) {
+        throw new Error('La API de Mercado Pago devolvió un formato inesperado.');
       }
 
       setAccount({
+        ...initialState,
         ...data,
         loading: false,
         error: null,

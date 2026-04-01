@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { publicityIconOptions, defaultPublicityConfig } from '@/lib/publicity';
 import type { PublicityConfig } from '@/types/publicity';
+import AdminNotification from '../components/AdminNotification';
 
 interface ApiResponse {
   error?: string;
@@ -14,6 +15,11 @@ export default function PublicidadPage() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
+  const [toast, setToast] = useState<{ id: number; message: string; type: 'success' | 'error'; title?: string } | null>(null);
+
+  const showToast = (message: string, type: 'success' | 'error', title?: string) => {
+    setToast({ id: Date.now(), message, type, title });
+  };
 
   useEffect(() => {
     async function fetchPublicity() {
@@ -79,8 +85,11 @@ export default function PublicidadPage() {
 
       setForm(data as PublicityConfig);
       setSuccess('Publicidad guardada correctamente.');
+      showToast('Los cambios de publicidad fueron guardados.', 'success', 'Publicidad actualizada');
     } catch (saveError) {
-      setError(saveError instanceof Error ? saveError.message : 'No se pudo guardar la publicidad.');
+      const message = saveError instanceof Error ? saveError.message : 'No se pudo guardar la publicidad.';
+      setError(message);
+      showToast(message, 'error', 'Error al guardar');
     } finally {
       setSaving(false);
     }
@@ -199,6 +208,16 @@ export default function PublicidadPage() {
           </form>
         )}
       </div>
+
+      {toast && (
+        <AdminNotification
+          key={toast.id}
+          message={toast.message}
+          type={toast.type}
+          title={toast.title}
+          onClose={() => setToast(null)}
+        />
+      )}
     </section>
   );
 }
