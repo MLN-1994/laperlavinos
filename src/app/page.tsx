@@ -16,11 +16,7 @@ export default function Home() {
           </div>
         </section>
 
-        <section className="relative z-10 mt-8 px-4 sm:px-6 lg:px-10">
-          <div className="mx-auto max-w-[1220px]">
-            <PublicityHighlights />
-          </div>
-        </section>
+        <PublicityHighlights />
 
         <section className="relative z-10 mt-10 px-4 sm:px-6 lg:px-10">
           <div className="pointer-events-none absolute inset-x-0 top-0 h-32 bg-[linear-gradient(180deg,_rgba(166,138,92,0.08),_transparent)]" />
