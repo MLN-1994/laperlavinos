@@ -38,6 +38,19 @@ export const defaultPublicityConfig: PublicityConfig = {
   benefit_items: defaultBenefits,
 };
 
+type PublicityConfigInput = {
+  id?: string | null;
+  promo_active?: boolean | null;
+  promo_title?: string | null;
+  promo_subtitle?: string | null;
+  promo_heading?: string | null;
+  promo_cta_label?: string | null;
+  promo_cta_href?: string | null;
+  benefits_active?: boolean | null;
+  benefit_items?: unknown;
+  updated_at?: string | null;
+};
+
 function sanitizeVisibility(value: unknown, fallback: boolean): boolean {
   return typeof value === 'boolean' ? value : fallback;
 }
@@ -68,7 +81,7 @@ export function normalizeBenefitItems(input: unknown): PublicityBenefit[] {
   return normalized;
 }
 
-export function normalizePublicityConfig(input: Partial<PublicityConfig> | null | undefined): PublicityConfig {
+export function normalizePublicityConfig(input: PublicityConfigInput | null | undefined): PublicityConfig {
   return {
     id: input?.id || defaultPublicityConfig.id,
     promo_active: sanitizeVisibility(input?.promo_active, defaultPublicityConfig.promo_active),
@@ -79,7 +92,7 @@ export function normalizePublicityConfig(input: Partial<PublicityConfig> | null 
     promo_cta_href: input?.promo_cta_href?.trim() || defaultPublicityConfig.promo_cta_href,
     benefits_active: sanitizeVisibility(input?.benefits_active, defaultPublicityConfig.benefits_active),
     benefit_items: normalizeBenefitItems(input?.benefit_items),
-    updated_at: input?.updated_at,
+    updated_at: input?.updated_at ?? undefined,
   };
 }
 
@@ -95,7 +108,7 @@ export async function getHomePublicityConfig(): Promise<PublicityConfig> {
       return defaultPublicityConfig;
     }
 
-    return normalizePublicityConfig(data as Partial<PublicityConfig> | null);
+    return normalizePublicityConfig(data);
   } catch {
     return defaultPublicityConfig;
   }

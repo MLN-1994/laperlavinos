@@ -16,6 +16,24 @@ interface MercadoPagoUserInfo {
   country_id?: string;
 }
 
+export interface MercadoPagoPaymentInfo {
+  id: string | number;
+  status?: string | null;
+  status_detail?: string | null;
+  external_reference?: string | null;
+  transaction_amount?: number | null;
+  currency_id?: string | null;
+  date_created?: string | null;
+  date_approved?: string | null;
+  payer?: {
+    email?: string | null;
+    identification?: {
+      type?: string | null;
+      number?: string | null;
+    } | null;
+  } | null;
+}
+
 function getOptionalEnv(name: string) {
   return process.env[name]?.trim() || null;
 }
@@ -57,6 +75,24 @@ async function fetchMercadoPagoUser(accessToken: string) {
   }
 
   return response.json() as Promise<MercadoPagoUserInfo>;
+}
+
+export async function fetchMercadoPagoPayment(paymentId: string) {
+  const accessToken = await getValidAccessToken();
+  const response = await fetch(`https://api.mercadopago.com/v1/payments/${paymentId}`, {
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+      Accept: 'application/json',
+    },
+    cache: 'no-store',
+  });
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    throw new Error(`Mercado Pago payments/${paymentId} error: ${errorText}`);
+  }
+
+  return response.json() as Promise<MercadoPagoPaymentInfo>;
 }
 
 async function upsertMercadoPagoAccount(params: {
@@ -219,12 +255,13 @@ async function getValidAccessToken() {
 export async function createMercadoPagoCheckoutPreference(params: {
   items: CheckoutItemInput[];
   origin?: string;
+  externalReference?: string;
 }) {
   const accessToken = await getValidAccessToken();
   const baseUrl = getBaseUrl(params.origin);
   const mercadopagoClient = new MercadoPagoConfig({ accessToken });
   const preference = new Preference(mercadopagoClient);
-  const externalReference = `pedido-${Date.now()}`;
+  const externalReference = params.externalReference ?? `pedido-${Date.now()}`;
 
   const response = await preference.create({
     body: {
