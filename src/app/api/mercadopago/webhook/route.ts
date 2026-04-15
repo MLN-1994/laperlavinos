@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { createHmac, timingSafeEqual } from 'crypto';
 import { fetchMercadoPagoPayment } from '@/lib/mercadoPago';
 import { getSupabaseAdmin, hasSupabaseAdminConfig } from '@/lib/supabaseAdmin';
 import type { Database, Json } from '@/types/supabase';
@@ -22,6 +23,19 @@ const ALLOWED_PAYMENT_STATUSES = new Set([
   'refunded',
   'charged_back',
 ]);
+
+const WEBHOOK_DEBUG_ENABLED = process.env.MERCADOPAGO_WEBHOOK_DEBUG === 'true';
+const WEBHOOK_SECRET = process.env.MERCADOPAGO_WEBHOOK_SECRET?.trim() || '';
+const WEBHOOK_TOLERANCE_MS = Number(process.env.MERCADOPAGO_WEBHOOK_TOLERANCE_MS ?? 300000);
+
+class WebhookValidationError extends Error {
+  status: number;
+
+  constructor(message: string, status = 401) {
+    super(message);
+    this.status = status;
+  }
+}
 
 function parseWebhookBody(rawBody: string) {
   let parsedBody: unknown = rawBody;
@@ -58,6 +72,96 @@ function getWebhookPaymentId(parsedBody: unknown, url: URL) {
 function getWebhookTopic(parsedBody: unknown, url: URL) {
   const body = getWebhookBody(parsedBody);
   return body?.type ?? url.searchParams.get('type') ?? url.searchParams.get('topic') ?? null;
+}
+
+function parseSignatureHeader(signatureHeader: string | null) {
+  if (!signatureHeader) {
+    return { ts: null, v1: null };
+  }
+
+  const entries = signatureHeader.split(',');
+  let ts: string | null = null;
+  let v1: string | null = null;
+
+  for (const entry of entries) {
+    const [rawKey, rawValue] = entry.split('=', 2);
+    const key = rawKey?.trim();
+    const value = rawValue?.trim();
+
+    if (!key || !value) {
+      continue;
+    }
+
+    if (key === 'ts') {
+      ts = value;
+    }
+
+    if (key === 'v1') {
+      v1 = value;
+    }
+  }
+
+  return { ts, v1 };
+}
+
+function getTimestampMs(rawTimestamp: string) {
+  const parsed = Number(rawTimestamp);
+
+  if (!Number.isFinite(parsed)) {
+    return null;
+  }
+
+  return rawTimestamp.length <= 10 ? parsed * 1000 : parsed;
+}
+
+function buildManifest(params: { url: URL; requestId: string | null; ts: string }) {
+  const segments: string[] = [];
+  const dataId = params.url.searchParams.get('data.id') ?? params.url.searchParams.get('id');
+
+  if (dataId) {
+    segments.push(`id:${dataId.toLowerCase()};`);
+  }
+
+  if (params.requestId) {
+    segments.push(`request-id:${params.requestId};`);
+  }
+
+  segments.push(`ts:${params.ts};`);
+
+  return segments.join('');
+}
+
+function verifyWebhookSignature(request: Request, url: URL) {
+  if (!WEBHOOK_SECRET) {
+    throw new WebhookValidationError('Falta configurar MERCADOPAGO_WEBHOOK_SECRET para validar webhooks.', 500);
+  }
+
+  const signatureHeader = request.headers.get('x-signature');
+  const requestId = request.headers.get('x-request-id');
+  const { ts, v1 } = parseSignatureHeader(signatureHeader);
+
+  if (!ts || !v1) {
+    throw new WebhookValidationError('Webhook sin firma valida de Mercado Pago.');
+  }
+
+  const timestampMs = getTimestampMs(ts);
+
+  if (timestampMs === null) {
+    throw new WebhookValidationError('Webhook con timestamp invalido.');
+  }
+
+  if (Math.abs(Date.now() - timestampMs) > WEBHOOK_TOLERANCE_MS) {
+    throw new WebhookValidationError('Webhook fuera de ventana de tolerancia.');
+  }
+
+  const manifest = buildManifest({ url, requestId, ts });
+  const expectedSignature = createHmac('sha256', WEBHOOK_SECRET).update(manifest).digest('hex');
+  const receivedBuffer = Buffer.from(v1, 'hex');
+  const expectedBuffer = Buffer.from(expectedSignature, 'hex');
+
+  if (receivedBuffer.length !== expectedBuffer.length || !timingSafeEqual(receivedBuffer, expectedBuffer)) {
+    throw new WebhookValidationError('La firma del webhook no coincide con Mercado Pago.');
+  }
 }
 
 function normalizePaymentStatus(status: string | null | undefined) {
@@ -128,9 +232,19 @@ function buildWebhookPayload(params: {
   } as Json;
 }
 
-function logWebhook(prefix: string, payload: unknown) {
+function logWebhook(prefix: string, payload: Record<string, unknown>) {
+  if (!WEBHOOK_DEBUG_ENABLED) {
+    return;
+  }
+
+  const summary = {
+    ...payload,
+    headers: payload.headers && typeof payload.headers === 'object' ? '[omitted]' : payload.headers,
+    body: payload.body === undefined ? undefined : '[omitted]',
+  };
+
   console.log(`[MercadoPago webhook] ${prefix}`);
-  console.log(JSON.stringify(payload, null, 2));
+  console.log(JSON.stringify(summary, null, 2));
 }
 
 export async function POST(request: Request) {
@@ -145,6 +259,8 @@ export async function POST(request: Request) {
     const paymentId = getWebhookPaymentId(parsedBody, url);
     const topic = getWebhookTopic(parsedBody, url);
 
+    verifyWebhookSignature(request, url);
+
     logWebhook('POST recibido', {
       url: url.toString(),
       headers: Object.fromEntries(request.headers.entries()),
@@ -156,6 +272,10 @@ export async function POST(request: Request) {
 
     if (!paymentId) {
       return NextResponse.json({ received: true, ignored: true, reason: 'missing_payment_id' });
+    }
+
+    if (topic && topic !== 'payment') {
+      return NextResponse.json({ received: true, ignored: true, reason: 'unsupported_topic' });
     }
 
     const payment = await fetchMercadoPagoPayment(paymentId);
@@ -211,6 +331,10 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ received: true });
   } catch (error) {
+    if (error instanceof WebhookValidationError) {
+      return NextResponse.json({ error: error.message }, { status: error.status });
+    }
+
     console.error('[MercadoPago webhook] Error procesando POST', error);
     return NextResponse.json({ error: 'Webhook error' }, { status: 500 });
   }

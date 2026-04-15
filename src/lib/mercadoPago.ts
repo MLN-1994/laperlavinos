@@ -282,7 +282,7 @@ export async function createMercadoPagoCheckoutPreference(params: {
         failure: `${baseUrl}/?checkout=failure`,
         pending: `${baseUrl}/?checkout=pending`,
       },
-      notification_url: `${baseUrl}/api/mercadopago/webhook`,
+      notification_url: `${baseUrl}/api/mercadopago/webhook?source_news=webhooks`,
       auto_return: 'approved',
     },
   });

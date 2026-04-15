@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { createMercadoPagoCheckoutPreference } from '@/lib/mercadoPago';
+import { getHermesProducts } from '@/lib/hermesClient';
 import { getSupabaseAdmin, hasSupabaseAdminConfig } from '@/lib/supabaseAdmin';
 import type { CheckoutItemInput } from '@/types/mercadopago';
 import type { Database, Json } from '@/types/supabase';
@@ -11,12 +12,134 @@ interface CheckoutRequestBody {
 type WebOrderInsert = Database['public']['Tables']['web_orders']['Insert'];
 type WebOrderItemInsert = Database['public']['Tables']['web_order_items']['Insert'];
 
+interface PublishedProductForCheckout {
+  id: string;
+  hermes_id: number | null;
+  nombre: string;
+  descripcion: string;
+  precio: number;
+  categoria_id: string | null;
+  imagen_url: string | null;
+  activo: boolean | null;
+}
+
+class CheckoutValidationError extends Error {
+  status: number;
+
+  constructor(message: string, status = 400) {
+    super(message);
+    this.status = status;
+  }
+}
+
 function buildExternalReference() {
   return `pedido-web-${Date.now()}-${crypto.randomUUID().slice(0, 8)}`;
 }
 
 function calculateTotalAmount(items: CheckoutItemInput[]) {
   return items.reduce((total, item) => total + Number(item.unit_price) * Number(item.quantity), 0);
+}
+
+function parseHermesId(value: unknown) {
+  const parsed = Number.parseInt(String(value), 10);
+  return Number.isFinite(parsed) ? parsed : null;
+}
+
+function parseNumber(value: unknown) {
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? parsed : null;
+}
+
+function areAmountsEqual(left: number, right: number) {
+  return Math.abs(left - right) < 0.000001;
+}
+
+async function loadLiveHermesProductsMap(products: PublishedProductForCheckout[]) {
+  const hasHermesProducts = products.some((product) => product.hermes_id !== null && product.hermes_id !== undefined);
+
+  if (!hasHermesProducts) {
+    return new Map<number, Record<string, unknown>>();
+  }
+
+  try {
+    const hermesProducts = await getHermesProducts();
+    const hermesMap = new Map<number, Record<string, unknown>>();
+
+    for (const product of Array.isArray(hermesProducts) ? hermesProducts : []) {
+      const hermesId = parseHermesId((product as Record<string, unknown>).Codigo);
+
+      if (hermesId === null) {
+        continue;
+      }
+
+      hermesMap.set(hermesId, product as Record<string, unknown>);
+    }
+
+    return hermesMap;
+  } catch {
+    return new Map<number, Record<string, unknown>>();
+  }
+}
+
+async function revalidateCheckoutItems(items: CheckoutItemInput[]) {
+  const requestedIds = [...new Set(items.map((item) => item.id))];
+  const supabaseAdmin = getSupabaseAdmin();
+  const { data: publishedProducts, error } = await supabaseAdmin
+    .from('productos_publicados')
+    .select('id, hermes_id, nombre, descripcion, precio, categoria_id, imagen_url, activo')
+    .in('id', requestedIds)
+    .eq('activo', true);
+
+  if (error) {
+    throw new Error(`No se pudieron revalidar los productos publicados: ${error.message}`);
+  }
+
+  const products = publishedProducts ?? [];
+
+  if (products.length !== requestedIds.length) {
+    throw new CheckoutValidationError('Hay productos que ya no estan disponibles para la venta.', 409);
+  }
+
+  const publishedProductsMap = new Map(products.map((product) => [product.id, product]));
+  const hermesMap = await loadLiveHermesProductsMap(products);
+
+  return items.map((item) => {
+    const publishedProduct = publishedProductsMap.get(item.id);
+
+    if (!publishedProduct) {
+      throw new CheckoutValidationError('Hay productos que ya no estan disponibles para la venta.', 409);
+    }
+
+    const liveProduct = publishedProduct.hermes_id !== null && publishedProduct.hermes_id !== undefined
+      ? hermesMap.get(publishedProduct.hermes_id)
+      : undefined;
+
+    const liveName = typeof liveProduct?.Descripcion === 'string' ? liveProduct.Descripcion.trim() : '';
+    const livePrice = parseNumber(liveProduct?.Precio);
+    const validatedPrice = livePrice ?? Number(publishedProduct.precio);
+
+    if (!Number.isInteger(item.quantity) || item.quantity <= 0) {
+      throw new CheckoutValidationError('Hay cantidades invalidas en el pedido.');
+    }
+
+    if (!areAmountsEqual(Number(item.unit_price), validatedPrice)) {
+      throw new CheckoutValidationError(
+        `El precio de "${liveName || publishedProduct.nombre}" cambio. Actualiza el carrito antes de pagar.`,
+        409,
+      );
+    }
+
+    return {
+      id: publishedProduct.id,
+      title: liveName || publishedProduct.nombre,
+      description: publishedProduct.descripcion,
+      quantity: item.quantity,
+      unit_price: validatedPrice,
+      currency_id: 'ARS' as const,
+      picture_url: publishedProduct.imagen_url ?? undefined,
+      category_id: publishedProduct.categoria_id ?? undefined,
+    } satisfies CheckoutItemInput;
+  });
 }
 
 function buildOrderItems(orderId: string, items: CheckoutItemInput[]): WebOrderItemInsert[] {
@@ -60,8 +183,7 @@ export async function POST(request: Request) {
     const invalidItem = items.find(
       (item) =>
         !item.id ||
-        !item.title ||
-        !Number.isFinite(item.quantity) ||
+        !Number.isInteger(item.quantity) ||
         item.quantity <= 0 ||
         !Number.isFinite(item.unit_price) ||
         item.unit_price <= 0,
@@ -71,8 +193,9 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Hay productos inválidos en el pedido.' }, { status: 400 });
     }
 
+    const validatedItems = await revalidateCheckoutItems(items);
     const supabaseAdmin = getSupabaseAdmin();
-    const totalAmount = calculateTotalAmount(items);
+    const totalAmount = calculateTotalAmount(validatedItems);
     const externalReference = buildExternalReference();
     const orderPayload: WebOrderInsert = {
       status: 'pendiente',
@@ -80,9 +203,9 @@ export async function POST(request: Request) {
       buyer_name: 'Cliente web',
       subtotal_amount: totalAmount,
       total_amount: totalAmount,
-      currency_id: items[0]?.currency_id ?? 'ARS',
-      raw_checkout_payload: toJsonValue(body),
-      notes: 'Checkout generado sin datos de comprador; pendiente ampliar payload del frontend.',
+      currency_id: validatedItems[0]?.currency_id ?? 'ARS',
+      raw_checkout_payload: toJsonValue({ requested: body, validatedItems }),
+      notes: 'Checkout revalidado server-side sin datos de comprador; pendiente ampliar payload del frontend.',
     };
 
     const { data: order, error: orderError } = await supabaseAdmin
@@ -95,7 +218,7 @@ export async function POST(request: Request) {
       throw new Error(orderError?.message ?? 'No se pudo crear el pedido web.');
     }
 
-    const orderItemsPayload = buildOrderItems(order.id, items);
+    const orderItemsPayload = buildOrderItems(order.id, validatedItems);
     const { error: orderItemsError } = await supabaseAdmin.from('web_order_items').insert(orderItemsPayload);
 
     if (orderItemsError) {
@@ -104,7 +227,7 @@ export async function POST(request: Request) {
     }
 
     const preference = await createMercadoPagoCheckoutPreference({
-      items,
+      items: validatedItems,
       origin: new URL(request.url).origin,
       externalReference,
     });
@@ -123,6 +246,10 @@ export async function POST(request: Request) {
 
     return NextResponse.json(preference);
   } catch (error) {
+    if (error instanceof CheckoutValidationError) {
+      return NextResponse.json({ error: error.message }, { status: error.status });
+    }
+
     const message = error instanceof Error ? error.message : 'No se pudo generar el checkout de Mercado Pago.';
     return NextResponse.json({ error: message }, { status: 500 });
   }
