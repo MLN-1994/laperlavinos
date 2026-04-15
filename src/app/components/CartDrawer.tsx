@@ -50,7 +50,7 @@ export default function CartDrawer({ isOpen, setIsOpen }: CartDrawerProps) {
         throw new Error(data.error ?? 'No se pudo generar el link de pago.');
       }
 
-      const destination = data.sandboxInitPoint || data.initPoint;
+      const destination = data.initPoint || data.sandboxInitPoint;
 
       if (!destination) {
         throw new Error('Mercado Pago no devolvió una URL de checkout.');

@@ -48,8 +48,8 @@ export default function MercadoPagoAdminPage() {
   const [manualSuccess, setManualSuccess] = useState<string | null>(null);
   const [manualLink, setManualLink] = useState<ManualLinkResult | null>(null);
   const isDirectMode = account.mode === 'direct';
-  const preferredManualLink = manualLink?.sandboxInitPoint || manualLink?.initPoint;
-  const isSandboxManualLink = Boolean(manualLink?.sandboxInitPoint);
+  const preferredManualLink = manualLink?.initPoint || manualLink?.sandboxInitPoint;
+  const isSandboxManualLink = !manualLink?.initPoint && Boolean(manualLink?.sandboxInitPoint);
 
   const fetchAccount = async () => {
     setAccount((current) => ({ ...current, loading: true, error: null }));
@@ -220,9 +220,11 @@ export default function MercadoPagoAdminPage() {
       }
 
       setManualLink(data);
-      setManualSuccess(data.sandboxInitPoint
-        ? 'Link de pago de prueba generado correctamente.'
-        : 'Link generado correctamente. Mercado Pago no devolvió sandbox_init_point para esta cuenta.');
+      setManualSuccess(data.initPoint
+        ? 'Link generado correctamente.'
+        : data.sandboxInitPoint
+          ? 'Link de pago de prueba generado correctamente.'
+          : 'Mercado Pago no devolvió una URL de checkout utilizable.');
     } catch (createError) {
       setManualError(createError instanceof Error ? createError.message : 'No se pudo generar el link manual de pago.');
       setManualLink(null);
