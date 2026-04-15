@@ -4,21 +4,79 @@ import { Dialog, Transition } from '@headlessui/react';
 import { Fragment, useState } from 'react';
 import { useCartStore } from '../../store/useCartStore';
 import { XMarkIcon, TrashIcon, ShoppingBagIcon } from '@heroicons/react/24/outline';
+import type { CheckoutBuyerInput } from '@/types/mercadopago';
 
 interface CartDrawerProps {
   isOpen: boolean;
   setIsOpen: (open: boolean) => void;
 }
 
+const initialBuyerForm: CheckoutBuyerInput = {
+  name: '',
+  email: '',
+  phone: '',
+  documentType: 'DNI',
+  documentNumber: '',
+  address: '',
+  notes: '',
+};
+
+function isValidEmail(value: string) {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
+}
+
 export default function CartDrawer({ isOpen, setIsOpen }: CartDrawerProps) {
   const { cart, removeFromCart, addToCart, decreaseQuantity } = useCartStore();
   const [checkoutLoading, setCheckoutLoading] = useState(false);
   const [checkoutError, setCheckoutError] = useState<string | null>(null);
+  const [buyerForm, setBuyerForm] = useState<CheckoutBuyerInput>(initialBuyerForm);
 
   const subtotal = cart.reduce((acc: number, item) => acc + (item.price * item.quantity), 0);
 
+  const handleBuyerFieldChange = <K extends keyof CheckoutBuyerInput>(field: K, value: CheckoutBuyerInput[K]) => {
+    setBuyerForm((current) => ({
+      ...current,
+      [field]: value,
+    }));
+  };
+
+  const validateBuyerForm = () => {
+    if (!buyerForm.name.trim()) {
+      return 'Ingresa nombre y apellido para continuar.';
+    }
+
+    if (!isValidEmail(buyerForm.email.trim())) {
+      return 'Ingresa un email valido.';
+    }
+
+    if (buyerForm.phone.trim().length < 6) {
+      return 'Ingresa un telefono valido.';
+    }
+
+    if (!buyerForm.documentType.trim()) {
+      return 'Selecciona el tipo de documento.';
+    }
+
+    if (buyerForm.documentNumber.trim().length < 5) {
+      return 'Ingresa un documento valido.';
+    }
+
+    if (buyerForm.address.trim().length < 8) {
+      return 'Ingresa una direccion valida para el pedido.';
+    }
+
+    return null;
+  };
+
   const handleCheckout = async () => {
     if (cart.length === 0 || checkoutLoading) {
+      return;
+    }
+
+    const formError = validateBuyerForm();
+
+    if (formError) {
+      setCheckoutError(formError);
       return;
     }
 
@@ -32,6 +90,15 @@ export default function CartDrawer({ isOpen, setIsOpen }: CartDrawerProps) {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
+          buyer: {
+            name: buyerForm.name.trim(),
+            email: buyerForm.email.trim(),
+            phone: buyerForm.phone.trim(),
+            documentType: buyerForm.documentType.trim(),
+            documentNumber: buyerForm.documentNumber.trim(),
+            address: buyerForm.address.trim(),
+            notes: buyerForm.notes?.trim() || undefined,
+          },
           items: cart.map((product) => ({
             id: product.id,
             title: product.name,
@@ -175,6 +242,106 @@ export default function CartDrawer({ isOpen, setIsOpen }: CartDrawerProps) {
                     {/* Footer con totales */}
                     {cart.length > 0 && (
                       <div className="border-t border-[#beb9b1]/10 px-6 py-8 bg-[#1a1a1a]/30 backdrop-blur-md">
+                        <div className="rounded-sm border border-[#beb9b1]/10 bg-[#1a1a1a]/35 px-4 py-4">
+                          <div className="flex items-center justify-between gap-3">
+                            <div>
+                              <p className="text-[10px] uppercase tracking-[0.28em] text-[#beb9b1]/50">Pedido y contacto</p>
+                              <p className="mt-1 text-sm font-serif uppercase tracking-[0.12em] text-[#beb9b1]">Tus datos para finalizar</p>
+                            </div>
+                            <p className="max-w-[9rem] text-right text-[10px] uppercase tracking-[0.18em] text-[#beb9b1]/40">
+                              Quedan guardados en el pedido antes de pagar.
+                            </p>
+                          </div>
+
+                          <div className="mt-4 grid gap-3">
+                            <label className="flex flex-col gap-1 text-[10px] uppercase tracking-[0.2em] text-[#beb9b1]/55">
+                              Nombre y apellido
+                              <input
+                                type="text"
+                                value={buyerForm.name}
+                                onChange={(event) => handleBuyerFieldChange('name', event.target.value)}
+                                autoComplete="name"
+                                className="rounded-sm border border-[#beb9b1]/15 bg-[#24201d] px-3 py-3 text-sm normal-case tracking-normal text-[#f5efe3] outline-none transition focus:border-[#a68a5c]"
+                                placeholder="Quien recibe o retira el pedido"
+                              />
+                            </label>
+
+                            <div className="grid gap-3 sm:grid-cols-2">
+                              <label className="flex flex-col gap-1 text-[10px] uppercase tracking-[0.2em] text-[#beb9b1]/55">
+                                Email
+                                <input
+                                  type="email"
+                                  value={buyerForm.email}
+                                  onChange={(event) => handleBuyerFieldChange('email', event.target.value)}
+                                  autoComplete="email"
+                                  className="rounded-sm border border-[#beb9b1]/15 bg-[#24201d] px-3 py-3 text-sm normal-case tracking-normal text-[#f5efe3] outline-none transition focus:border-[#a68a5c]"
+                                  placeholder="mail@ejemplo.com"
+                                />
+                              </label>
+                              <label className="flex flex-col gap-1 text-[10px] uppercase tracking-[0.2em] text-[#beb9b1]/55">
+                                Telefono
+                                <input
+                                  type="tel"
+                                  value={buyerForm.phone}
+                                  onChange={(event) => handleBuyerFieldChange('phone', event.target.value)}
+                                  autoComplete="tel"
+                                  className="rounded-sm border border-[#beb9b1]/15 bg-[#24201d] px-3 py-3 text-sm normal-case tracking-normal text-[#f5efe3] outline-none transition focus:border-[#a68a5c]"
+                                  placeholder="Telefono de contacto"
+                                />
+                              </label>
+                            </div>
+
+                            <div className="grid gap-3 sm:grid-cols-[140px_minmax(0,1fr)]">
+                              <label className="flex flex-col gap-1 text-[10px] uppercase tracking-[0.2em] text-[#beb9b1]/55">
+                                Documento
+                                <select
+                                  value={buyerForm.documentType}
+                                  onChange={(event) => handleBuyerFieldChange('documentType', event.target.value)}
+                                  className="rounded-sm border border-[#beb9b1]/15 bg-[#24201d] px-3 py-3 text-sm normal-case tracking-normal text-[#f5efe3] outline-none transition focus:border-[#a68a5c]"
+                                >
+                                  <option value="DNI">DNI</option>
+                                  <option value="CUIT">CUIT</option>
+                                  <option value="CUIL">CUIL</option>
+                                  <option value="Pasaporte">Pasaporte</option>
+                                </select>
+                              </label>
+                              <label className="flex flex-col gap-1 text-[10px] uppercase tracking-[0.2em] text-[#beb9b1]/55">
+                                Numero
+                                <input
+                                  type="text"
+                                  value={buyerForm.documentNumber}
+                                  onChange={(event) => handleBuyerFieldChange('documentNumber', event.target.value)}
+                                  className="rounded-sm border border-[#beb9b1]/15 bg-[#24201d] px-3 py-3 text-sm normal-case tracking-normal text-[#f5efe3] outline-none transition focus:border-[#a68a5c]"
+                                  placeholder="Numero de documento"
+                                />
+                              </label>
+                            </div>
+
+                            <label className="flex flex-col gap-1 text-[10px] uppercase tracking-[0.2em] text-[#beb9b1]/55">
+                              Direccion
+                              <input
+                                type="text"
+                                value={buyerForm.address}
+                                onChange={(event) => handleBuyerFieldChange('address', event.target.value)}
+                                autoComplete="street-address"
+                                className="rounded-sm border border-[#beb9b1]/15 bg-[#24201d] px-3 py-3 text-sm normal-case tracking-normal text-[#f5efe3] outline-none transition focus:border-[#a68a5c]"
+                                placeholder="Direccion completa o referencia para coordinar"
+                              />
+                            </label>
+
+                            <label className="flex flex-col gap-1 text-[10px] uppercase tracking-[0.2em] text-[#beb9b1]/55">
+                              Observaciones
+                              <textarea
+                                value={buyerForm.notes}
+                                onChange={(event) => handleBuyerFieldChange('notes', event.target.value)}
+                                rows={3}
+                                className="rounded-sm border border-[#beb9b1]/15 bg-[#24201d] px-3 py-3 text-sm normal-case tracking-normal text-[#f5efe3] outline-none transition focus:border-[#a68a5c]"
+                                placeholder="Retiro, horario o comentario util para operar el pedido"
+                              />
+                            </label>
+                          </div>
+                        </div>
+
                         <div className="flex justify-between text-sm font-serif tracking-[0.2em] uppercase text-[#beb9b1]">
                           <p>Total Estimado</p>
                           <p className="text-lg text-[#a68a5c] tracking-normal">${subtotal.toLocaleString('es-AR')}</p>

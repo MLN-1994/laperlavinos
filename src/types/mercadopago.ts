@@ -45,3 +45,13 @@ export interface CheckoutItemInput {
   picture_url?: string;
   category_id?: string;
 }
+
+export interface CheckoutBuyerInput {
+  name: string;
+  email: string;
+  phone: string;
+  documentType: string;
+  documentNumber: string;
+  address: string;
+  notes?: string;
+}

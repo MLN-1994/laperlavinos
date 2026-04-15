@@ -2,11 +2,12 @@ import { NextResponse } from 'next/server';
 import { createMercadoPagoCheckoutPreference } from '@/lib/mercadoPago';
 import { getHermesProducts } from '@/lib/hermesClient';
 import { getSupabaseAdmin, hasSupabaseAdminConfig } from '@/lib/supabaseAdmin';
-import type { CheckoutItemInput } from '@/types/mercadopago';
+import type { CheckoutBuyerInput, CheckoutItemInput } from '@/types/mercadopago';
 import type { Database, Json } from '@/types/supabase';
 
 interface CheckoutRequestBody {
   items?: CheckoutItemInput[];
+  buyer?: CheckoutBuyerInput;
 }
 
 type WebOrderInsert = Database['public']['Tables']['web_orders']['Insert'];
@@ -52,6 +53,52 @@ function parseNumber(value: unknown) {
 
 function areAmountsEqual(left: number, right: number) {
   return Math.abs(left - right) < 0.000001;
+}
+
+function sanitizeText(value: unknown) {
+  return typeof value === 'string' ? value.trim() : '';
+}
+
+function isValidEmail(value: string) {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
+}
+
+function parseBuyerInput(buyer: CheckoutRequestBody['buyer']) {
+  const parsedBuyer = {
+    name: sanitizeText(buyer?.name),
+    email: sanitizeText(buyer?.email).toLowerCase(),
+    phone: sanitizeText(buyer?.phone),
+    documentType: sanitizeText(buyer?.documentType),
+    documentNumber: sanitizeText(buyer?.documentNumber),
+    address: sanitizeText(buyer?.address),
+    notes: sanitizeText(buyer?.notes),
+  };
+
+  if (!parsedBuyer.name) {
+    throw new CheckoutValidationError('Ingresa el nombre y apellido del comprador.');
+  }
+
+  if (!isValidEmail(parsedBuyer.email)) {
+    throw new CheckoutValidationError('Ingresa un email valido para el pedido.');
+  }
+
+  if (parsedBuyer.phone.length < 6) {
+    throw new CheckoutValidationError('Ingresa un telefono valido para el pedido.');
+  }
+
+  if (!parsedBuyer.documentType) {
+    throw new CheckoutValidationError('Selecciona el tipo de documento del comprador.');
+  }
+
+  if (parsedBuyer.documentNumber.length < 5) {
+    throw new CheckoutValidationError('Ingresa un numero de documento valido.');
+  }
+
+  if (parsedBuyer.address.length < 8) {
+    throw new CheckoutValidationError('Ingresa una direccion valida para el pedido.');
+  }
+
+  return parsedBuyer;
 }
 
 async function loadLiveHermesProductsMap(products: PublishedProductForCheckout[]) {
@@ -175,6 +222,7 @@ export async function POST(request: Request) {
 
     const body = (await request.json()) as CheckoutRequestBody;
     const items = Array.isArray(body.items) ? body.items : [];
+    const buyer = parseBuyerInput(body.buyer);
 
     if (items.length === 0) {
       return NextResponse.json({ error: 'El carrito está vacío.' }, { status: 400 });
@@ -200,12 +248,17 @@ export async function POST(request: Request) {
     const orderPayload: WebOrderInsert = {
       status: 'pendiente',
       external_reference: externalReference,
-      buyer_name: 'Cliente web',
+      buyer_name: buyer.name,
+      buyer_email: buyer.email,
+      buyer_phone: buyer.phone,
+      buyer_document_type: buyer.documentType,
+      buyer_document_number: buyer.documentNumber,
+      buyer_address: buyer.address,
       subtotal_amount: totalAmount,
       total_amount: totalAmount,
       currency_id: validatedItems[0]?.currency_id ?? 'ARS',
-      raw_checkout_payload: toJsonValue({ requested: body, validatedItems }),
-      notes: 'Checkout revalidado server-side sin datos de comprador; pendiente ampliar payload del frontend.',
+      raw_checkout_payload: toJsonValue({ requested: body, buyer, validatedItems }),
+      notes: buyer.notes || null,
     };
 
     const { data: order, error: orderError } = await supabaseAdmin
