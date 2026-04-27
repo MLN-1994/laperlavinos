@@ -178,6 +178,7 @@ async function revalidateCheckoutItems(items: CheckoutItemInput[]) {
 
     return {
       id: publishedProduct.id,
+      hermes_id: publishedProduct.hermes_id ?? null,
       title: liveName || publishedProduct.nombre,
       description: publishedProduct.descripcion,
       quantity: item.quantity,
@@ -193,6 +194,7 @@ function buildOrderItems(orderId: string, items: CheckoutItemInput[]): WebOrderI
   return items.map((item) => ({
     order_id: orderId,
     product_id: item.id,
+    hermes_id: item.hermes_id ?? null,
     title: item.title,
     quantity: item.quantity,
     unit_price: Number(item.unit_price),

@@ -37,6 +37,7 @@ export interface MercadoPagoManualCredentialsInput {
 
 export interface CheckoutItemInput {
   id: string;
+  hermes_id?: number | null;
   title: string;
   description?: string;
   quantity: number;

@@ -2,6 +2,8 @@
 
 Fecha: 2026-04-09
 
+Estado de vigencia: sigue vigente. Esta nota todavia describe bien la parte Hermes y no entra en conflicto con el estado actual del deploy.
+
 ## Estado actual confirmado
 
 - La web ya consume productos desde Hermes por MySQL en modo solo lectura.
@@ -15,10 +17,17 @@ Fecha: 2026-04-09
   - `Marca`
 - Hoy no se escribe en Hermes desde la web.
 - La trazabilidad propia de pedidos web sigue pensada en Supabase para checkout, estados y relacion con Mercado Pago.
+- La tienda ya esta deployada y hoy usa Hermes en lectura tanto local como en produccion a traves de variables de entorno cargadas en Vercel.
 
 ## Objetivo de la nueva etapa
 
 Definir la forma correcta de registrar ventas desde la web en Hermes sin romper la logica de comprobantes, clientes, stock ni numeracion.
+
+Contexto inmediato de la reunion siguiente:
+
+- La web ya crea pedidos internos en Supabase, captura comprador y puede cobrar con Mercado Pago.
+- Lo que falta confirmar con Hermes no es la lectura, sino el circuito oficial de escritura para cerrar la venta aprobada.
+- Si el descuento de stock depende de facturacion, entonces la integracion web debera facturar o emitir el comprobante correcto en Hermes; no conviene hacer un descuento de stock aislado por fuera de ese circuito.
 
 ## Definiciones funcionales ya confirmadas con Hermes
 
@@ -57,6 +66,7 @@ Definir la forma correcta de registrar ventas desde la web en Hermes sin romper 
 
 - La venta web contado deberia registrarse recien cuando el pago este aprobado.
 - Antes de eso, el pedido puede mantenerse como trazabilidad propia del ecommerce.
+- La expectativa mas razonable hoy es que el impacto de stock ocurra como consecuencia del comprobante correcto en Hermes, no por una actualizacion manual desde la web.
 
 ## Implicancias tecnicas para la integracion
 
@@ -65,6 +75,7 @@ Definir la forma correcta de registrar ventas desde la web en Hermes sin romper 
 - Si no hay match, la venta puede seguir adelante igual con cliente `0`.
 - Los datos del comprador deberan quedar guardados en los campos del comprobante definidos por Hermes.
 - La escritura sobre Hermes deberia ocurrir despues de la aprobacion del pago, no antes.
+- Si Hermes requiere facturar para descontar stock, entonces la app necesitara algo mas que acceso de lectura: SQL de escritura controlado o el mecanismo oficial que Hermes ya use.
 
 ## Dudas abiertas que faltan cerrar con Hermes
 
@@ -84,6 +95,7 @@ Definir la forma correcta de registrar ventas desde la web en Hermes sin romper 
   - factura
   - otro comprobante intermedio
 - Si ese comprobante impacta stock automaticamente o requiere logica adicional.
+- Si el comprobante correcto tambien registra el pago o si ese paso va por separado.
 
 ### Lista de precios
 
@@ -109,6 +121,15 @@ Definir la forma correcta de registrar ventas desde la web en Hermes sin romper 
   - varias tablas relacionadas
   - procedimiento almacenado
   - otro circuito oficial
+- Falta confirmar que nivel de acceso SQL se habilitara para la integracion web.
+- Falta confirmar si conviene escribir contra tablas o delegar todo en una rutina ya validada por Hermes.
+
+## Pista nueva a validar
+
+- 2026-04-20: segun el programador de Hermes, para entender la integracion conviene pararse primero en `comprob_ventas`.
+- Interpretacion practica: `comprob_ventas` probablemente sea la tabla que mejor representa la venta ya registrada desde la logica de Hermes.
+- Esto no invalida el resto de tablas: `items_comprobantes`, `pagos`, `pagos_detalle` y `movimientos_stk` siguen siendo parte del circuito, pero `comprob_ventas` puede ser el mejor punto de entrada para entender cliente, tipo de comprobante, numeracion y clave de relacion.
+- Siguiente verificacion recomendada: partir de una fila real de `comprob_ventas` y seguir sus relaciones hacia `comprobantes`, `items_comprobantes`, `pagos` y `movimientos_stk`.
 
 ## Machete de preguntas pendientes para Hermes
 
@@ -119,6 +140,8 @@ Definir la forma correcta de registrar ventas desde la web en Hermes sin romper 
 5. Si el precio que hoy sale en `vista_articulos` es el precio correcto para cobrar online.
 6. Si el stock que hoy sale en `vista_articulos` es stock vendible real o solo orientativo.
 7. Como impacta stock el comprobante generado desde la web.
+8. Si para descontar stock la web debe facturar, remitir o ejecutar otro proceso oficial.
+9. Que acceso SQL o rutina concreta nos van a habilitar para hacerlo.
 
 ## Resumen ejecutivo
 
@@ -128,4 +151,12 @@ Definir la forma correcta de registrar ventas desde la web en Hermes sin romper 
 - Registro en Hermes: deberia hacerse despues de pago aprobado.
 - Cliente existente: buscar en `contactos`.
 - Cliente inexistente: registrar comprobante con cliente `0`.
-- Pendientes criticos: criterio de busqueda del cliente, tipo de comprobante y lista de precios.
+- Pendientes criticos: criterio de busqueda del cliente, tipo de comprobante, lista de precios y circuito exacto que impacta stock.
+
+## Decision practica hoy
+
+- No tocar escritura en Hermes hasta cerrar antes estas capas propias:
+  - validacion real de webhook
+  - regla operativa de stock
+  - cobertura minima de tests
+  - confirmacion del circuito oficial de escritura con Hermes

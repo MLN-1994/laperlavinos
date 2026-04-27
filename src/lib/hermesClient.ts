@@ -11,6 +11,10 @@ const pool = mysql.createPool({
   queueLimit: 0,
 });
 
+export function getHermesPool() {
+  return pool;
+}
+
 export async function getHermesProducts() {
   const [rows] = await pool.query('SELECT * FROM vista_articulos');
   return rows;

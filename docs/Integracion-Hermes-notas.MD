@@ -1,102 +1,77 @@
-##
-1. Instala el cliente MySQL:
- npm install mysql2
+# Integracion Hermes: estado y notas practicas
 
-2. Variables creades en .env.local:
+Actualizado: 2026-04-17
 
-HERMES_HOST=
-HERMES_USER=
-HERMES_PASSWORD=
-HERMES_DATABASE=
-HERMES_PORT=
+## Nota 2026-04-17
 
+- La expectativa actual para la siguiente reunion con Hermes es revisar el SQL o mecanismo real de escritura.
+- No se espera descontar stock con una actualizacion manual aislada desde la web.
+- Lo razonable es registrar la venta aprobada en Hermes por su circuito oficial de comprobantes para que el stock y la facturacion queden alineados.
+- Si Hermes confirma que el stock se descuenta al facturar, entonces la app necesitara acceso de escritura controlado o una rutina oficial para ejecutar ese paso.
 
+## Estado actual
 
-3. Crea el cliente de conexión en el backend:
+La integracion de Hermes en lectura ya esta implementada y funcionando.
 
-Crea src/lib/hermesClient.ts:
+- `mysql2` ya esta instalado.
+- Existen las variables `HERMES_HOST`, `HERMES_USER`, `HERMES_PASSWORD`, `HERMES_DATABASE` y `HERMES_PORT`.
+- Existe `src/lib/hermesClient.ts` con pool de conexiones.
+- La fuente actual de productos es `vista_articulos`.
+- La tienda publica solo productos seleccionados desde Supabase y mezcla esos registros con datos vivos de Hermes.
+- La app ya esta deployada en Vercel y Hermes se consume tambien en produccion via variables del proyecto.
 
-import mysql from 'mysql2/promise';
+## Flujo actual resuelto
 
-const pool = mysql.createPool({
-  host: process.env.HERMES_HOST,
-  user: process.env.HERMES_USER,
-  password: process.env.HERMES_PASSWORD,
-  database: process.env.HERMES_DATABASE,
-  port: Number(process.env.HERMES_PORT),
-  waitForConnections: true,
-  connectionLimit: 5,
-  queueLimit: 0,
-});
+1. Se leen productos desde Hermes usando `vista_articulos`.
+2. En Supabase se guardan los productos que se quieren publicar en la web.
+3. El admin publica o despublica productos desde el panel.
+4. La tienda pide los productos publicados y los enriquece con precio, stock y otros datos vivos de Hermes.
 
-export async function getHermesProducts() {
-  const [rows] = await pool.query('SELECT * FROM vista_articulos');
-  return rows;
-}
+## Restricciones vigentes
 
-# (Solo importa y usa este cliente en código backend (API routes, server actions, scripts). Nunca en componentes React ni hooks.)
+- Hermes sigue en solo lectura.
+- No se escribe stock, ventas ni comprobantes desde esta app.
+- La web no reemplaza el circuito operativo de Hermes mientras no exista escritura validada.
 
-4. Crea una API Route en Next.js
+## Buenas practicas que siguen vigentes
 
-import { NextResponse } from 'next/server';
-import { getHermesProducts } from '@/lib/hermesClient';
+- Nunca exponer credenciales ni logica MySQL en el frontend.
+- Usar Hermes solo desde backend.
+- Manejar errores sin devolver detalles sensibles al frontend.
+- Mantener pool de conexiones.
+- Configurar variables seguras tambien en hosting o deploy.
 
-export async function GET() {
-  try {
-    const products = await getHermesProducts();
-    return NextResponse.json(products);
-  } catch (error) {
-    return NextResponse.json({ error: 'Error fetching products' }, { status: 500 });
-  }
-}
+## Lo que ya no es pendiente
 
-# Así el frontend nunca ve las credenciales ni accede directo a MySQL.
+- Crear el cliente MySQL.
+- Crear la API route base para productos Hermes.
+- Crear la tabla de productos publicados en Supabase.
+- Tener panel admin para publicar productos.
 
-5. Buenas prácticas
+## Pendiente real en la parte Hermes
 
-Nunca expongas credenciales ni lógica MySQL en el frontend.
-Solo usa el cliente y las variables en el backend (API routes, server actions).
-Maneja errores y no devuelvas detalles sensibles al frontend.
-Usa un pool de conexiones para eficiencia.
-Agrega .env.local a .gitignore.
-Si subes a producción, usa variables de entorno seguras en el hosting.
+- Confirmar si `vista_articulos.Precio` es el precio definitivo para ecommerce.
+- Confirmar si `vista_articulos.Stock` es stock vendible real o solo orientativo.
+- Definir como buscar cliente existente en `contactos`.
+- Confirmar uso de cliente `0` para comprador que no exista en Hermes.
+- Confirmar comprobante correcto a generar despues de pago aprobado.
+- Confirmar mecanismo oficial de escritura: inserts directos, varias tablas, procedimiento almacenado u otro circuito.
+- Confirmar si el descuento de stock ocurre al facturar o en otra parte del circuito.
+- Confirmar que acceso SQL real se habilitara para la integracion web.
 
-6. Siguiente paso
+## Decision practica hoy
 
-Implementa la tabla de productos publicados en Supabase para guardar los IDs seleccionados.
-El panel admin permite seleccionar/deseleccionar productos para la web.
-Al mostrar productos en la tienda, filtra usando los IDs guardados en Supabase, pero la info de stock, precio, etc. siempre viene en tiempo real desde Hermes.
-Resumen del flujo
+No avanzar con escritura en Hermes hasta cerrar antes estas capas propias:
 
-Traes todos los productos desde Hermes (vista_articulos).
-En Supabase guardas los IDs de los productos seleccionados para la web.
-El admin de la web permite elegir qué productos mostrar.
-El frontend pide los productos publicados, y para cada uno consulta los datos frescos a Hermes.
+- validacion real del webhook de Mercado Pago
+- regla operativa de stock y disponibilidad
+- cobertura minima de tests automatizados
+- confirmacion del circuito oficial de escritura con Hermes
 
+## Mejoras pendientes del panel admin
 
-## a mejorar panel ADMIN
-Mejorar la experiencia de usuario:
-
-Agrega paginación o scroll infinito si hay muchos productos.
-Muestra loaders claros durante operaciones (publicar/quitar).
-Agrega confirmaciones para acciones destructivas (ej: quitar producto).
-Robustecer validaciones:
-
-Valida los datos antes de publicar (campos requeridos, imagen seleccionada, etc).
-Muestra mensajes de error claros y útiles.
-Modulariza y ordena:
-
-Centraliza hooks en src/hooks/.
-Crea un layout para admin en src/app/admin/layout.tsx.
-Separa lógica de imágenes/publicación en hooks o utils propios.
-Mejora el manejo de estado:
-
-Si el panel crece, considera Zustand o Context para estado global (por ahora, useState está bien si es simple).
-Documenta:
-
-Agrega comentarios y un README para el panel admin.
-Documenta los flujos principales y dependencias.
-Prepara para el futuro:
-
-Deja TODOs o comentarios donde irá la auth/roles.
-Revisa las policies de Supabase antes de producción.
+- Agregar paginacion o mejor navegacion si el listado crece.
+- Mostrar loaders y errores mas claros en operaciones largas.
+- Agregar confirmaciones para acciones destructivas.
+- Endurecer validaciones de publicacion.
+- Seguir ordenando componentes y hooks si el panel crece.

@@ -1,12 +1,23 @@
 # Guia para retomar el proyecto
 
-Fecha: 2026-04-09
+Fecha base: 2026-04-09
+Actualizada: 2026-04-15
 
 ## Resumen brutalmente honesto
 
-La tienda ya tiene frente visual, panel admin, lectura de productos desde Hermes y generacion de links de Mercado Pago.
+La tienda ya esta deployada y operativa en una primera version.
 
-Lo que falta no es "integrar Hermes completo".
+Hoy ya tiene:
+
+- home online
+- panel admin usable
+- lectura de productos desde Hermes
+- publicacion de productos desde Supabase
+- banners y publicidad en la home
+- checkout base con Mercado Pago
+- pedidos web persistidos en Supabase
+
+Lo que falta no es "hacer que la tienda exista".
 
 Lo que falta es cerrar el circuito minimo de ecommerce para que cada compra web tenga:
 
@@ -16,7 +27,7 @@ Lo que falta es cerrar el circuito minimo de ecommerce para que cada compra web 
 - trazabilidad
 - revalidacion antes de cobrar
 
-Sin eso, la web puede mostrar productos y generar cobros, pero todavia no tiene una base operativa confiable.
+Sin eso, la web puede mostrar productos y generar cobros, pero todavia no tiene una base operativa completa y confiable.
 
 ## Estado real hoy
 
@@ -31,21 +42,36 @@ Sin eso, la web puede mostrar productos y generar cobros, pero todavia no tiene 
 - Generacion de checkout link de Mercado Pago desde carrito o panel admin.
 - Tablas `web_orders` y `web_order_items` ya creadas en Supabase.
 - Tipos de Supabase actualizados para pedidos web.
+- Deploy inicial en Vercel funcionando con variables configuradas a nivel de proyecto.
+- Webhook de Mercado Pago con logica de actualizacion de pedidos ya implementada.
+- Revalidacion server-side de precio en checkout antes de crear la preferencia.
+- Validacion de firma HMAC del webhook con clave secreta de Mercado Pago.
+- Captura de datos del comprador antes de crear el checkout.
+- Vista admin inicial de pedidos web con filtros y detalle.
 
 ### No esta resuelto
 
-- El checkout no guarda intento de compra antes de mandar a Mercado Pago.
-- No se capturan datos del comprador en el flujo actual.
-- El webhook de Mercado Pago no actualiza nada: solo loguea.
-- No existe panel de pedidos.
-- No hay revalidacion fuerte de precio y disponibilidad antes de cobrar.
+- No hay garantia fuerte de stock antes de cobrar; el precio ya se revalida server-side, pero el stock sigue dependiendo de la calidad del dato disponible.
+- No hay integracion real de envio. Andreani sigue pendiente y hoy solo esta contemplado en campos de `web_orders`, no en el flujo operativo.
 - No hay integracion de escritura hacia Hermes.
+- No hay validacion real de punta a punta del webhook con un pago aprobado en entorno correctamente configurado.
+
+## Pendientes concretos despues de este deploy
+
+- cerrar una compra real aprobada y confirmar actualizacion automatica por webhook
+- definir politica real de stock y mensajes de disponibilidad
+- agregar una base minima de tests automatizados para checkout, webhook y auth admin
+- decidir si el panel de pedidos necesita observaciones internas o acciones operativas
+- pulir frontend del formulario de comprador y del panel de pedidos
+- definir envio real; Andreani sigue pendiente y no esta implementado
 
 ## Conclusión importante
 
 La prioridad correcta no es escribir en Hermes ya.
 
 La prioridad correcta es construir la capa propia de pedidos en Supabase y dejar a Hermes para la etapa siguiente.
+
+Pero la reunion con Hermes pasa a ser importante para la etapa siguiente: la web ya tiene trazabilidad propia y ahora falta confirmar como se registra formalmente la venta aprobada dentro de Hermes.
 
 ## Orden correcto de trabajo
 
@@ -104,10 +130,10 @@ Estados sugeridos para `web_orders.status`:
 - `pendiente_integracion_hermes`
 - `integrado_hermes`
 
-Resultado esperado:
+Estado actual:
 
-- Cada vez que se genera checkout, queda un pedido guardado.
-- El `external_reference` nace en tu base, no solo en Mercado Pago.
+- Esta fase ya esta avanzada y el objetivo base se cumple: cada checkout deja un pedido guardado y la `external_reference` nace en tu base.
+- Lo que queda pendiente de esta fase es enriquecer comprador, envio y operacion.
 
 ### Fase 2. Pedir datos del comprador
 
@@ -123,10 +149,10 @@ Antes de crear el checkout, pedir en frontend como minimo:
 
 No hace falta login obligatorio en esta etapa.
 
-Resultado esperado:
+Estado actual:
 
-- Cada pedido queda asociado a datos concretos de una persona.
-- Despues esos datos sirven tanto para operacion propia como para futura integracion con Hermes.
+- Ya hay formulario de comprador en el checkout y esos datos se persisten en `web_orders`.
+- Falta validar el flujo completo con un pago aprobado real y luego decidir si hace falta sumar envio estructurado.
 
 ### Fase 3. Cambiar la logica del checkout
 
@@ -148,10 +174,10 @@ Lo que no conviene hacer:
 - generar `external_reference` solo con `Date.now()` y no persistirlo
 - depender del carrito del frontend como fuente de verdad
 
-Resultado esperado:
+Estado actual:
 
-- Si algo falla despues, el pedido igual existe.
-- Podes buscar cualquier pago por `external_reference`.
+- La estructura central ya esta resuelta: el pedido existe antes del checkout y la referencia externa queda persistida.
+- Falta endurecer validaciones y dejar de depender solo del payload del frontend.
 
 ### Fase 4. Webhook real de Mercado Pago
 
@@ -173,10 +199,10 @@ Mapeo sugerido:
 - cancelled -> `pago_cancelado`
 - pending / in_process -> mantener pendiente segun tu criterio
 
-Resultado esperado:
+Estado actual:
 
-- El webhook deja trazabilidad y cambia el estado del pedido.
-- Ya no dependes de mirar logs sueltos.
+- La logica ya esta implementada.
+- Falta validacion real de extremo a extremo con entorno Mercado Pago consistente y webhook efectivamente disparado.
 
 ### Fase 5. Revalidacion antes de cobrar
 
@@ -212,15 +238,38 @@ Crear en admin una pantalla con:
 - detalle de items
 - observaciones internas
 
-Resultado esperado:
+Estado actual:
 
-- Ya podes seguir un pedido de punta a punta desde el panel.
+- Ya existe una primera pantalla admin de pedidos con filtros basicos y detalle.
+- Falta validarla con pedidos aprobados reales y decidir si necesita observaciones internas o acciones operativas adicionales.
 
-### Fase 7. Integracion con Hermes
+### Fase 7. Calidad minima automatizada
+
+Objetivo: dejar de depender solo de pruebas manuales para los flujos criticos.
+
+Estado actual:
+
+- No hay una suite de tests automatizados implementada en el repo.
+- La validacion actual depende sobre todo de pruebas manuales, `npm run build` y `npm run lint`.
+
+Cobertura minima razonable para la siguiente etapa:
+
+1. Checkout de Mercado Pago.
+2. Webhook de Mercado Pago.
+3. Auth admin y proteccion de rutas.
+
+### Fase 8. Integracion con Hermes
 
 Objetivo: registrar en Hermes solamente pedidos ya cobrados.
 
 Recien cuando lo anterior exista, avanzar con Hermes.
+
+Corroboracion practica de lo que hoy se espera de Hermes:
+
+- No se espera que la web descuente stock con una escritura directa e independiente.
+- Lo esperable es que la web registre la venta aprobada usando el circuito oficial de Hermes.
+- Si Hermes descuenta stock al facturar o al emitir el comprobante correcto, esa deberia ser la integracion a implementar.
+- La reunion de manana deberia confirmar si eso requiere acceso SQL de escritura, varias tablas, un procedimiento almacenado o algun mecanismo propio del sistema.
 
 Lo que Hermes te tiene que definir:
 
@@ -231,6 +280,7 @@ Lo que Hermes te tiene que definir:
 5. uso de cliente `0`
 6. campos donde guardar datos del comprador
 7. si `vista_articulos.Precio` y `vista_articulos.Stock` sirven como verdad operativa para ecommerce
+8. si el stock se descuenta al facturar o en otro paso del circuito
 
 Resultado esperado:
 
@@ -243,10 +293,49 @@ Si mañana te sentas a programar, no empieces por Hermes.
 
 Empeza por esto:
 
-1. Formulario de datos del comprador en el checkout.
-2. Refactor de `/api/mercadopago/checkout` para crear pedido antes de generar preferencia.
-3. Webhook que actualice pedidos.
-4. Vista admin de pedidos.
+1. Validacion real del webhook con pago aprobado.
+2. Regla operativa de stock y disponibilidad.
+3. Tests minimos para checkout, webhook y auth admin.
+4. Confirmacion del circuito oficial de escritura con Hermes.
+
+## Machete breve para la reunion de manana
+
+1. Que SQL o circuito oficial usa Hermes para registrar una venta web aprobada.
+2. Si el stock se descuenta al facturar, al remitir o en otro evento.
+3. Que tablas o procedimiento generan cabecera, detalle, pagos y numeracion.
+4. Como identificar cliente existente y cuando usar cliente `0`.
+5. Donde guardar los datos del comprador si el cliente no existe.
+6. Si el precio y stock de `vista_articulos` sirven como dato operativo real para ecommerce.
+
+## Mini checklist para retomar la prueba real
+
+Antes de pedirle a alguien que pague:
+
+1. Confirmar que Vercel tenga `MERCADOPAGO_ACCESS_TOKEN`, `NEXT_PUBLIC_MERCADOPAGO_PUBLIC_KEY` y `MERCADOPAGO_WEBHOOK_SECRET` cargadas con valores productivos.
+2. Confirmar que la app publica responda `{"received": true}` en `/api/mercadopago/webhook`.
+3. Abrir `web_orders` en Supabase ordenado por `created_at desc`.
+
+Durante la prueba:
+
+1. Generar un checkout nuevo de monto minimo.
+2. Refrescar `web_orders` y capturar enseguida la nueva `external_reference`.
+3. Hacer que el comprador real complete el pago.
+
+Despues del pago:
+
+1. Buscar ese pedido exacto por `external_reference`.
+2. Verificar `status = pago_aprobado`.
+3. Verificar `payment_status = approved`.
+4. Verificar que `mercadopago_payment_id` tenga valor.
+5. Verificar que `raw_webhook_payload` ya no este vacio.
+
+Si falla la prueba, anotar:
+
+- fecha y hora
+- `external_reference`
+- `mercadopago_preference_id`
+- resultado observado en Mercado Pago
+- estado final del registro en `web_orders`
 
 ## Archivos donde tocar primero
 
