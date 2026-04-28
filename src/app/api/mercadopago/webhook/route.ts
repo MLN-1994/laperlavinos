@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server';
+import { NextResponse, after } from 'next/server';
 import { createHmac, timingSafeEqual } from 'crypto';
 import { fetchMercadoPagoPayment } from '@/lib/mercadoPago';
 import { getSupabaseAdmin, hasSupabaseAdminConfig } from '@/lib/supabaseAdmin';
@@ -328,6 +328,41 @@ export async function POST(request: Request) {
       externalReference,
       topic,
     });
+
+    // Disparar registro en Hermes cuando el pago es aprobado
+    if (paymentStatus === 'approved' && order.id) {
+      const hermesUrl = new URL('/api/hermes/venta', request.url).toString();
+      const orderId = order.id;
+      console.log(`[MercadoPago webhook] Pago aprobado — disparando registro en Hermes para order=${orderId}`);
+
+      // Usamos after() para garantizar que el fetch se complete aunque la respuesta ya fue enviada.
+      // En Vercel serverless, el fire-and-log sin after() puede ser cancelado antes de ejecutarse.
+      after(async () => {
+        try {
+          const res = await fetch(hermesUrl, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ web_order_id: orderId }),
+          });
+          const data = await res.json().catch(() => null);
+          if (!res.ok) {
+            console.error(
+              `[MercadoPago webhook] Error al registrar venta en Hermes order=${orderId} status=${res.status}`,
+              data,
+            );
+          } else {
+            console.log(
+              `[MercadoPago webhook] Venta registrada en Hermes order=${orderId} comprobante=${(data as Record<string, unknown>)?.hermes_comprobante ?? 'desconocido'}`,
+            );
+          }
+        } catch (err: unknown) {
+          console.error(
+            `[MercadoPago webhook] Fallo de red al llamar a Hermes order=${orderId}`,
+            err instanceof Error ? err.message : err,
+          );
+        }
+      });
+    }
 
     return NextResponse.json({ received: true });
   } catch (error) {
