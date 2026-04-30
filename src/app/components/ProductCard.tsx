@@ -1,4 +1,5 @@
 import { useState } from "react";
+import Link from "next/link";
 import { CheckIcon, ShoppingCartIcon } from "@heroicons/react/24/outline";
 
 type ProductoPublicado = {
@@ -28,7 +29,7 @@ export default function ProductCard({ product, addToCart }: ProductCardProps) {
     <div className="group relative flex flex-col overflow-hidden rounded-sm border border-[#beb9b1]/10 bg-[#3c3c3b]/40 backdrop-blur-md p-2 transition-all duration-500 hover:border-[#a68a5c]/40 hover:bg-[#3c3c3b]/60">
       
       {/* Imagen con Overlay de Lujo */}
-      <div className="relative aspect-[3/4] overflow-hidden rounded-sm bg-[#1a1a1a]">
+      <Link href={`/producto/${product.id}`} target="_blank" rel="noopener noreferrer" className="relative block aspect-[3/4] overflow-hidden rounded-sm bg-[#1a1a1a]">
         <img
           src={product.imagen_url || "/placeholder.png"}
           alt={product.nombre}
@@ -41,14 +42,16 @@ export default function ProductCard({ product, addToCart }: ProductCardProps) {
             {product.categoria_id || "Exclusivo"}
           </span>
         </div>
-      </div>
+      </Link>
 
       {/* Información con tipografía cuidada */}
       <div className="flex flex-1 flex-col px-1 py-3">
         <div className="flex-1">
-          <h3 className="text-[14px] font-serif tracking-tight text-[#beb9b1] line-clamp-1 group-hover:text-[#a68a5c] transition-colors">
-            {product.nombre}
-          </h3>
+          <Link href={`/producto/${product.id}`} target="_blank" rel="noopener noreferrer">
+            <h3 className="text-[14px] font-serif tracking-tight text-[#beb9b1] line-clamp-1 group-hover:text-[#a68a5c] transition-colors">
+              {product.nombre}
+            </h3>
+          </Link>
           <p className="mt-1 text-[11px] leading-4 text-[#beb9b1]/50 line-clamp-2 italic">
             {product.descripcion}
           </p>

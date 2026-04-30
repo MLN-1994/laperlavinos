@@ -224,19 +224,32 @@ async function fetchOrderWithItems(web_order_id: string): Promise<{
 async function markOrderHermesRegistrado(web_order_id: string, codigoVenta: number): Promise<void> {
   const supabase = getSupabaseAdmin();
   const comproStr = buildComproString(codigoVenta);
-  const nota = `Hermes comprobante ${comproStr} registrado el ${new Date().toISOString()}`;
 
-  const { error } = await supabase
+  const { error, data } = await supabase
     .from('web_orders')
-    .update({ status: 'hermes_registrado', notes: nota })
-    .eq('id', web_order_id);
+    .update({ status: 'hermes_registrado' })
+    .eq('id', web_order_id)
+    .select('id, status')
+    .maybeSingle();
 
   if (error) {
     // No lanzamos — el COMMIT ya ocurrió. Solo logueamos el fallo.
     console.error(
-      `[hermes/venta] WARN No se pudo actualizar el estado en Supabase para order=${web_order_id}: ${error.message}`,
+      `[hermes/venta] WARN No se pudo actualizar el estado en Supabase para order=${web_order_id} comprobante=${comproStr}: ${error.message}`,
     );
+    return;
   }
+
+  if (!data) {
+    console.error(
+      `[hermes/venta] WARN Update de Supabase no encontró la orden order=${web_order_id} comprobante=${comproStr} (0 filas afectadas)`,
+    );
+    return;
+  }
+
+  console.log(
+    `[hermes/venta] Supabase actualizado OK: order=${web_order_id} status=${data.status} comprobante=${comproStr}`,
+  );
 }
 
 // ─────────────────────────────────────────────────────────────────────────────

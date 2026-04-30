@@ -3,6 +3,7 @@ import ProductList from './components/ProductList';
 import BannerList from './components/BannerList';
 import PublicityHighlights from './components/PublicityHighlights';
 import HomeBrandOrnaments from './components/HomeBrandOrnaments';
+import Footer from './components/Footer';
 
 export default function Home() {
   return (
@@ -25,23 +26,7 @@ export default function Home() {
           </div>
         </section>
       </main>
-
-      <footer className="border-t border-[#beb9b1]/10 bg-black/10 px-6 py-12 backdrop-blur-sm">
-        <div className="mx-auto flex max-w-[1440px] flex-col gap-8 md:flex-row md:items-end md:justify-between">
-          <div className="max-w-xl">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#a68a5c]">La Perla Vinos</p>
-            <h2 className="mt-3 text-2xl font-serif tracking-tight text-[#ebe3d2]">Selección cuidada, experiencia simple.</h2>
-            <p className="mt-3 text-sm leading-6 text-[#beb9b1]/70">
-              Catálogo online conectado al negocio real, con una experiencia visual más sobria y enfocada en producto.
-            </p>
-          </div>
-
-          <div className="text-sm text-[#beb9b1]/60 md:text-right">
-            <p>© {new Date().getFullYear()} La Perla Vinos</p>
-            <p className="mt-2">Tienda en desarrollo y gestión interna conectada a Hermes.</p>
-          </div>
-        </div>
-      </footer>
+      <Footer />
     </div>
   );
 }
