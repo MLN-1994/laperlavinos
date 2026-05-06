@@ -248,7 +248,7 @@ export async function POST(request: Request) {
     const totalAmount = calculateTotalAmount(validatedItems);
     const externalReference = buildExternalReference();
     const orderPayload: WebOrderInsert = {
-      status: 'pendiente',
+      status: 'checkout_generado',
       external_reference: externalReference,
       buyer_name: buyer.name,
       buyer_email: buyer.email,

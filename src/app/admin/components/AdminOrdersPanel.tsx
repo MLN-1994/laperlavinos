@@ -63,12 +63,12 @@ function formatDate(value: string | null) {
 function getStatusStyles(status: string) {
   switch (status) {
     case 'pago_aprobado':
-      return 'border-[#cfe0ca] bg-[#eef5ea] text-[#4d6643]';
+      return 'border-[#a68a5c]/30 bg-[#a68a5c]/10 text-[#c9a96e]';
     case 'pago_rechazado':
     case 'pago_cancelado':
-      return 'border-[#e7c8c3] bg-[#fbefed] text-[#8e4e45]';
+      return 'border-[#d03416]/30 bg-[#d03416]/10 text-[#f3c3ba]';
     default:
-      return 'border-[#ddd1bf] bg-[#faf6ef] text-[#6c5e4b]';
+      return 'border-[#beb9b1]/15 bg-[#beb9b1]/5 text-[#beb9b1]/60';
   }
 }
 
@@ -116,7 +116,7 @@ export default function AdminOrdersPanel({ orders }: AdminOrdersPanelProps) {
 
   return (
     <section className="space-y-6">
-      <div className="overflow-hidden rounded-[28px] border border-[#dbd0c2] bg-[linear-gradient(135deg,_rgba(49,44,40,0.98),_rgba(63,56,51,0.94))] p-6 text-[#f7f0e2] shadow-xl shadow-[#2f2b28]/10 sm:p-8">
+      <div className="overflow-hidden rounded-sm border border-[#beb9b1]/10 bg-[linear-gradient(135deg,_rgba(49,44,40,0.98),_rgba(63,56,51,0.94))] p-6 text-[#f7f0e2] shadow-xl shadow-[#2f2b28]/10 sm:p-8">
         <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
           <div>
             <div className="mb-3 inline-flex rounded-full border border-white/10 bg-white/5 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.24em] text-[#cbbca3]">
@@ -141,9 +141,9 @@ export default function AdminOrdersPanel({ orders }: AdminOrdersPanelProps) {
         </div>
       </div>
 
-      <div className="rounded-[28px] border border-[#ddd2c0] bg-[rgba(252,249,244,0.92)] p-6 shadow-sm backdrop-blur-sm sm:p-8">
+      <div className="rounded-sm border border-[#beb9b1]/10 bg-[#2a2725] p-6 shadow-sm sm:p-8">
         <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_220px]">
-          <label className="flex flex-col gap-2 text-sm text-slate-700">
+          <label className="flex flex-col gap-1.5 text-[10px] uppercase tracking-[0.2em] text-[#beb9b1]/55">
             Buscar por referencia o comprador
             <input
               type="text"
@@ -153,11 +153,11 @@ export default function AdminOrdersPanel({ orders }: AdminOrdersPanelProps) {
                 setPage(1);
               }}
               placeholder="external_reference, email, telefono"
-              className="rounded-2xl border border-[#d7ccbc] bg-[#fdfbf7] px-4 py-3 text-sm text-slate-800 shadow-sm outline-none transition focus:border-[#9f8763] focus:ring-2 focus:ring-[#c6b08a]/20"
+              className="rounded-sm border border-[#beb9b1]/15 bg-[#1a1a1a]/30 px-3 py-2.5 text-sm text-[#f5efe3] outline-none transition focus:border-[#a68a5c]"
             />
           </label>
 
-          <label className="flex flex-col gap-2 text-sm text-slate-700">
+          <label className="flex flex-col gap-1.5 text-[10px] uppercase tracking-[0.2em] text-[#beb9b1]/55">
             Estado
             <select
               value={statusFilter}
@@ -165,7 +165,7 @@ export default function AdminOrdersPanel({ orders }: AdminOrdersPanelProps) {
                 setStatusFilter(event.target.value);
                 setPage(1);
               }}
-              className="rounded-2xl border border-[#d7ccbc] bg-[#fdfbf7] px-4 py-3 text-sm text-slate-800 shadow-sm outline-none transition focus:border-[#9f8763] focus:ring-2 focus:ring-[#c6b08a]/20"
+              className="rounded-sm border border-[#beb9b1]/15 bg-[#1a1a1a]/30 px-3 py-2.5 text-sm text-[#f5efe3] outline-none transition focus:border-[#a68a5c]"
             >
               <option value="all">Todos</option>
               <option value="checkout_generado">Checkout generado</option>
@@ -180,7 +180,7 @@ export default function AdminOrdersPanel({ orders }: AdminOrdersPanelProps) {
       <div className="grid gap-6 xl:grid-cols-[minmax(0,1.2fr)_minmax(360px,0.8fr)]">
         <div className="space-y-4">
           {paginatedOrders.length === 0 ? (
-            <div className="rounded-[28px] border border-[#ddd2c0] bg-[rgba(252,249,244,0.92)] p-8 text-sm text-slate-600 shadow-sm backdrop-blur-sm">
+              <div className="rounded-sm border border-[#beb9b1]/10 bg-[#2a2725] p-8 text-sm text-[#beb9b1]/50">
               No hay pedidos que coincidan con los filtros actuales.
             </div>
           ) : (
@@ -189,10 +189,10 @@ export default function AdminOrdersPanel({ orders }: AdminOrdersPanelProps) {
                 key={order.id}
                 type="button"
                 onClick={() => setSelectedOrderId(order.id)}
-                className={`w-full rounded-[28px] border p-5 text-left shadow-sm transition ${
+                className={`w-full rounded-sm border p-5 text-left transition ${
                   order.id === selectedOrder?.id
-                    ? 'border-[#b49971] bg-[#f7f0e5] shadow-[#d6c8b4]/40'
-                    : 'border-[#ddd2c0] bg-[rgba(252,249,244,0.92)] hover:border-[#ccb089]'
+                    ? 'border-[#a68a5c]/40 bg-[#a68a5c]/10'
+                    : 'border-[#beb9b1]/10 bg-[#2a2725] hover:border-[#beb9b1]/20'
                 }`}
               >
                 <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
@@ -202,21 +202,21 @@ export default function AdminOrdersPanel({ orders }: AdminOrdersPanelProps) {
                         {order.status.replaceAll('_', ' ')}
                       </span>
                       {order.paymentStatus && (
-                        <span className="rounded-full border border-[#d6c9b7] bg-white px-3 py-1 text-[11px] uppercase tracking-[0.18em] text-slate-600">
+                        <span className="rounded-sm border border-[#beb9b1]/15 bg-[#beb9b1]/5 px-3 py-1 text-[11px] uppercase tracking-[0.18em] text-[#beb9b1]/50">
                           MP: {order.paymentStatus}
                         </span>
                       )}
                     </div>
                     <div>
-                      <h2 className="text-lg font-semibold tracking-tight text-slate-900">{order.buyerName}</h2>
-                      <p className="mt-1 text-sm text-slate-500">{order.externalReference}</p>
+                      <h2 className="text-lg font-semibold tracking-tight text-[#f5efe3]">{order.buyerName}</h2>
+                      <p className="mt-1 text-sm text-[#beb9b1]/40">{order.externalReference}</p>
                     </div>
                   </div>
 
                   <div className="text-right">
-                    <p className="text-xs uppercase tracking-[0.18em] text-slate-400">Total</p>
-                    <p className="mt-1 text-xl font-semibold text-slate-900">{formatCurrency(order.totalAmount, order.currencyId)}</p>
-                    <p className="mt-2 text-xs text-slate-500">{formatDate(order.createdAt)}</p>
+                    <p className="text-[10px] uppercase tracking-[0.18em] text-[#beb9b1]/40">Total</p>
+                    <p className="mt-1 text-xl font-semibold text-[#c9a96e]">{formatCurrency(order.totalAmount, order.currencyId)}</p>
+                    <p className="mt-2 text-xs text-[#beb9b1]/40">{formatDate(order.createdAt)}</p>
                   </div>
                 </div>
               </button>
@@ -232,78 +232,78 @@ export default function AdminOrdersPanel({ orders }: AdminOrdersPanelProps) {
           />
         </div>
 
-        <div className="rounded-[28px] border border-[#ddd2c0] bg-[rgba(252,249,244,0.92)] p-6 shadow-sm backdrop-blur-sm sm:p-8">
+        <div className="rounded-sm border border-[#beb9b1]/10 bg-[#2a2725] p-6 sm:p-8">
           {selectedOrder ? (
             <div className="space-y-6">
-              <div className="space-y-3 border-b border-[#e5dccf] pb-5">
+              <div className="space-y-3 border-b border-[#beb9b1]/10 pb-5">
                 <div className="flex flex-wrap items-center gap-2">
                   <span className={`rounded-full border px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] ${getStatusStyles(selectedOrder.status)}`}>
                     {selectedOrder.status.replaceAll('_', ' ')}
                   </span>
                   {selectedOrder.paymentStatus && (
-                    <span className="rounded-full border border-[#d6c9b7] bg-white px-3 py-1 text-[11px] uppercase tracking-[0.18em] text-slate-600">
+                    <span className="rounded-sm border border-[#beb9b1]/15 bg-[#beb9b1]/5 px-3 py-1 text-[11px] uppercase tracking-[0.18em] text-[#beb9b1]/50">
                       Mercado Pago: {selectedOrder.paymentStatus}
                     </span>
                   )}
                 </div>
-                <h2 className="text-2xl font-semibold tracking-tight text-slate-900">{selectedOrder.buyerName}</h2>
-                <p className="text-sm text-slate-500">Creado el {formatDate(selectedOrder.createdAt)}</p>
+                <h2 className="text-2xl font-serif tracking-wide text-[#beb9b1]">{selectedOrder.buyerName}</h2>
+                <p className="text-sm text-[#beb9b1]/40">Creado el {formatDate(selectedOrder.createdAt)}</p>
               </div>
 
               <div className="grid gap-4 sm:grid-cols-2">
-                <div className="rounded-2xl border border-[#ddd1bf] bg-[#faf6ef] p-4">
-                  <p className="text-[11px] uppercase tracking-[0.22em] text-slate-400">Referencia</p>
-                  <p className="mt-2 break-all text-sm font-medium text-slate-800">{selectedOrder.externalReference}</p>
+                <div className="rounded-sm border border-[#beb9b1]/10 bg-[#1a1a1a]/20 p-4">
+                  <p className="text-[10px] uppercase tracking-[0.22em] text-[#beb9b1]/40">Referencia</p>
+                  <p className="mt-2 break-all text-sm font-medium text-[#beb9b1]">{selectedOrder.externalReference}</p>
                 </div>
-                <div className="rounded-2xl border border-[#ddd1bf] bg-[#faf6ef] p-4">
-                  <p className="text-[11px] uppercase tracking-[0.22em] text-slate-400">Pago Mercado Pago</p>
-                  <p className="mt-2 break-all text-sm font-medium text-slate-800">{selectedOrder.mercadopagoPaymentId || 'Todavia sin pago vinculado'}</p>
+                <div className="rounded-sm border border-[#beb9b1]/10 bg-[#1a1a1a]/20 p-4">
+                  <p className="text-[10px] uppercase tracking-[0.22em] text-[#beb9b1]/40">Pago Mercado Pago</p>
+                  <p className="mt-2 break-all text-sm font-medium text-[#beb9b1]">{selectedOrder.mercadopagoPaymentId || 'Sin pago vinculado'}</p>
                 </div>
-                <div className="rounded-2xl border border-[#ddd1bf] bg-[#faf6ef] p-4 sm:col-span-2">
-                  <p className="text-[11px] uppercase tracking-[0.22em] text-slate-400">Comprador</p>
-                  <div className="mt-3 grid gap-3 sm:grid-cols-2 text-sm text-slate-700">
-                    <p><span className="font-semibold">Email:</span> {selectedOrder.buyerEmail || 'No informado'}</p>
-                    <p><span className="font-semibold">Telefono:</span> {selectedOrder.buyerPhone || 'No informado'}</p>
-                    <p><span className="font-semibold">Documento:</span> {selectedOrder.buyerDocumentType || '-'} {selectedOrder.buyerDocumentNumber || ''}</p>
-                    <p><span className="font-semibold">Direccion:</span> {selectedOrder.buyerAddress || 'No informada'}</p>
+                <div className="rounded-sm border border-[#beb9b1]/10 bg-[#1a1a1a]/20 p-4 sm:col-span-2">
+                  <p className="text-[10px] uppercase tracking-[0.22em] text-[#beb9b1]/40">Comprador</p>
+                  <div className="mt-3 grid gap-3 sm:grid-cols-2 text-sm text-[#beb9b1]/70">
+                    <p><span className="text-[#beb9b1]/40">Email:</span> {selectedOrder.buyerEmail || 'No informado'}</p>
+                    <p><span className="text-[#beb9b1]/40">Teléfono:</span> {selectedOrder.buyerPhone || 'No informado'}</p>
+                    <p><span className="text-[#beb9b1]/40">Documento:</span> {selectedOrder.buyerDocumentType || '-'} {selectedOrder.buyerDocumentNumber || ''}</p>
+                    <p><span className="text-[#beb9b1]/40">Dirección:</span> {selectedOrder.buyerAddress || 'No informada'}</p>
                   </div>
                 </div>
               </div>
 
-              <div className="rounded-2xl border border-[#ddd1bf] bg-[#faf6ef] p-4">
+              <div className="rounded-sm border border-[#beb9b1]/10 bg-[#1a1a1a]/20 p-4">
                 <div className="flex items-center justify-between gap-3">
-                  <p className="text-[11px] uppercase tracking-[0.22em] text-slate-400">Items</p>
-                  <p className="text-xs text-slate-500">{selectedOrder.items.length} item(s)</p>
+                  <p className="text-[10px] uppercase tracking-[0.22em] text-[#beb9b1]/40">Items</p>
+                  <p className="text-xs text-[#beb9b1]/40">{selectedOrder.items.length} item(s)</p>
                 </div>
                 <div className="mt-4 space-y-3">
                   {selectedOrder.items.map((item) => (
-                    <div key={item.id} className="rounded-2xl border border-[#e7dece] bg-white px-4 py-3">
+                    <div key={item.id} className="rounded-sm border border-[#beb9b1]/10 bg-[#2a2725] px-4 py-3">
                       <div className="flex items-start justify-between gap-3">
                         <div>
-                          <p className="text-sm font-semibold text-slate-900">{item.title}</p>
-                          <p className="mt-1 text-xs text-slate-500">{item.productId || 'Sin product_id'} · {item.quantity} unidad(es)</p>
+                          <p className="text-sm font-semibold text-[#f5efe3]">{item.title}</p>
+                          <p className="mt-1 text-xs text-[#beb9b1]/40">{item.productId || 'Sin product_id'} · {item.quantity} unidad(es)</p>
                         </div>
-                        <p className="text-sm font-semibold text-slate-800">{formatCurrency(item.lineTotal, selectedOrder.currencyId)}</p>
+                        <p className="text-sm font-semibold text-[#c9a96e]">{formatCurrency(item.lineTotal, selectedOrder.currencyId)}</p>
                       </div>
-                      <p className="mt-2 text-xs text-slate-500">Unitario: {formatCurrency(item.unitPrice, selectedOrder.currencyId)}</p>
+                      <p className="mt-2 text-xs text-[#beb9b1]/40">Unitario: {formatCurrency(item.unitPrice, selectedOrder.currencyId)}</p>
                     </div>
                   ))}
                 </div>
               </div>
 
-              <div className="rounded-2xl border border-[#ddd1bf] bg-[#faf6ef] p-4 text-sm text-slate-700">
-                <p className="text-[11px] uppercase tracking-[0.22em] text-slate-400">Resumen operativo</p>
+              <div className="rounded-sm border border-[#beb9b1]/10 bg-[#1a1a1a]/20 p-4 text-sm text-[#beb9b1]/70">
+                <p className="text-[10px] uppercase tracking-[0.22em] text-[#beb9b1]/40">Resumen operativo</p>
                 <div className="mt-3 space-y-2">
-                  <p><span className="font-semibold">Subtotal:</span> {formatCurrency(selectedOrder.subtotalAmount ?? selectedOrder.totalAmount, selectedOrder.currencyId)}</p>
-                  <p><span className="font-semibold">Envio:</span> {selectedOrder.shippingAmount !== null ? formatCurrency(selectedOrder.shippingAmount, selectedOrder.currencyId) : 'No calculado'}</p>
-                  <p><span className="font-semibold">Total:</span> {formatCurrency(selectedOrder.totalAmount, selectedOrder.currencyId)}</p>
-                  <p><span className="font-semibold">Preferencia:</span> {selectedOrder.mercadopagoPreferenceId || 'No informada'}</p>
-                  <p><span className="font-semibold">Notas:</span> {selectedOrder.notes || 'Sin observaciones del comprador'}</p>
+                  <p><span className="text-[#beb9b1]/40">Subtotal:</span> {formatCurrency(selectedOrder.subtotalAmount ?? selectedOrder.totalAmount, selectedOrder.currencyId)}</p>
+                  <p><span className="text-[#beb9b1]/40">Envío:</span> {selectedOrder.shippingAmount !== null ? formatCurrency(selectedOrder.shippingAmount, selectedOrder.currencyId) : 'No calculado'}</p>
+                  <p><span className="text-[#beb9b1]/40">Total:</span> <span className="text-[#c9a96e] font-semibold">{formatCurrency(selectedOrder.totalAmount, selectedOrder.currencyId)}</span></p>
+                  <p><span className="text-[#beb9b1]/40">Preferencia:</span> {selectedOrder.mercadopagoPreferenceId || 'No informada'}</p>
+                  <p><span className="text-[#beb9b1]/40">Notas:</span> {selectedOrder.notes || 'Sin observaciones del comprador'}</p>
                 </div>
               </div>
             </div>
           ) : (
-            <p className="text-sm text-slate-600">No hay un pedido seleccionado.</p>
+            <p className="text-sm text-[#beb9b1]/50">No hay un pedido seleccionado.</p>
           )}
         </div>
       </div>

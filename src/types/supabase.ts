@@ -50,6 +50,11 @@ export interface Database {
           promo_cta_href: string | null;
           benefits_active: boolean;
           benefit_items: Json;
+          strip_active: boolean;
+          strip_text: string;
+          strip_link: string | null;
+          strip_bg_color: string;
+          strip_text_color: string;
           created_at: string | null;
           updated_at: string | null;
         };
@@ -63,6 +68,11 @@ export interface Database {
           promo_cta_href?: string | null;
           benefits_active?: boolean;
           benefit_items?: Json;
+          strip_active?: boolean;
+          strip_text?: string;
+          strip_link?: string | null;
+          strip_bg_color?: string;
+          strip_text_color?: string;
           created_at?: string | null;
           updated_at?: string | null;
         };
@@ -76,6 +86,11 @@ export interface Database {
           promo_cta_href?: string | null;
           benefits_active?: boolean;
           benefit_items?: Json;
+          strip_active?: boolean;
+          strip_text?: string;
+          strip_link?: string | null;
+          strip_bg_color?: string;
+          strip_text_color?: string;
           created_at?: string | null;
           updated_at?: string | null;
         };

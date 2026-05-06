@@ -36,6 +36,11 @@ export const defaultPublicityConfig: PublicityConfig = {
   promo_cta_href: '',
   benefits_active: true,
   benefit_items: defaultBenefits,
+  strip_active: false,
+  strip_text: 'Envío gratis en CABA y AMBA en compras desde $200.000',
+  strip_link: '',
+  strip_bg_color: '#a68a5c',
+  strip_text_color: '#1a1806',
 };
 
 type PublicityConfigInput = {
@@ -48,6 +53,11 @@ type PublicityConfigInput = {
   promo_cta_href?: string | null;
   benefits_active?: boolean | null;
   benefit_items?: unknown;
+  strip_active?: boolean | null;
+  strip_text?: string | null;
+  strip_link?: string | null;
+  strip_bg_color?: string | null;
+  strip_text_color?: string | null;
   updated_at?: string | null;
 };
 
@@ -92,6 +102,11 @@ export function normalizePublicityConfig(input: PublicityConfigInput | null | un
     promo_cta_href: input?.promo_cta_href?.trim() || defaultPublicityConfig.promo_cta_href,
     benefits_active: sanitizeVisibility(input?.benefits_active, defaultPublicityConfig.benefits_active),
     benefit_items: normalizeBenefitItems(input?.benefit_items),
+    strip_active: sanitizeVisibility(input?.strip_active, defaultPublicityConfig.strip_active),
+    strip_text: input?.strip_text?.trim() || defaultPublicityConfig.strip_text,
+    strip_link: input?.strip_link?.trim() || defaultPublicityConfig.strip_link,
+    strip_bg_color: input?.strip_bg_color?.trim() || defaultPublicityConfig.strip_bg_color,
+    strip_text_color: input?.strip_text_color?.trim() || defaultPublicityConfig.strip_text_color,
     updated_at: input?.updated_at ?? undefined,
   };
 }
@@ -134,5 +149,10 @@ export function buildPublicityPayload(
     promo_cta_href: config.promo_cta_href || null,
     benefits_active: config.benefits_active,
     benefit_items: benefitItemsJson,
+    strip_active: config.strip_active,
+    strip_text: config.strip_text,
+    strip_link: config.strip_link || null,
+    strip_bg_color: config.strip_bg_color,
+    strip_text_color: config.strip_text_color,
   };
 }

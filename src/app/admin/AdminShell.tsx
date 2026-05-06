@@ -32,7 +32,7 @@ export default function AdminShell({ children, userEmail }: AdminShellProps) {
   };
 
   return (
-    <div className="relative flex min-h-screen bg-[linear-gradient(180deg,_#f4efe7_0%,_#efe8dd_52%,_#ebe3d7_100%)] text-slate-900">
+    <div className="relative flex min-h-screen bg-[#3c3c3b] text-[#beb9b1]">
       <button
         className="fixed left-4 top-4 z-50 inline-flex items-center gap-2 rounded-full border border-[#4d443b]/15 bg-[#2f2b28] px-3 py-2.5 shadow-lg shadow-black/15 transition-transform active:scale-95 md:hidden"
         aria-label="Abrir menu"

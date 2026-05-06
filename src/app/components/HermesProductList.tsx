@@ -77,7 +77,7 @@ export default function HermesProductList() {
 
   return (
     <section className="space-y-7">
-      <div className="overflow-hidden rounded-[28px] border border-[#dbd0c2] bg-[linear-gradient(135deg,_rgba(49,44,40,0.98),_rgba(63,56,51,0.94))] p-4 sm:p-8 text-[#f7f0e2] shadow-xl shadow-[#2f2b28]/10">
+      <div className="overflow-hidden rounded-sm border border-[#beb9b1]/10 bg-[linear-gradient(135deg,_rgba(49,44,40,0.98),_rgba(63,56,51,0.94))] p-4 sm:p-8 text-[#f7f0e2] shadow-xl shadow-[#2f2b28]/10">
         <div className="flex flex-col gap-4 sm:gap-7 lg:flex-row lg:items-end lg:justify-between">
           <div className="max-w-2xl">
             <div className="mb-2 inline-flex rounded-full border border-white/10 bg-white/5 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.24em] text-[#cbbca3] sm:mb-3 sm:text-[11px]">
@@ -109,23 +109,23 @@ export default function HermesProductList() {
         </div>
       </div>
 
-      <div className="rounded-[28px] border border-[#ddd2c0] bg-[rgba(252,249,244,0.92)] p-6 sm:p-8 shadow-sm backdrop-blur-sm">
+      <div className="rounded-sm border border-[#beb9b1]/10 bg-[#2a2725] p-6 sm:p-8">
         <div className="flex flex-col gap-6">
           <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
             <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">Gestión de catálogo</p>
-              <h3 className="mt-1 text-2xl font-semibold tracking-tight text-slate-900 sm:text-[2rem]">Productos</h3>
+              <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[#beb9b1]/50">Gestión de catálogo</p>
+              <h3 className="mt-1 text-2xl font-serif tracking-wide text-[#beb9b1] sm:text-[2rem]">Productos</h3>
             </div>
 
-            <div className="inline-flex rounded-2xl border border-[#ddd0be] bg-[#f3ede4] p-1 shadow-inner">
+            <div className="inline-flex rounded-sm border border-[#beb9b1]/10 bg-[#1a1a1a]/30 p-1">
               <button
-                className={`rounded-xl px-4 py-2 text-sm font-semibold transition-colors ${tab === 'todos' ? 'bg-[#312c28] text-[#f7f0e2]' : 'text-slate-600 hover:text-slate-900'}`}
+                className={`rounded-sm px-4 py-2 text-xs font-semibold uppercase tracking-[0.15em] transition-colors ${tab === 'todos' ? 'bg-[#a68a5c]/20 text-[#c9a96e]' : 'text-[#beb9b1]/50 hover:text-[#beb9b1]'}`}
                 onClick={() => setTab('todos')}
               >
                 Todos
               </button>
               <button
-                className={`rounded-xl px-4 py-2 text-sm font-semibold transition-colors ${tab === 'publicados' ? 'bg-[#312c28] text-[#f7f0e2]' : 'text-slate-600 hover:text-slate-900'}`}
+                className={`rounded-sm px-4 py-2 text-xs font-semibold uppercase tracking-[0.15em] transition-colors ${tab === 'publicados' ? 'bg-[#a68a5c]/20 text-[#c9a96e]' : 'text-[#beb9b1]/50 hover:text-[#beb9b1]'}`}
                 onClick={() => setTab('publicados')}
               >
                 Publicados
@@ -139,16 +139,16 @@ export default function HermesProductList() {
           </div>
         </div>
 
-        <div className="mt-2 rounded-[24px] border border-[#e6ddcf] bg-[#fdfbf7] p-4 sm:p-5">
+        <div className="mt-2 rounded-sm border border-[#beb9b1]/10 bg-[#1a1a1a]/20 p-4 sm:p-5">
       {loadingHermes ? (
         <div className="flex items-center justify-center py-16">
           <Spinner size={32} colorClass="border-[#8f7a58]" />
-          <span className="ml-3 text-slate-500">Cargando productos...</span>
+          <span className="ml-3 text-[#beb9b1]/50">Cargando productos...</span>
         </div>
       ) : (
         <>
-          {errorHermes && <div className="rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">{errorHermes}</div>}
-          {hermesProducts.length === 0 && <div className="rounded-2xl border border-slate-200 bg-white px-4 py-6 text-sm text-slate-500">No hay productos disponibles. (¿La API responde bien?)</div>}
+          {errorHermes && <div className="rounded-sm border border-[#d03416]/30 bg-[#d03416]/10 px-4 py-3 text-sm text-[#f3c3ba]">{errorHermes}</div>}
+          {hermesProducts.length === 0 && <div className="rounded-sm border border-[#beb9b1]/10 bg-[#1a1a1a]/20 px-4 py-6 text-sm text-[#beb9b1]/50">No hay productos disponibles. (¿La API responde bien?)</div>}
           <ul className="space-y-3">
             {paginatedProducts.map((product) => (
               <HermesProductItem

@@ -152,7 +152,7 @@ export default function BannersPage() {
 
   return (
     <section className="space-y-7">
-      <div className="overflow-hidden rounded-[28px] border border-[#dbd0c2] bg-[linear-gradient(135deg,_rgba(49,44,40,0.98),_rgba(63,56,51,0.94))] p-6 sm:p-8 text-[#f7f0e2] shadow-xl shadow-[#2f2b28]/10">
+      <div className="overflow-hidden rounded-sm border border-[#beb9b1]/10 bg-[linear-gradient(135deg,_rgba(49,44,40,0.98),_rgba(63,56,51,0.94))] p-6 sm:p-8 text-[#f7f0e2] shadow-xl shadow-[#2f2b28]/10">
         <div className="flex flex-col gap-7 lg:flex-row lg:items-end lg:justify-between">
           <div className="max-w-2xl">
             <div className="mb-3 inline-flex rounded-full border border-white/10 bg-white/5 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.24em] text-[#cbbca3]">
@@ -181,30 +181,31 @@ export default function BannersPage() {
         </div>
       </div>
 
-      <div className="rounded-[28px] border border-[#ddd2c0] bg-[rgba(252,249,244,0.92)] p-6 sm:p-8 shadow-sm backdrop-blur-sm">
+      <div className="rounded-sm border border-[#beb9b1]/10 bg-[#2a2725] p-6 sm:p-8">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">Gestión visual</p>
-            <h2 className="mt-1 text-2xl font-semibold tracking-tight text-slate-900 sm:text-[2rem]">
+            <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[#beb9b1]/50">Gestión visual</p>
+            <h2 className="mt-1 text-2xl font-serif tracking-wide text-[#beb9b1] sm:text-[2rem]">
               {showForm ? (editingBanner ? 'Editar banner' : 'Nuevo banner') : 'Biblioteca de banners'}
             </h2>
           </div>
 
           {!showForm && (
             <button
-              className="inline-flex items-center justify-center rounded-2xl bg-[#312c28] px-5 py-3 text-sm font-semibold text-[#f7f0e2] transition hover:bg-[#403932] disabled:cursor-not-allowed disabled:bg-slate-300"
+              className="group relative flex items-center justify-center overflow-hidden border border-[#a68a5c] bg-transparent px-5 py-2.5 text-xs font-bold uppercase tracking-[0.2em] text-[#a68a5c] transition-all hover:text-[#3c3c3b] disabled:opacity-40 disabled:cursor-not-allowed"
               onClick={() => { setShowForm(true); setEditingBanner(null); }}
               disabled={actionLoading}
             >
-              Nuevo banner
+              <span className="absolute inset-0 z-0 bg-[#a68a5c] transition-transform duration-300 translate-y-full group-hover:translate-y-0" />
+              <span className="relative z-10">Nuevo banner</span>
             </button>
           )}
         </div>
 
         <div className="mt-6 space-y-4">
-          {loading && <div className="rounded-2xl border border-[#ddd1bf] bg-[#faf6ef] px-4 py-3 text-sm text-slate-600">Cargando banners...</div>}
-          {error && <div className="rounded-2xl border border-[#e2c5c1] bg-[#fbf0ef] px-4 py-3 text-sm text-[#8b4b43]">Error: {error}</div>}
-          {actionLoading && <div className="rounded-2xl border border-[#ddd1bf] bg-[#f7f1e7] px-4 py-3 text-sm text-[#7b6646]">Procesando cambios...</div>}
+          {loading && <div className="rounded-sm border border-[#beb9b1]/10 bg-[#1a1a1a]/20 px-4 py-3 text-sm text-[#beb9b1]/50">Cargando banners...</div>}
+          {error && <div className="rounded-sm border border-[#d03416]/30 bg-[#d03416]/10 px-4 py-3 text-sm text-[#f3c3ba]">Error: {error}</div>}
+          {actionLoading && <div className="rounded-sm border border-[#beb9b1]/10 bg-[#1a1a1a]/20 px-4 py-3 text-sm text-[#beb9b1]/40">Procesando cambios...</div>}
 
           {!showForm && (
             <AdminBannerList

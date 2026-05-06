@@ -16,5 +16,10 @@ export interface PublicityConfig {
   promo_cta_href?: string;
   benefits_active: boolean;
   benefit_items: PublicityBenefit[];
+  strip_active: boolean;
+  strip_text: string;
+  strip_link?: string;
+  strip_bg_color: string;
+  strip_text_color: string;
   updated_at?: string;
 }

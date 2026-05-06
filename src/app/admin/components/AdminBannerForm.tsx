@@ -19,32 +19,35 @@ const AdminBannerForm: React.FC<AdminBannerFormProps> = ({ initialBanner = {}, o
 	};
 
 	return (
-		<form onSubmit={handleSubmit} className="mx-auto max-w-2xl space-y-6 rounded-[24px] border border-[#e4d9c9] bg-white p-6 sm:p-7 shadow-sm">
+		<form onSubmit={handleSubmit} className="mx-auto max-w-2xl space-y-6 rounded-sm border border-[#beb9b1]/10 bg-[#1a1a1a]/20 p-6 sm:p-7">
 			<div>
-				<p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">Detalle del banner</p>
-				<h2 className="mt-1 text-2xl font-semibold tracking-tight text-slate-900 sm:text-[2rem]">{initialBanner.id ? 'Editar banner' : 'Nuevo banner'}</h2>
+				<p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[#beb9b1]/50">Detalle del banner</p>
+				<h2 className="mt-1 text-xl font-serif tracking-wide text-[#beb9b1]">{initialBanner.id ? 'Editar banner' : 'Nuevo banner'}</h2>
 			</div>
 			<div className="grid gap-5">
-				<label className="flex flex-col gap-2 text-sm text-slate-700">
-					<span className="font-medium">Título</span>
-					<input className="w-full rounded-2xl border border-[#d7ccbc] bg-[#fdfbf7] px-4 py-3 text-sm text-slate-800 shadow-sm outline-none transition focus:border-[#9f8763] focus:ring-2 focus:ring-[#c6b08a]/20" value={titulo} onChange={e => setTitulo(e.target.value)} required />
+				<label className="flex flex-col gap-1.5 text-[10px] uppercase tracking-[0.2em] text-[#beb9b1]/55">
+					Título
+					<input className="w-full rounded-sm border border-[#beb9b1]/15 bg-[#1a1a1a]/30 px-3 py-2.5 text-sm normal-case tracking-normal text-[#f5efe3] outline-none transition focus:border-[#a68a5c]" value={titulo} onChange={e => setTitulo(e.target.value)} required />
 				</label>
-				<label className="flex flex-col gap-2 text-sm text-slate-700">
-					<span className="font-medium">Imagen URL</span>
-					<input className="w-full rounded-2xl border border-[#d7ccbc] bg-[#fdfbf7] px-4 py-3 text-sm text-slate-800 shadow-sm outline-none transition focus:border-[#9f8763] focus:ring-2 focus:ring-[#c6b08a]/20" value={imagen_url} onChange={e => setImagenUrl(e.target.value)} required />
+				<label className="flex flex-col gap-1.5 text-[10px] uppercase tracking-[0.2em] text-[#beb9b1]/55">
+					Imagen URL
+					<input className="w-full rounded-sm border border-[#beb9b1]/15 bg-[#1a1a1a]/30 px-3 py-2.5 text-sm normal-case tracking-normal text-[#f5efe3] outline-none transition focus:border-[#a68a5c]" value={imagen_url} onChange={e => setImagenUrl(e.target.value)} required />
 				</label>
-				<label className="flex flex-col gap-2 text-sm text-slate-700">
-					<span className="font-medium">Link</span>
-					<input className="w-full rounded-2xl border border-[#d7ccbc] bg-[#fdfbf7] px-4 py-3 text-sm text-slate-800 shadow-sm outline-none transition focus:border-[#9f8763] focus:ring-2 focus:ring-[#c6b08a]/20" value={link} onChange={e => setLink(e.target.value)} placeholder="Opcional" />
+				<label className="flex flex-col gap-1.5 text-[10px] uppercase tracking-[0.2em] text-[#beb9b1]/55">
+					Link <span className="normal-case tracking-normal text-[#beb9b1]/30">(opcional)</span>
+					<input className="w-full rounded-sm border border-[#beb9b1]/15 bg-[#1a1a1a]/30 px-3 py-2.5 text-sm normal-case tracking-normal text-[#f5efe3] outline-none transition focus:border-[#a68a5c]" value={link} onChange={e => setLink(e.target.value)} placeholder="https://..." />
 				</label>
 			</div>
-			<label className="inline-flex items-center gap-3 rounded-2xl border border-[#ddd1bf] bg-[#faf6ef] px-4 py-3 text-sm text-slate-700">
-				<input type="checkbox" checked={activo} onChange={e => setActivo(e.target.checked)} id="activo" className="h-4 w-4 rounded border-slate-300 text-[#7c6c54] focus:ring-[#c6b08a]" />
+			<label className="inline-flex items-center gap-3 rounded-sm border border-[#beb9b1]/10 bg-[#1a1a1a]/20 px-4 py-3 text-sm text-[#beb9b1]/70 cursor-pointer">
+				<input type="checkbox" checked={activo} onChange={e => setActivo(e.target.checked)} id="activo" className="h-4 w-4 rounded accent-[#a68a5c]" />
 				<span>Banner activo</span>
 			</label>
 			<div className="flex flex-col gap-3 pt-2 md:flex-row">
-				<button type="submit" className="inline-flex items-center justify-center rounded-2xl bg-[#312c28] px-5 py-3 text-sm font-semibold text-[#f7f0e2] transition hover:bg-[#403932]">Guardar</button>
-				<button type="button" className="inline-flex items-center justify-center rounded-2xl border border-[#d6c9b7] bg-white px-5 py-3 text-sm font-semibold text-slate-700 transition hover:bg-[#f5eee4]" onClick={onCancel}>Cancelar</button>
+				<button type="submit" className="group relative flex items-center justify-center overflow-hidden border border-[#a68a5c] bg-transparent px-5 py-2.5 text-xs font-bold uppercase tracking-[0.2em] text-[#a68a5c] transition-all hover:text-[#3c3c3b]">
+					<span className="absolute inset-0 z-0 bg-[#a68a5c] transition-transform duration-300 translate-y-full group-hover:translate-y-0" />
+					<span className="relative z-10">Guardar</span>
+				</button>
+				<button type="button" className="border border-[#beb9b1]/15 px-5 py-2.5 text-xs font-semibold uppercase tracking-[0.2em] text-[#beb9b1]/50 transition hover:text-[#beb9b1]" onClick={onCancel}>Cancelar</button>
 			</div>
 		</form>
 	);
