@@ -26,3 +26,12 @@ body {
 .animate-slow-rotate {
   animation: slow-rotate 100s linear infinite;
 }
+
+/* Oculta la scrollbar manteniendo el scroll funcional */
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}

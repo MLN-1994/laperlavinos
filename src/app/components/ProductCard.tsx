@@ -26,29 +26,29 @@ export default function ProductCard({ product, addToCart }: ProductCardProps) {
   };
 
   return (
-    <div className="group relative flex flex-col overflow-hidden rounded-sm border border-[#beb9b1]/10 bg-[#3c3c3b]/40 backdrop-blur-md p-2 transition-all duration-500 hover:border-[#a68a5c]/50 hover:shadow-[0_8px_32px_rgba(0,0,0,0.35)]">
+    <div className="group relative flex flex-col overflow-hidden rounded-sm border border-neutral-200 bg-white p-2 transition-all duration-500 hover:border-neutral-400 hover:shadow-[0_8px_32px_rgba(0,0,0,0.10)]">
 
       {/* Imagen con overlay hover */}
-      <Link href={`/producto/${product.id}`} target="_blank" rel="noopener noreferrer" className="relative block aspect-[3/4] overflow-hidden rounded-sm bg-[#1a1a1a]">
+      <Link href={`/producto/${product.id}`} target="_blank" rel="noopener noreferrer" className="relative block aspect-[3/4] overflow-hidden rounded-sm bg-neutral-100">
         <img
           src={product.imagen_url || "/placeholder.png"}
           alt={product.nombre}
-          className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105 opacity-90 group-hover:opacity-100"
+          className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
         />
 
         {/* Degradado inferior en hover */}
-        <div className="absolute inset-0 bg-gradient-to-t from-[#1a1a1a]/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
 
         {/* Botón "Ver producto" centrado en hover */}
         <div className="absolute inset-0 flex items-end justify-center pb-5 opacity-0 translate-y-2 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-300">
-          <span className="border border-[#a68a5c]/70 bg-[#1a1a1a]/60 px-4 py-1.5 text-[10px] font-semibold uppercase tracking-[0.25em] text-[#a68a5c] backdrop-blur-sm">
+          <span className="border border-white/80 bg-black/30 px-4 py-1.5 text-[10px] font-semibold uppercase tracking-[0.25em] text-white backdrop-blur-sm">
             Ver producto
           </span>
         </div>
 
         {/* Badge categoría */}
         <div className="absolute top-2 left-2">
-          <span className="inline-flex items-center bg-[#a68a5c] px-2 py-0.5 text-[8px] font-bold uppercase tracking-[0.2em] text-white shadow-xl">
+          <span className="inline-flex items-center bg-neutral-800 px-2 py-0.5 text-[8px] font-bold uppercase tracking-[0.2em] text-white shadow-xl">
             {product.categoria_id || "Exclusivo"}
           </span>
         </div>
@@ -59,20 +59,20 @@ export default function ProductCard({ product, addToCart }: ProductCardProps) {
         <div className="flex-1">
           <Link href={`/producto/${product.id}`} target="_blank" rel="noopener noreferrer">
             <h3
-              className="text-[13px] font-serif leading-snug tracking-tight text-[#beb9b1] line-clamp-2 group-hover:text-[#a68a5c] transition-colors"
+              className="text-[13px] font-serif leading-snug tracking-tight text-neutral-800 line-clamp-2 group-hover:text-neutral-600 transition-colors"
               title={product.nombre}
             >
               {product.nombre}
             </h3>
           </Link>
-          <p className="mt-1.5 text-[11px] leading-4 text-[#beb9b1]/45 line-clamp-2 italic">
+          <p className="mt-1.5 text-[11px] leading-4 text-neutral-400 line-clamp-2 italic">
             {product.descripcion}
           </p>
         </div>
 
         {/* Footer: Precio y Botón */}
-        <div className="mt-4 flex items-center justify-between pt-3 border-t border-[#beb9b1]/8">
-          <span className="font-serif text-[15px] font-light tracking-tight text-[#c9a96e]">
+        <div className="mt-4 flex items-center justify-between pt-3 border-t border-neutral-100">
+          <span className="font-serif text-[15px] font-light tracking-tight text-neutral-700">
             ${product.precio.toLocaleString("es-AR")}
           </span>
 
@@ -80,20 +80,20 @@ export default function ProductCard({ product, addToCart }: ProductCardProps) {
             onClick={handleAdd}
             disabled={isAdded}
             aria-label="Agregar al carrito"
-            className={`relative flex h-9 w-9 items-center justify-center rounded-full border transition-all duration-500 ease-out shadow-lg
+            className={`relative flex h-9 w-9 items-center justify-center rounded-full border transition-all duration-500 ease-out shadow-sm
               ${isAdded
-                ? "bg-[#a68a5c] border-[#a68a5c] scale-110 shadow-[#a68a5c]/20"
-                : "bg-transparent border-[#a68a5c]/40 text-[#a68a5c] hover:bg-[#a68a5c] hover:text-[#3c3c3b] hover:border-[#a68a5c]"
+                ? "bg-neutral-800 border-neutral-800 scale-110"
+                : "bg-transparent border-neutral-300 text-neutral-600 hover:bg-neutral-800 hover:text-white hover:border-neutral-800"
               }`}
           >
             <div className={`absolute transition-all duration-300 ${isAdded ? "opacity-0 scale-50" : "opacity-100 scale-100"}`}>
               <ShoppingCartIcon className="h-4 w-4" strokeWidth={1.5} />
             </div>
             <div className={`absolute transition-all duration-500 ${isAdded ? "opacity-100 scale-100 rotate-0" : "opacity-0 scale-50 -rotate-45"}`}>
-              <CheckIcon className="h-5 w-5 text-[#3c3c3b]" strokeWidth={2.5} />
+              <CheckIcon className="h-5 w-5 text-white" strokeWidth={2.5} />
             </div>
             {isAdded && (
-              <span className="absolute inset-0 rounded-full animate-ping bg-[#a68a5c]/30" />
+              <span className="absolute inset-0 rounded-full animate-ping bg-neutral-400/30" />
             )}
           </button>
         </div>

@@ -43,11 +43,11 @@ export default function ProductDetail({ product }: ProductDetailProps) {
   const increase = () => setQuantity((q) => q + 1);
 
   return (
-    <section className="min-h-screen bg-[#1c1a17] px-4 py-10 sm:px-8 lg:px-16">
+    <section className="min-h-screen bg-neutral-50 px-4 py-10 sm:px-8 lg:px-16">
       {/* Volver */}
       <button
         onClick={handleBack}
-        className="mb-8 inline-flex items-center gap-2 text-[#beb9b1]/60 hover:text-[#a68a5c] transition-colors text-sm tracking-wide"
+        className="mb-8 inline-flex items-center gap-2 text-neutral-400 hover:text-[#a68a5c] transition-colors text-sm tracking-wide"
       >
         <HiArrowLeft className="h-4 w-4" />
         Volver
@@ -55,7 +55,7 @@ export default function ProductDetail({ product }: ProductDetailProps) {
 
       <div className="mx-auto max-w-5xl grid grid-cols-1 gap-10 lg:grid-cols-2">
         {/* Imagen */}
-        <div className="relative aspect-square overflow-hidden rounded-sm border border-[#beb9b1]/10 bg-[#111]">
+        <div className="relative aspect-square overflow-hidden rounded-sm border border-neutral-200 bg-neutral-100">
           <img
             src={product.imagen_url || "/placeholder.png"}
             alt={product.nombre}
@@ -76,11 +76,11 @@ export default function ProductDetail({ product }: ProductDetailProps) {
                 {product.marca}
               </p>
             )}
-            <h1 className="font-serif text-3xl font-light leading-snug text-[#e8e3da] sm:text-4xl">
+            <h1 className="font-serif text-3xl font-light leading-snug text-neutral-800 sm:text-4xl">
               {product.nombre}
             </h1>
-            <div className="mt-5 border-t border-[#beb9b1]/10 pt-5">
-              <p className="text-sm leading-relaxed text-[#beb9b1]/70 italic">
+            <div className="mt-5 border-t border-neutral-200 pt-5">
+              <p className="text-sm leading-relaxed text-neutral-500 italic">
                 {product.descripcion}
               </p>
             </div>
@@ -96,23 +96,23 @@ export default function ProductDetail({ product }: ProductDetailProps) {
 
             {/* Selector de cantidad */}
             <div className="flex items-center gap-4">
-              <span className="text-xs uppercase tracking-widest text-[#beb9b1]/50">
+              <span className="text-xs uppercase tracking-widest text-neutral-400">
                 Cantidad
               </span>
-              <div className="flex items-center gap-3 rounded-full border border-[#beb9b1]/15 bg-[#2a2622] px-4 py-2">
+              <div className="flex items-center gap-3 rounded-full border border-neutral-300 bg-white px-4 py-2 shadow-sm">
                 <button
                   onClick={decrease}
-                  className="text-[#beb9b1]/60 hover:text-[#a68a5c] transition-colors disabled:opacity-30"
+                  className="text-neutral-400 hover:text-[#a68a5c] transition-colors disabled:opacity-30"
                   disabled={quantity <= 1}
                 >
                   <HiMinus className="h-4 w-4" />
                 </button>
-                <span className="w-6 text-center text-sm font-medium text-[#e8e3da]">
+                <span className="w-6 text-center text-sm font-medium text-neutral-800">
                   {quantity}
                 </span>
                 <button
                   onClick={increase}
-                  className="text-[#beb9b1]/60 hover:text-[#a68a5c] transition-colors"
+                  className="text-neutral-400 hover:text-[#a68a5c] transition-colors"
                 >
                   <HiPlus className="h-4 w-4" />
                 </button>
@@ -123,10 +123,10 @@ export default function ProductDetail({ product }: ProductDetailProps) {
             <button
               onClick={handleAdd}
               disabled={added}
-              className={`relative flex w-full items-center justify-center gap-3 rounded-sm border py-4 text-sm font-semibold uppercase tracking-[0.15em] transition-all duration-500 shadow-lg
+              className={`relative flex w-full items-center justify-center gap-3 rounded-sm border py-4 text-sm font-semibold uppercase tracking-[0.15em] transition-all duration-500 shadow-sm
                 ${added
-                  ? "border-[#a68a5c] bg-[#a68a5c]/20 text-[#a68a5c] scale-[0.99]"
-                  : "border-[#a68a5c]/50 bg-transparent text-[#e8e3da] hover:bg-[#a68a5c] hover:border-[#a68a5c] hover:text-[#1c1a17]"
+                  ? "border-[#a68a5c] bg-[#a68a5c]/10 text-[#a68a5c] scale-[0.99]"
+                  : "border-neutral-800 bg-neutral-900 text-neutral-100 hover:bg-[#a68a5c] hover:border-[#a68a5c] hover:text-neutral-900"
                 }`}
             >
               <span
@@ -144,7 +144,7 @@ export default function ProductDetail({ product }: ProductDetailProps) {
             </button>
 
             {product.stock != null && product.stock <= 5 && product.stock > 0 && (
-              <p className="text-xs text-amber-400/80 tracking-wide">
+              <p className="text-xs text-amber-600 tracking-wide">
                 ¡Solo quedan {product.stock} unidades!
               </p>
             )}

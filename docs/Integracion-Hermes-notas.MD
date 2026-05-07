@@ -1,6 +1,6 @@
 # Integracion Hermes: estado y notas practicas
 
-Actualizado: 2026-04-17
+Actualizado: 2026-05-06
 
 ## Nota 2026-04-17
 
@@ -75,3 +75,49 @@ No avanzar con escritura en Hermes hasta cerrar antes estas capas propias:
 - Agregar confirmaciones para acciones destructivas.
 - Endurecer validaciones de publicacion.
 - Seguir ordenando componentes y hooks si el panel crece.
+
+---
+
+## Nota 2026-05-06 — Medios de pago en Hermes
+
+### Tabla tipo_tarjetas (confirmada)
+
+| Codigo | Nombre |
+|--------|--------|
+| 1  | VISA |
+| 2  | MASTERCARD |
+| 4  | MAESTRO |
+| 5  | NARANJA |
+| 7  | CABAL |
+| 8  | AMERICAN EXPRESS |
+| 9  | MERCADO PAGO |
+| 10 | CUENTA DNI |
+| 11 | TRANSFERENCIA |
+| 12 | OPENPAY |
+| 13 | MODO |
+| 14 | CHEQUE |
+| 15 | GIFT CARD |
+| 16 | DEBITO |
+| 17 | PUBLICIDAD |
+| 18 | BNA+ |
+
+### Estado de implementacion
+
+El campo `pagos_detalle.CodChe` ya se resuelve dinamicamente segun `web_orders.payment_provider`:
+- `mercadopago` → 9
+- `openpay` → 12
+- `gift_card` → 15
+- `transferencia` → 11
+- Cualquier otro o nulo → fallback a 9 (MercadoPago)
+
+El codigo vive en `src/app/api/hermes/venta/route.ts` en la funcion `getCodTarjeta()`.
+
+### Pendientes de prueba
+
+- [ ] **OpenPay (12):** Integrar OpenPay como medio de pago en el checkout. Cuando el pago se apruebe, el webhook debe setear `payment_provider = 'openpay'` en `web_orders`. El endpoint `/api/hermes/venta` ya mapeara el codigo correcto automaticamente.
+
+- [ ] **Gift Card (15):** ✅ CONFIRMADO por admin Hermes (2026-05-06): `pagos_detalle` acepta múltiples filas para el mismo `Codigo` de pago — una por medio de pago. La columna `Clave` es autonumérica y garantiza unicidad. En `pagos` va un solo registro; en `pagos_detalle` se repite el `Codigo` tantas veces como medios de pago haya. **Pendiente:** implementar en el checkout el flujo de pago mixto (Gift Card parcial + otro medio) y pasar un array de medios al endpoint `/api/hermes/venta`.
+
+- [ ] **Verificar descuento de stock:** Confirmar en Hermes que `movimientos_stk` con `TipMov=2` esta bajando el stock correctamente despues de una venta real.
+
+- [ ] **Comprobante de prueba 1000010:** Borrar o aclarar al admin de Hermes que es un registro de test.

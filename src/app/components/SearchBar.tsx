@@ -64,12 +64,12 @@ export default function SearchBar({
 
   return (
     <div
-      className={`rounded-[26px] border-[0.5px] border-[#c8b48f]/18 bg-[linear-gradient(180deg,_rgba(255,255,255,0.055),_rgba(255,255,255,0.028))] p-3 shadow-[0_18px_40px_rgba(0,0,0,0.12)] backdrop-blur-[10px] transition duration-500 sm:p-3.5${rootClassName}`}
+      className={`rounded-[26px] border border-neutral-200 bg-white p-3 shadow-[0_4px_16px_rgba(0,0,0,0.05)] transition duration-500 sm:p-3.5${rootClassName}`}
       aria-label="Filtros de búsqueda"
     >
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-3">
         <div className="relative min-w-0 flex-1">
-          <span className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-[#cfbb95]/80">
+          <span className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-neutral-400">
             <svg className="h-[20px] w-[20px] sm:h-[18px] sm:w-[18px]" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.55" d="m21 21-4.35-4.35M10.5 18a7.5 7.5 0 1 1 0-15 7.5 7.5 0 0 1 0 15Z" />
             </svg>
@@ -80,13 +80,13 @@ export default function SearchBar({
             value={filters.query}
             onChange={(event) => setFilters((current) => ({ ...current, query: event.target.value }))}
             placeholder={placeholder}
-            className="h-[48px] w-full rounded-[18px] border border-[#cfbb95]/14 bg-[rgba(255,255,255,0.04)] py-3 pl-12 pr-4 text-base sm:text-sm text-[#f0e8da] outline-none transition-all duration-300 placeholder:text-[#d9d0c3]/42 focus:border-[#f0dfbf]/42 focus:bg-[rgba(255,255,255,0.065)] focus:shadow-[0_0_0_1px_rgba(240,223,191,0.18),0_0_30px_rgba(240,223,191,0.08)]"
+            className="h-[48px] w-full rounded-[18px] border border-neutral-200 bg-white py-3 pl-12 pr-4 text-base sm:text-sm text-neutral-800 outline-none transition-all duration-300 placeholder:text-neutral-300 focus:border-neutral-400 focus:shadow-[0_0_0_1px_rgba(0,0,0,0.06)]"
             aria-label="Buscar productos por texto"
           />
         </div>
 
         <div className="relative w-full mt-2 sm:mt-0 sm:w-[220px] shrink-0">
-          <span className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-[#cfbb95]/78">
+          <span className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-neutral-400">
             <svg className="h-5 w-5 sm:h-4 sm:w-4" viewBox="0 0 20 20" fill="none" stroke="currentColor" aria-hidden="true">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.7" d="M6 7h8M6 10h5M6 13h3" />
             </svg>
@@ -100,13 +100,13 @@ export default function SearchBar({
                 sortOrder: event.target.value as SearchSortOrder,
               }))
             }
-            className="h-[48px] w-full appearance-none rounded-[18px] border border-[#cfbb95]/14 bg-[rgba(255,255,255,0.04)] py-3 pl-11 pr-10 text-base sm:text-sm text-[#f0e8da] outline-none transition-all duration-300 focus:border-[#f0dfbf]/42 focus:bg-[rgba(255,255,255,0.065)] focus:shadow-[0_0_0_1px_rgba(240,223,191,0.18),0_0_30px_rgba(240,223,191,0.08)]"
+            className="h-[48px] w-full appearance-none rounded-[18px] border border-neutral-200 bg-white py-3 pl-11 pr-10 text-base sm:text-sm text-neutral-700 outline-none transition-all duration-300 focus:border-neutral-400 focus:shadow-[0_0_0_1px_rgba(0,0,0,0.06)]"
             aria-label="Ordenar productos por precio"
           >
-            <option value="price-asc" className="bg-[#2c2c2b] text-[#f0e8da]">Precio: Menor a Mayor</option>
-            <option value="price-desc" className="bg-[#2c2c2b] text-[#f0e8da]">Precio: Mayor a Menor</option>
+            <option value="price-asc">Precio: Menor a Mayor</option>
+            <option value="price-desc">Precio: Mayor a Menor</option>
           </select>
-          <span className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-[#cfbb95]/78">
+          <span className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-neutral-400">
             <svg className="h-5 w-5 sm:h-4 sm:w-4" viewBox="0 0 20 20" fill="none" stroke="currentColor" aria-hidden="true">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.7" d="m5 8 5 5 5-5" />
             </svg>

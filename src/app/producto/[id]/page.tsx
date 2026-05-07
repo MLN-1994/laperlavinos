@@ -4,6 +4,7 @@ import Header from '@/app/components/Header';
 import BannerList from '@/app/components/BannerList';
 import ProductDetail from '@/app/components/ProductDetail';
 import Footer from '@/app/components/Footer';
+import Newsletter from '@/app/components/Newsletter';
 import { ProductoPublicado } from '@/types';
 
 interface Props {
@@ -33,7 +34,7 @@ export default async function ProductoPage({ params }: Props) {
   };
 
   return (
-    <div className="min-h-screen bg-[#1c1a17] text-[#beb9b1]">
+    <div className="min-h-screen bg-neutral-50 text-neutral-800">
       <Header />
       <div className="px-3 pt-4 sm:px-5 md:px-8 lg:px-10">
         <div className="mx-auto max-w-[1440px]">
@@ -43,6 +44,7 @@ export default async function ProductoPage({ params }: Props) {
       <main>
         <ProductDetail product={product} />
       </main>
+      <Newsletter />
       <Footer />
     </div>
   );

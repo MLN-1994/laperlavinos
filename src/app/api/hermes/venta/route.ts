@@ -8,12 +8,24 @@ import { getSupabaseAdmin, hasSupabaseAdminConfig } from '@/lib/supabaseAdmin';
 // ─────────────────────────────────────────────────────────────────────────────
 
 /**
- * Código de tipo de tarjeta para MercadoPago en `pagos_detalle.CodChe`.
- * FALLBACK TEMPORAL: se usa 0 porque el usuario no tiene acceso a tipo_tarjetas.
- * Cuando el admin de Hermes ejecute: SELECT Codigo, Descri FROM tipo_tarjetas;
- * reemplazar este valor con el Codigo que corresponda a pago electrónico / MercadoPago.
+ * Códigos de tipo de tarjeta en `pagos_detalle.CodChe` (tabla tipo_tarjetas de Hermes).
+ * Confirmados el 2026-05-06 con acceso directo a la tabla.
  */
-const COD_TIPO_TARJETA_MP = 0;
+const COD_TIPO_TARJETA: Record<string, number> = {
+  mercadopago: 9,   // MERCADO PAGO
+  openpay:    12,   // OPENPAY
+  gift_card:  15,   // GIFT CARD
+  transferencia: 11, // TRANSFERENCIA
+} as const;
+
+/**
+ * Devuelve el CodChe de Hermes según el proveedor de pago.
+ * Si no se reconoce, usa MercadoPago como fallback (9).
+ */
+function getCodTarjeta(provider?: string | null): number {
+  if (!provider) return COD_TIPO_TARJETA.mercadopago;
+  return COD_TIPO_TARJETA[provider.toLowerCase()] ?? COD_TIPO_TARJETA.mercadopago;
+}
 
 /** Prefijo de sucursal para el número de comprobante (formato: SSSS-NNNNNNNN). */
 const COMPRO_SUCURSAL = '0009';
@@ -47,6 +59,7 @@ interface OrderData {
   notes: string | null;
   total_amount: number;
   mercadopago_payment_id: string | null;
+  payment_provider: string | null;
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -168,7 +181,7 @@ async function fetchOrderWithItems(web_order_id: string): Promise<{
   const { data: order, error: orderError } = await supabase
     .from('web_orders')
     .select(
-      'id, status, buyer_name, buyer_email, buyer_address, buyer_document_type, buyer_document_number, notes, total_amount, mercadopago_payment_id',
+      'id, status, buyer_name, buyer_email, buyer_address, buyer_document_type, buyer_document_number, notes, total_amount, mercadopago_payment_id, payment_provider',
     )
     .eq('id', web_order_id)
     .single();
@@ -475,6 +488,8 @@ async function registrarVentaEnHermes(
   const codigoPago = extractNextCodigo(rowsCodPago, 'pagos', 'Paso 6');
   log.info('Codigo de pago reservado', { codigoPago }, 'Paso 6');
 
+  const codTarjeta = getCodTarjeta(order.payment_provider);
+
   // ── Paso 7: INSERT pagos ──────────────────────────────────────────────────
   log.info('Insertando en pagos', { codigoPago, codVta: codigoVenta }, 'Paso 7');
   try {
@@ -495,14 +510,14 @@ async function registrarVentaEnHermes(
   // ── Paso 8: INSERT pagos_detalle ──────────────────────────────────────────
   log.info(
     'Insertando en pagos_detalle',
-    { codigoPago, tipPag: 6, importe: totalConIva, codChe: COD_TIPO_TARJETA_MP },
+    { codigoPago, tipPag: 6, importe: totalConIva, codChe: codTarjeta, provider: order.payment_provider },
     'Paso 8',
   );
   try {
     await conn.execute(
       `INSERT INTO pagos_detalle (NroEmp, Codigo, TipPag, ImpPag, CodChe, CodAsi, Clave)
        VALUES (2, ?, 6, ?, ?, 0, NULL)`,
-      [codigoPago, totalConIva, COD_TIPO_TARJETA_MP],
+      [codigoPago, totalConIva, codTarjeta],
     );
   } catch (err) {
     throw new VentaError(

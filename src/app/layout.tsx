@@ -1,6 +1,7 @@
 // src/app/layout.tsx
 import type { Metadata } from "next";
-import "./globals.css"; // ¡Importante para que Tailwind funcione!
+import "./globals.css";
+import GeodesicBackground from "./components/GeodesicBackground";
 
 export const metadata: Metadata = {
   title: "Mi Ecommerce",
@@ -14,7 +15,12 @@ export default function RootLayout({
 }) {
   return (
     <html lang="es">
-      <body>{children}</body>
+      <body className="antialiased">
+        <GeodesicBackground />
+        <div className="relative z-10">
+          {children}
+        </div>
+      </body>
     </html>
   );
 }
