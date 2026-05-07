@@ -248,6 +248,7 @@ export interface Database {
           external_reference: string;
           mercadopago_preference_id: string | null;
           mercadopago_payment_id: string | null;
+          payment_provider: string | null;
           buyer_name: string;
           buyer_email: string | null;
           buyer_phone: string | null;
@@ -274,6 +275,7 @@ export interface Database {
           external_reference: string;
           mercadopago_preference_id?: string | null;
           mercadopago_payment_id?: string | null;
+          payment_provider?: string | null;
           buyer_name: string;
           buyer_email?: string | null;
           buyer_phone?: string | null;
@@ -300,6 +302,7 @@ export interface Database {
           external_reference?: string;
           mercadopago_preference_id?: string | null;
           mercadopago_payment_id?: string | null;
+          payment_provider?: string | null;
           buyer_name?: string;
           buyer_email?: string | null;
           buyer_phone?: string | null;
