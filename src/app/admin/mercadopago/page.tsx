@@ -241,20 +241,22 @@ export default function MercadoPagoAdminPage() {
                 </button>
               </div>
             ) : (
-              <div className="pt-2 border-t border-[#beb9b1]/10">
+              <div className="flex flex-wrap gap-3 pt-2 border-t border-[#beb9b1]/10">
                 <a
                   href="/api/mercadopago/oauth/authorize"
                   className="text-xs uppercase tracking-widest text-[#beb9b1]/50 hover:text-[#beb9b1] transition-colors"
                 >
                   Cambiar cuenta
-                </a>                <span className="text-[#beb9b1]/20">·</span>
+                </a>
+                <span className="text-[#beb9b1]/20">&middot;</span>
                 <button
                   type="button"
                   onClick={() => { setShowManualForm((v) => !v); setSaveError(null); }}
                   className="text-xs uppercase tracking-widest text-[#beb9b1]/30 hover:text-[#beb9b1]/60 transition-colors"
                 >
                   {showManualForm ? 'Cancelar' : 'Usar token manual'}
-                </button>              </div>
+                </button>
+              </div>
             )}
           </div>
         ) : (
@@ -301,22 +303,44 @@ export default function MercadoPagoAdminPage() {
 
         {/* Formulario token manual (secundario) */}
         {showManualForm && (
-          <form className="mt-5 pt-5 border-t border-[#beb9b1]/10 grid gap-4" onSubmit={handleSave}>
-            <p className="text-sm text-[#beb9b1]/60">
-              Conseguis el token en{' '}
+          <form className="mt-5 pt-5 border-t border-[#beb9b1]/10 grid gap-5" onSubmit={handleSave}>
+
+            {/* Guia paso a paso */}
+            <div className="rounded-sm bg-[#1a1a1a]/40 border border-[#beb9b1]/8 p-4 space-y-3">
+              <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[#a68a5c]/80">
+                Como obtener el token (3 pasos)
+              </p>
+              <ol className="space-y-2.5">
+                <li className="flex gap-3 text-sm text-[#beb9b1]/70">
+                  <span className="flex-shrink-0 w-5 h-5 rounded-full bg-[#a68a5c]/20 text-[#a68a5c] text-[10px] font-bold flex items-center justify-center">1</span>
+                  <span>Hace clic en el boton de abajo para abrir Mercado Pago. Inicia sesion con la cuenta que queres usar para recibir los pagos.</span>
+                </li>
+                <li className="flex gap-3 text-sm text-[#beb9b1]/70">
+                  <span className="flex-shrink-0 w-5 h-5 rounded-full bg-[#a68a5c]/20 text-[#a68a5c] text-[10px] font-bold flex items-center justify-center">2</span>
+                  <span>Una vez adentro, hace clic en <strong className="text-[#beb9b1]/85">Mis aplicaciones</strong> en el menu izquierdo y entra a tu aplicacion.</span>
+                </li>
+                <li className="flex gap-3 text-sm text-[#beb9b1]/70">
+                  <span className="flex-shrink-0 w-5 h-5 rounded-full bg-[#a68a5c]/20 text-[#a68a5c] text-[10px] font-bold flex items-center justify-center">3</span>
+                  <span>En la seccion <strong className="text-[#beb9b1]/85">Credenciales de produccion</strong>, copia el <strong className="text-[#beb9b1]/85">Access token</strong> y pegalo abajo.</span>
+                </li>
+              </ol>
               <a
                 href="https://www.mercadopago.com.ar/developers/panel"
                 target="_blank"
                 rel="noreferrer"
-                className="text-[#a68a5c] underline underline-offset-2 hover:opacity-80"
+                className="inline-flex items-center gap-2 mt-1 rounded-sm border border-[#009ee3]/40 bg-[#009ee3]/8 px-3 py-2 text-xs font-semibold text-[#009ee3] hover:bg-[#009ee3]/15 transition-colors"
               >
-                mercadopago.com.ar/developers
+                <svg className="h-3.5 w-3.5 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                  <path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/>
+                  <polyline points="15 3 21 3 21 9"/>
+                  <line x1="10" y1="14" x2="21" y2="3"/>
+                </svg>
+                Abrir panel de Mercado Pago
               </a>
-              {' '}→ tu aplicacion → <strong className="text-[#beb9b1]/70">Credenciales de produccion</strong>.
-            </p>
+            </div>
 
             <label className="flex flex-col gap-1.5 text-[10px] uppercase tracking-[0.2em] text-[#beb9b1]/55">
-              Token de acceso <span className="text-[#d03416]/70 normal-case tracking-normal">(requerido)</span>
+              Access token <span className="text-[#d03416]/70 normal-case tracking-normal">(pegar aqui)</span>
               <textarea
                 value={accessToken}
                 onChange={(e) => setAccessToken(e.target.value)}
@@ -327,7 +351,7 @@ export default function MercadoPagoAdminPage() {
             </label>
 
             <label className="flex flex-col gap-1.5 text-[10px] uppercase tracking-[0.2em] text-[#beb9b1]/55">
-              Clave pública <span className="text-[#beb9b1]/30 normal-case tracking-normal">(opcional)</span>
+              Clave publica <span className="text-[#beb9b1]/30 normal-case tracking-normal">(de la misma seccion, opcional)</span>
               <input
                 type="text"
                 value={publicKey}
