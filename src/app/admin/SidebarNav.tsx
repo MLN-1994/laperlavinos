@@ -8,6 +8,7 @@ const navItems = [
   { href: "/admin/banners", label: "Banners" },
   { href: "/admin/publicidad", label: "Publicidad" },
   { href: "/admin/mercadopago", label: "Mercado Pago" },
+  { href: "/admin/openpay", label: "OpenPay / BBVA" },
 ];
 
 interface SidebarNavProps {

@@ -95,10 +95,20 @@ export async function fetchMercadoPagoPayment(paymentId: string) {
   return response.json() as Promise<MercadoPagoPaymentInfo>;
 }
 
+interface OAuthTokenData {
+  refreshToken?: string | null;
+  tokenType?: string | null;
+  scope?: string | null;
+  liveMode?: boolean | null;
+  expiresIn?: number | null;
+  expiresAt?: string | null;
+}
+
 async function upsertMercadoPagoAccount(params: {
   accessToken: string;
   publicKey?: string | null;
   userInfo: MercadoPagoUserInfo;
+  oauth?: OAuthTokenData;
 }) {
   const supabaseAdmin = getSupabaseAdmin();
   const accountsTable = supabaseAdmin.from(ACCOUNT_TABLE);
@@ -116,12 +126,12 @@ async function upsertMercadoPagoAccount(params: {
     country_id: params.userInfo.country_id ?? null,
     public_key: params.publicKey ?? null,
     access_token: params.accessToken,
-    refresh_token: null,
-    token_type: 'Bearer',
-    scope: null,
-    live_mode: null,
-    expires_in: null,
-    expires_at: null,
+    refresh_token: params.oauth?.refreshToken ?? null,
+    token_type: params.oauth?.tokenType ?? 'Bearer',
+    scope: params.oauth?.scope ?? null,
+    live_mode: params.oauth?.liveMode ?? null,
+    expires_in: params.oauth?.expiresIn ?? null,
+    expires_at: params.oauth?.expiresAt ?? null,
     connected_at: new Date().toISOString(),
     updated_at: new Date().toISOString(),
   };
@@ -293,4 +303,74 @@ export async function createMercadoPagoCheckoutPreference(params: {
     sandboxInitPoint: response.sandbox_init_point,
     externalReference,
   };
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// OAuth — intercambio de código y guardado de tokens
+// ─────────────────────────────────────────────────────────────────────────────
+
+interface MPOAuthTokenResponse {
+  access_token: string;
+  token_type: string;
+  expires_in: number;
+  scope: string;
+  user_id: number;
+  refresh_token: string;
+  public_key: string;
+  live_mode: boolean;
+}
+
+export async function exchangeMercadoPagoOAuthCode(
+  code: string,
+  redirectUri: string,
+): Promise<void> {
+  const clientId = process.env.MERCADOPAGO_CLIENT_ID?.trim();
+  const clientSecret = process.env.MERCADOPAGO_CLIENT_SECRET?.trim();
+
+  if (!clientId || !clientSecret) {
+    throw new Error(
+      'Faltan las credenciales OAuth de Mercado Pago en el servidor (CLIENT_ID / CLIENT_SECRET).',
+    );
+  }
+
+  const tokenRes = await fetch('https://api.mercadopago.com/oauth/token', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+    body: JSON.stringify({
+      client_id: clientId,
+      client_secret: clientSecret,
+      grant_type: 'authorization_code',
+      code,
+      redirect_uri: redirectUri,
+    }),
+    cache: 'no-store',
+  });
+
+  if (!tokenRes.ok) {
+    const text = await tokenRes.text().catch(() => '');
+    throw new Error(`Mercado Pago OAuth error ${tokenRes.status}: ${text}`);
+  }
+
+  const data = (await tokenRes.json()) as MPOAuthTokenResponse;
+
+  if (!data.access_token) {
+    throw new Error('Mercado Pago no devolvio access_token.');
+  }
+
+  const userInfo = await fetchMercadoPagoUser(data.access_token);
+  const expiresAt = new Date(Date.now() + (data.expires_in ?? 0) * 1000).toISOString();
+
+  await upsertMercadoPagoAccount({
+    accessToken: data.access_token,
+    publicKey: data.public_key ?? null,
+    userInfo,
+    oauth: {
+      refreshToken: data.refresh_token ?? null,
+      tokenType: data.token_type ?? 'Bearer',
+      scope: data.scope ?? null,
+      liveMode: data.live_mode ?? null,
+      expiresIn: data.expires_in ?? null,
+      expiresAt,
+    },
+  });
 }

@@ -57,6 +57,7 @@ const labelClass =
 export default function CartDrawer({ isOpen, setIsOpen }: CartDrawerProps) {
   const { cart, removeFromCart, addToCart, decreaseQuantity } = useCartStore();
   const [checkoutLoading, setCheckoutLoading] = useState(false);
+  const [openPayLoading, setOpenPayLoading] = useState(false);
   const [checkoutError, setCheckoutError] = useState<string | null>(null);
   const [buyerForm, setBuyerForm] = useState<CheckoutBuyerInput>(initialBuyerForm);
   const [isFormOpen, setIsFormOpen] = useState(false);
@@ -80,6 +81,28 @@ export default function CartDrawer({ isOpen, setIsOpen }: CartDrawerProps) {
     return null;
   };
 
+  const buildCheckoutPayload = () => ({
+    buyer: {
+      name: buyerForm.name.trim(),
+      email: buyerForm.email.trim(),
+      phone: buyerForm.phone.trim(),
+      documentType: buyerForm.documentType.trim(),
+      documentNumber: buyerForm.documentNumber.trim(),
+      address: buyerForm.address.trim(),
+      notes: buyerForm.notes?.trim() || undefined,
+    },
+    items: cart.map((product) => ({
+      id: product.id,
+      title: product.name,
+      description: product.description,
+      quantity: product.quantity,
+      unit_price: product.price,
+      currency_id: 'ARS',
+      picture_url: product.image,
+      category_id: product.category,
+    })),
+  });
+
   const handleCheckout = async () => {
     if (cart.length === 0 || checkoutLoading) return;
 
@@ -97,27 +120,7 @@ export default function CartDrawer({ isOpen, setIsOpen }: CartDrawerProps) {
       const response = await fetch('/api/mercadopago/checkout', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          buyer: {
-            name: buyerForm.name.trim(),
-            email: buyerForm.email.trim(),
-            phone: buyerForm.phone.trim(),
-            documentType: buyerForm.documentType.trim(),
-            documentNumber: buyerForm.documentNumber.trim(),
-            address: buyerForm.address.trim(),
-            notes: buyerForm.notes?.trim() || undefined,
-          },
-          items: cart.map((product) => ({
-            id: product.id,
-            title: product.name,
-            description: product.description,
-            quantity: product.quantity,
-            unit_price: product.price,
-            currency_id: 'ARS',
-            picture_url: product.image,
-            category_id: product.category,
-          })),
-        }),
+        body: JSON.stringify(buildCheckoutPayload()),
       });
 
       const data = (await response.json()) as {
@@ -137,6 +140,43 @@ export default function CartDrawer({ isOpen, setIsOpen }: CartDrawerProps) {
         error instanceof Error ? error.message : 'No se pudo generar el link de pago.',
       );
       setCheckoutLoading(false);
+    }
+  };
+
+  const handleOpenPayCheckout = async () => {
+    if (cart.length === 0 || openPayLoading) return;
+
+    const formError = validateBuyerForm();
+    if (formError) {
+      setCheckoutError(formError);
+      setIsFormOpen(true);
+      return;
+    }
+
+    setOpenPayLoading(true);
+    setCheckoutError(null);
+
+    try {
+      const response = await fetch('/api/openpay/checkout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(buildCheckoutPayload()),
+      });
+
+      const data = (await response.json()) as {
+        error?: string;
+        checkoutUrl?: string;
+      };
+
+      if (!response.ok) throw new Error(data.error ?? 'No se pudo generar el link de pago.');
+      if (!data.checkoutUrl) throw new Error('OpenPay no devolvió una URL de checkout.');
+
+      window.location.href = data.checkoutUrl;
+    } catch (error) {
+      setCheckoutError(
+        error instanceof Error ? error.message : 'No se pudo generar el link de pago con OpenPay.',
+      );
+      setOpenPayLoading(false);
     }
   };
 
@@ -417,15 +457,34 @@ export default function CartDrawer({ isOpen, setIsOpen }: CartDrawerProps) {
                           </p>
                         )}
 
+                        {/* Separador de métodos de pago */}
+                        <p className="mb-2 text-[9px] uppercase tracking-[0.3em] text-neutral-400 text-center">
+                          Elegí cómo pagar
+                        </p>
+
+                        {/* Mercado Pago */}
                         <button
                           type="button"
                           onClick={() => void handleCheckout()}
-                          disabled={checkoutLoading}
-                          className="group relative w-full flex items-center justify-center overflow-hidden border border-neutral-800 bg-transparent px-6 py-4 text-xs font-bold uppercase tracking-[0.3em] text-neutral-800 transition-all hover:text-white disabled:opacity-60 disabled:cursor-not-allowed"
+                          disabled={checkoutLoading || openPayLoading}
+                          className="group relative w-full flex items-center justify-center overflow-hidden border border-[#009ee3] bg-transparent px-6 py-3.5 text-xs font-bold uppercase tracking-[0.25em] text-[#009ee3] transition-all hover:text-white disabled:opacity-50 disabled:cursor-not-allowed mb-2"
+                        >
+                          <span className="absolute inset-0 z-0 bg-[#009ee3] transition-transform duration-500 translate-y-full group-hover:translate-y-0" />
+                          <span className="relative z-10">
+                            {checkoutLoading ? 'Generando...' : 'Mercado Pago'}
+                          </span>
+                        </button>
+
+                        {/* OpenPay (BBVA) */}
+                        <button
+                          type="button"
+                          onClick={() => void handleOpenPayCheckout()}
+                          disabled={checkoutLoading || openPayLoading}
+                          className="group relative w-full flex items-center justify-center overflow-hidden border border-neutral-800 bg-transparent px-6 py-3.5 text-xs font-bold uppercase tracking-[0.25em] text-neutral-800 transition-all hover:text-white disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                           <span className="absolute inset-0 z-0 bg-neutral-800 transition-transform duration-500 translate-y-full group-hover:translate-y-0" />
                           <span className="relative z-10">
-                            {checkoutLoading ? 'Generando Link...' : 'Finalizar Pedido'}
+                            {openPayLoading ? 'Generando...' : 'OpenPay / BBVA'}
                           </span>
                         </button>
                       </div>

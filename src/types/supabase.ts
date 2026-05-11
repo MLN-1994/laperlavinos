@@ -96,6 +96,30 @@ export interface Database {
         };
         Relationships: [];
       };
+      openpay_config: {
+        Row: {
+          id: string;
+          client_id: string;
+          client_secret: string;
+          environment: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          client_id: string;
+          client_secret: string;
+          environment?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          client_id?: string;
+          client_secret?: string;
+          environment?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
       mercado_pago_accounts: {
         Row: {
           id: string;

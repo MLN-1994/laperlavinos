@@ -1,12 +1,16 @@
 /**
  * Cliente OpenPay (BBVA Argentina) — autenticación y creación de órdenes de pago.
  *
- * Variables de entorno requeridas:
- *   OPENPAY_CLIENT_ID           — client_id de la aplicación
- *   OPENPAY_CLIENT_SECRET       — client_secret de la aplicación
- *   OPENPAY_AUTH_BASE_URL       — URL base del Auth Server  (ej: https://auth.openpay.com.ar)
- *   OPENPAY_CHECKOUT_BASE_URL   — URL base del Checkout API (ej: https://api.openpay.com.ar)
+ * Credenciales: se leen primero de la tabla openpay_config en Supabase (configurable
+ * desde el panel admin). Si no hay fila en DB, se usan las variables de entorno:
+ *   OPENPAY_CLIENT_ID, OPENPAY_CLIENT_SECRET
+ *
+ * Variables de entorno de infraestructura (siempre requeridas):
+ *   OPENPAY_AUTH_BASE_URL       — URL base del Auth Server
+ *   OPENPAY_CHECKOUT_BASE_URL   — URL base del Checkout API
  */
+
+import { getSupabaseAdmin, hasSupabaseAdminConfig } from '@/lib/supabaseAdmin';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Tipos
@@ -84,6 +88,7 @@ export interface OpenPayOrder {
 interface TokenCache {
   token: string;
   expiresAt: number; // ms epoch
+  clientId: string;  // para invalidar si cambian las credenciales
 }
 
 let tokenCache: TokenCache | null = null;
@@ -103,20 +108,67 @@ function getEnvOrThrow(key: string): string {
   return value;
 }
 
-function getOpenPayConfig() {
+async function getOpenPayConfig() {
+  const authBaseUrl = getEnvOrThrow('OPENPAY_AUTH_BASE_URL').replace(/\/$/, '');
+  const checkoutBaseUrl = getEnvOrThrow('OPENPAY_CHECKOUT_BASE_URL').replace(/\/$/, '');
+
+  // Intentar leer credenciales desde Supabase (panel admin)
+  if (hasSupabaseAdminConfig()) {
+    try {
+      const supabase = getSupabaseAdmin();
+      const { data } = await supabase
+        .from('openpay_config')
+        .select('client_id, client_secret')
+        .order('updated_at', { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      if (data?.client_id && data?.client_secret) {
+        return {
+          clientId: data.client_id as string,
+          clientSecret: data.client_secret as string,
+          authBaseUrl,
+          checkoutBaseUrl,
+        };
+      }
+    } catch {
+      // Si falla la lectura de DB, usamos env vars
+    }
+  }
+
+  // Fallback a variables de entorno
   return {
     clientId: getEnvOrThrow('OPENPAY_CLIENT_ID'),
     clientSecret: getEnvOrThrow('OPENPAY_CLIENT_SECRET'),
-    authBaseUrl: getEnvOrThrow('OPENPAY_AUTH_BASE_URL').replace(/\/$/, ''),
-    checkoutBaseUrl: getEnvOrThrow('OPENPAY_CHECKOUT_BASE_URL').replace(/\/$/, ''),
+    authBaseUrl,
+    checkoutBaseUrl,
   };
+}
+
+export async function saveOpenPayCredentials(clientId: string, clientSecret: string): Promise<void> {
+  if (!hasSupabaseAdminConfig()) {
+    throw new Error('Supabase no esta configurado.');
+  }
+  const supabase = getSupabaseAdmin();
+  // Eliminar fila existente e insertar nueva (tabla de una sola fila)
+  await supabase.from('openpay_config').delete().neq('id', '00000000-0000-0000-0000-000000000000');
+  const { error } = await supabase.from('openpay_config').insert({
+    client_id: clientId,
+    client_secret: clientSecret,
+    environment: 'production',
+    updated_at: new Date().toISOString(),
+  });
+  if (error) throw new Error(`No se pudo guardar: ${error.message}`);
+  // Invalidar cache de token al cambiar credenciales
+  tokenCache = null;
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Autenticación — obtener JWT con client_credentials
 // ─────────────────────────────────────────────────────────────────────────────
 
-async function fetchNewToken(config: ReturnType<typeof getOpenPayConfig>): Promise<TokenCache> {
+type OpenPayConfigResolved = Awaited<ReturnType<typeof getOpenPayConfig>>;
+
+async function fetchNewToken(config: OpenPayConfigResolved): Promise<TokenCache> {
   const url = `${config.authBaseUrl}/oauth/token`;
 
   const response = await fetch(url, {
@@ -153,14 +205,19 @@ async function fetchNewToken(config: ReturnType<typeof getOpenPayConfig>): Promi
     ? raw * 1000 - TOKEN_MARGIN_MS                   // era epoch en segundos
     : Date.now() + raw * 1000 - TOKEN_MARGIN_MS;     // era duración en segundos
 
-  return { token: data.access_token, expiresAt };
+  return { token: data.access_token, expiresAt, clientId: config.clientId };
 }
 
 /**
  * Devuelve un token JWT válido, renovándolo automáticamente cuando está por vencer.
  */
 export async function getOpenPayToken(): Promise<string> {
-  const config = getOpenPayConfig();
+  const config = await getOpenPayConfig();
+
+  // Invalidar cache si cambiaron las credenciales
+  if (tokenCache && tokenCache.clientId !== config.clientId) {
+    tokenCache = null;
+  }
 
   if (tokenCache && Date.now() < tokenCache.expiresAt) {
     return tokenCache.token;
@@ -179,7 +236,7 @@ export async function getOpenPayToken(): Promise<string> {
  * Devuelve el objeto Order con el UUID y el link de checkout.
  */
 export async function createOpenPayOrder(params: OpenPayCreateOrderParams): Promise<OpenPayOrder> {
-  const config = getOpenPayConfig();
+  const config = await getOpenPayConfig();
   const token = await getOpenPayToken();
   const url = `${config.checkoutBaseUrl}/api/v2/orders`;
 
@@ -245,7 +302,7 @@ export async function createOpenPayOrder(params: OpenPayCreateOrderParams): Prom
  * Consulta el estado de una intención de pago por UUID.
  */
 export async function getOpenPayOrder(uuid: string): Promise<OpenPayOrder> {
-  const config = getOpenPayConfig();
+  const config = await getOpenPayConfig();
   const token = await getOpenPayToken();
   const url = `${config.checkoutBaseUrl}/api/v2/orders/${encodeURIComponent(uuid)}`;
 
@@ -271,9 +328,9 @@ export async function getOpenPayOrder(uuid: string): Promise<OpenPayOrder> {
 // ─────────────────────────────────────────────────────────────────────────────
 
 export function hasOpenPayConfig(): boolean {
+  // La config de credenciales puede venir de DB (no verificable aqui sin async).
+  // Solo verificamos que las URLs de infraestructura esten configuradas.
   return !!(
-    process.env.OPENPAY_CLIENT_ID?.trim() &&
-    process.env.OPENPAY_CLIENT_SECRET?.trim() &&
     process.env.OPENPAY_AUTH_BASE_URL?.trim() &&
     process.env.OPENPAY_CHECKOUT_BASE_URL?.trim()
   );
