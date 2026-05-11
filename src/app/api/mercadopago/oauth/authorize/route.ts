@@ -22,7 +22,6 @@ export async function GET(request: Request) {
   const params = new URLSearchParams({
     client_id: clientId,
     response_type: 'code',
-    platform_id: 'mp',
     redirect_uri: redirectUri,
     state,
   });
