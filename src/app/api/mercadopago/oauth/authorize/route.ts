@@ -23,7 +23,7 @@ export async function GET(request: Request) {
     state,
   });
 
-  const authUrl = `https://auth.mercadopago.com.ar/authorization?${params.toString()}`;
+  const authUrl = `https://auth.mercadopago.com/authorization?${params.toString()}`;
 
   const response = NextResponse.redirect(authUrl);
   response.cookies.set('mp_oauth_state', state, {
