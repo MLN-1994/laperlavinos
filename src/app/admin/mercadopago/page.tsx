@@ -244,13 +244,10 @@ export default function MercadoPagoAdminPage() {
               <div className="pt-2 border-t border-[#beb9b1]/10">
                 <a
                   href="/api/mercadopago/oauth/authorize"
-                  className="text-xs uppercase tracking-widest text-[#a68a5c] hover:opacity-80 transition-opacity"
+                  className="text-xs uppercase tracking-widest text-[#beb9b1]/50 hover:text-[#beb9b1] transition-colors"
                 >
-                  Conectar cuenta de la clienta
+                  Cambiar cuenta
                 </a>
-                <p className="mt-1 text-xs text-[#beb9b1]/35">
-                  Ahora esta usando tu cuenta personal. Conecta la cuenta de quien va a recibir los pagos.
-                </p>
               </div>
             )}
           </div>
