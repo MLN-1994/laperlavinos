@@ -25,12 +25,19 @@ export async function POST(request: Request) {
     const precioValue = formData.get('precio');
     const destacadoValue = formData.get('destacado');
     const activoValue = formData.get('activo');
+    const enOfertaValue = formData.get('en_oferta');
+    const descuentoPorcentajeValue = formData.get('descuento_porcentaje');
     const imageValue = formData.get('imagen');
 
     const hermesId = Number(hermesIdValue);
     const nombre = typeof nombreValue === 'string' ? nombreValue.trim() : '';
     const descripcion = typeof descripcionValue === 'string' ? descripcionValue.trim() : '';
     const precio = Number(precioValue);
+    const enOferta = enOfertaValue === 'true';
+    const rawDescuento = Number(descuentoPorcentajeValue);
+    const descuentoPorcentaje = enOferta && Number.isFinite(rawDescuento) && rawDescuento > 0 && rawDescuento < 100
+      ? rawDescuento
+      : null;
 
     if (!isValidHermesId(hermesId)) {
       return NextResponse.json({ error: 'El hermes_id es obligatorio.' }, { status: 400 });
@@ -92,6 +99,8 @@ export async function POST(request: Request) {
         imagen_url: imagenUrl,
         destacado: destacadoValue === 'true',
         activo: activoValue !== 'false',
+        en_oferta: enOferta,
+        descuento_porcentaje: descuentoPorcentaje,
       })
       .select('*')
       .single();

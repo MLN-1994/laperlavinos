@@ -16,6 +16,11 @@ export default function ProductDetail({ product }: ProductDetailProps) {
   const addToCart = useCartStore((s) => s.addToCart);
   const router = useRouter();
 
+  const enOferta = product.en_oferta === true && (product.descuento_porcentaje ?? 0) > 0;
+  const precioFinal = enOferta
+    ? Math.round(product.precio * (1 - (product.descuento_porcentaje ?? 0) / 100))
+    : product.precio;
+
   const handleBack = () => {
     if (window.history.length > 1) {
       router.back();
@@ -29,7 +34,7 @@ export default function ProductDetail({ product }: ProductDetailProps) {
       addToCart({
         id: product.id,
         name: product.nombre,
-        price: product.precio,
+        price: precioFinal,
         description: product.descripcion ?? "",
         image: product.imagen_url ?? "/placeholder.png",
         category: product.categoria_id ?? "",
@@ -88,10 +93,20 @@ export default function ProductDetail({ product }: ProductDetailProps) {
 
           <div className="space-y-6">
             {/* Precio */}
-            <div>
-              <span className="text-4xl font-light text-[#a68a5c] tracking-tight">
-                ${product.precio.toLocaleString("es-AR")}
+            <div className="flex items-end gap-3">
+              {enOferta && (
+                <span className="text-lg font-light line-through text-neutral-400">
+                  ${product.precio.toLocaleString("es-AR")}
+                </span>
+              )}
+              <span className={`text-4xl font-light tracking-tight ${enOferta ? 'text-[#c0392b]' : 'text-[#a68a5c]'}`}>
+                ${precioFinal.toLocaleString("es-AR")}
               </span>
+              {enOferta && (
+                <span className="mb-1 rounded-sm bg-[#c0392b] px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.15em] text-white">
+                  -{product.descuento_porcentaje}% OFF
+                </span>
+              )}
             </div>
 
             {/* Selector de cantidad */}

@@ -19,6 +19,8 @@ export interface ProductoPublicado {
   activo?: boolean;
   grupo?: string | null;
   marca?: string | null;
+  en_oferta?: boolean | null;
+  descuento_porcentaje?: number | null;
 }
 
 export interface Banner {

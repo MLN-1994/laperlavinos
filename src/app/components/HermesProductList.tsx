@@ -48,9 +48,9 @@ export default function HermesProductList() {
   }, []);
 
   // Handler para publicar con loading individual
-  const handlePublishWithLoading = async (product: HermesProduct) => {
+  const handlePublishWithLoading = async (product: HermesProduct, description: string, enOferta: boolean, descuentoPorcentaje: number | null) => {
     setLoadingProduct(prev => ({ ...prev, [product.hermes_id]: true }));
-    const result = await handlePublish(product);
+    const result = await handlePublish(product, description, enOferta, descuentoPorcentaje);
     setLoadingProduct(prev => ({ ...prev, [product.hermes_id]: false }));
 
     if (result.ok) {

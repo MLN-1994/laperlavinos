@@ -33,13 +33,15 @@ export function useHermesProductList() {
     [publishedProducts],
   );
 
-  const handlePublish = useCallback(async (product: HermesProduct) => {
+  const handlePublish = useCallback(async (product: HermesProduct, description?: string, enOferta?: boolean, descuentoPorcentaje?: number | null) => {
     const result = await publishProduct({
       hermes_id: product.hermes_id,
       nombre: product.nombre,
-      descripcion: product.descripcion,
+      descripcion: description?.trim() || product.descripcion,
       precio: product.precio,
       imagen: selectedImage[product.hermes_id] || null,
+      en_oferta: enOferta ?? false,
+      descuento_porcentaje: descuentoPorcentaje ?? null,
     });
     setSelectedImage((prev) => ({ ...prev, [product.hermes_id]: null }));
     refetchPublished();

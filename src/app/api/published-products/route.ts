@@ -16,7 +16,7 @@ export async function GET() {
   try {
     const { data: publishedProducts, error } = await getSupabaseAdmin()
       .from('productos_publicados')
-      .select('id, hermes_id, nombre, descripcion, precio, categoria_id, imagen_url, destacado, activo')
+      .select('id, hermes_id, nombre, descripcion, precio, categoria_id, imagen_url, destacado, activo, en_oferta, descuento_porcentaje')
       .eq('activo', true)
       .order('nombre', { ascending: true });
 
@@ -57,11 +57,13 @@ export async function GET() {
       return {
         ...product,
         nombre: liveName || product.nombre,
-        descripcion: liveName || product.descripcion,
+        descripcion: product.descripcion || liveName,
         precio: livePrice ?? product.precio,
         stock: liveStock,
         grupo: liveGroup,
         marca: liveBrand,
+        en_oferta: product.en_oferta ?? false,
+        descuento_porcentaje: product.descuento_porcentaje ?? null,
       };
     });
 

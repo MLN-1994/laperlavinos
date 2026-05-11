@@ -9,6 +9,8 @@ type ProductoPublicado = {
   precio: number;
   imagen_url?: string;
   categoria_id?: string;
+  en_oferta?: boolean | null;
+  descuento_porcentaje?: number | null;
 };
 
 interface ProductCardProps {
@@ -19,8 +21,13 @@ interface ProductCardProps {
 export default function ProductCard({ product, addToCart }: ProductCardProps) {
   const [isAdded, setIsAdded] = useState(false);
 
+  const enOferta = product.en_oferta === true && (product.descuento_porcentaje ?? 0) > 0;
+  const precioFinal = enOferta
+    ? Math.round(product.precio * (1 - (product.descuento_porcentaje ?? 0) / 100))
+    : product.precio;
+
   const handleAdd = () => {
-    addToCart(product);
+    addToCart({ ...product, precio: precioFinal });
     setIsAdded(true);
     setTimeout(() => setIsAdded(false), 1500);
   };
@@ -47,10 +54,15 @@ export default function ProductCard({ product, addToCart }: ProductCardProps) {
         </div>
 
         {/* Badge categoría */}
-        <div className="absolute top-2 left-2">
+        <div className="absolute top-2 left-2 flex flex-col gap-1">
           <span className="inline-flex items-center bg-neutral-800 px-2 py-0.5 text-[8px] font-bold uppercase tracking-[0.2em] text-white shadow-xl">
             {product.categoria_id || "Exclusivo"}
           </span>
+          {enOferta && (
+            <span className="inline-flex items-center bg-[#c0392b] px-2 py-0.5 text-[8px] font-bold uppercase tracking-[0.2em] text-white shadow-xl">
+              -{product.descuento_porcentaje}%
+            </span>
+          )}
         </div>
       </Link>
 
@@ -65,16 +77,25 @@ export default function ProductCard({ product, addToCart }: ProductCardProps) {
               {product.nombre}
             </h3>
           </Link>
-          <p className="mt-1.5 text-[11px] leading-4 text-neutral-400 line-clamp-2 italic">
-            {product.descripcion}
-          </p>
+          {product.descripcion && (
+            <p className="mt-1.5 text-[11px] leading-snug text-neutral-500 line-clamp-2">
+              {product.descripcion}
+            </p>
+          )}
         </div>
 
         {/* Footer: Precio y Botón */}
         <div className="mt-4 flex items-center justify-between pt-3 border-t border-neutral-100">
-          <span className="font-serif text-[15px] font-light tracking-tight text-neutral-700">
-            ${product.precio.toLocaleString("es-AR")}
-          </span>
+          <div className="flex flex-col">
+            {enOferta && (
+              <span className="text-[11px] font-light line-through text-neutral-400">
+                ${product.precio.toLocaleString("es-AR")}
+              </span>
+            )}
+            <span className={`font-serif text-[15px] font-light tracking-tight ${enOferta ? 'text-[#c0392b]' : 'text-neutral-700'}`}>
+              ${precioFinal.toLocaleString("es-AR")}
+            </span>
+          </div>
 
           <button
             onClick={handleAdd}

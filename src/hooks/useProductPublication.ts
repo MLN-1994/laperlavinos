@@ -8,6 +8,8 @@ interface PublishOptions {
   imagen?: File | null;
   destacado?: boolean;
   activo?: boolean;
+  en_oferta?: boolean;
+  descuento_porcentaje?: number | null;
 }
 
 interface PublicationResult {
@@ -52,6 +54,10 @@ export function useProductPublication() {
       formData.append('precio', String(options.precio));
       formData.append('destacado', String(options.destacado ?? false));
       formData.append('activo', String(options.activo ?? true));
+      formData.append('en_oferta', String(options.en_oferta ?? false));
+      if (options.descuento_porcentaje != null) {
+        formData.append('descuento_porcentaje', String(options.descuento_porcentaje));
+      }
 
       if (options.imagen) {
         formData.append('imagen', options.imagen);

@@ -16,7 +16,7 @@ export default async function ProductoPage({ params }: Props) {
 
   const { data, error } = await getSupabaseAdmin()
     .from('productos_publicados')
-    .select('id, hermes_id, nombre, descripcion, precio, categoria_id, imagen_url, destacado, activo')
+    .select('id, hermes_id, nombre, descripcion, precio, categoria_id, imagen_url, destacado, activo, en_oferta, descuento_porcentaje')
     .eq('id', id)
     .single();
 
@@ -31,6 +31,8 @@ export default async function ProductoPage({ params }: Props) {
     imagen_url: data.imagen_url ?? undefined,
     destacado: data.destacado ?? undefined,
     activo: data.activo ?? undefined,
+    en_oferta: data.en_oferta ?? undefined,
+    descuento_porcentaje: data.descuento_porcentaje ?? undefined,
   };
 
   return (

@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { createMercadoPagoCheckoutPreference } from '@/lib/mercadoPago';
+import { createOpenPayOrder, hasOpenPayConfig } from '@/lib/openPayClient';
 import { getHermesProducts } from '@/lib/hermesClient';
 import { getSupabaseAdmin, hasSupabaseAdminConfig } from '@/lib/supabaseAdmin';
 import type { CheckoutBuyerInput, CheckoutItemInput } from '@/types/mercadopago';
@@ -28,7 +28,6 @@ interface PublishedProductForCheckout {
 
 class CheckoutValidationError extends Error {
   status: number;
-
   constructor(message: string, status = 400) {
     super(message);
     this.status = status;
@@ -36,7 +35,7 @@ class CheckoutValidationError extends Error {
 }
 
 function buildExternalReference() {
-  return `pedido-web-${Date.now()}-${crypto.randomUUID().slice(0, 8)}`;
+  return `pedido-web-op-${Date.now()}-${crypto.randomUUID().slice(0, 8)}`;
 }
 
 function calculateTotalAmount(items: CheckoutItemInput[]) {
@@ -104,7 +103,7 @@ function parseBuyerInput(buyer: CheckoutRequestBody['buyer']) {
 }
 
 async function loadLiveHermesProductsMap(products: PublishedProductForCheckout[]) {
-  const hasHermesProducts = products.some((product) => product.hermes_id !== null && product.hermes_id !== undefined);
+  const hasHermesProducts = products.some((p) => p.hermes_id !== null && p.hermes_id !== undefined);
 
   if (!hasHermesProducts) {
     return new Map<number, Record<string, unknown>>();
@@ -116,11 +115,7 @@ async function loadLiveHermesProductsMap(products: PublishedProductForCheckout[]
 
     for (const product of Array.isArray(hermesProducts) ? hermesProducts : []) {
       const hermesId = parseHermesId((product as Record<string, unknown>).Codigo);
-
-      if (hermesId === null) {
-        continue;
-      }
-
+      if (hermesId === null) continue;
       hermesMap.set(hermesId, product as Record<string, unknown>);
     }
 
@@ -149,7 +144,7 @@ async function revalidateCheckoutItems(items: CheckoutItemInput[]) {
     throw new CheckoutValidationError('Hay productos que ya no estan disponibles para la venta.', 409);
   }
 
-  const publishedProductsMap = new Map(products.map((product) => [product.id, product]));
+  const publishedProductsMap = new Map(products.map((p) => [p.id, p]));
   const hermesMap = await loadLiveHermesProductsMap(products);
 
   return items.map((item) => {
@@ -159,20 +154,21 @@ async function revalidateCheckoutItems(items: CheckoutItemInput[]) {
       throw new CheckoutValidationError('Hay productos que ya no estan disponibles para la venta.', 409);
     }
 
-    const liveProduct = publishedProduct.hermes_id !== null && publishedProduct.hermes_id !== undefined
-      ? hermesMap.get(publishedProduct.hermes_id)
-      : undefined;
+    const liveProduct =
+      publishedProduct.hermes_id !== null && publishedProduct.hermes_id !== undefined
+        ? hermesMap.get(publishedProduct.hermes_id)
+        : undefined;
 
     const liveName = typeof liveProduct?.Descripcion === 'string' ? liveProduct.Descripcion.trim() : '';
     const livePrice = parseNumber(liveProduct?.Precio);
     const basePrice = livePrice ?? Number(publishedProduct.precio);
 
-    // Aplicar descuento server-side (redondeado, sin floating point)
     const enOferta = publishedProduct.en_oferta === true;
     const pct = publishedProduct.descuento_porcentaje;
-    const validatedPrice = enOferta && pct !== null && pct > 0 && pct < 100
-      ? Math.round(basePrice * (1 - pct / 100))
-      : basePrice;
+    const validatedPrice =
+      enOferta && pct !== null && pct > 0 && pct < 100
+        ? Math.round(basePrice * (1 - pct / 100))
+        : basePrice;
 
     if (!Number.isInteger(item.quantity) || item.quantity <= 0) {
       throw new CheckoutValidationError('Hay cantidades invalidas en el pedido.');
@@ -231,6 +227,12 @@ export async function POST(request: Request) {
       throw new Error('Falta configurar NEXT_PUBLIC_SUPABASE_URL y SUPABASE_SERVICE_ROLE_KEY para registrar pedidos web.');
     }
 
+    if (!hasOpenPayConfig()) {
+      throw new Error(
+        'Falta configurar las variables de OpenPay: OPENPAY_CLIENT_ID, OPENPAY_CLIENT_SECRET, OPENPAY_AUTH_BASE_URL, OPENPAY_CHECKOUT_BASE_URL.',
+      );
+    }
+
     const body = (await request.json()) as CheckoutRequestBody;
     const items = Array.isArray(body.items) ? body.items : [];
     const buyer = parseBuyerInput(body.buyer);
@@ -256,8 +258,11 @@ export async function POST(request: Request) {
     const supabaseAdmin = getSupabaseAdmin();
     const totalAmount = calculateTotalAmount(validatedItems);
     const externalReference = buildExternalReference();
+    const origin = new URL(request.url).origin;
+
     const orderPayload: WebOrderInsert = {
       status: 'checkout_generado',
+      payment_provider: 'openpay',
       external_reference: externalReference,
       buyer_name: buyer.name,
       buyer_email: buyer.email,
@@ -290,31 +295,49 @@ export async function POST(request: Request) {
       throw new Error(`No se pudieron guardar los items del pedido: ${orderItemsError.message}`);
     }
 
-    const preference = await createMercadoPagoCheckoutPreference({
-      items: validatedItems,
-      origin: new URL(request.url).origin,
-      externalReference,
+    // Construir y crear la orden en OpenPay
+    const webhookSecret = process.env.OPENPAY_WEBHOOK_SECRET?.trim() ?? '';
+    const webhookUrl = webhookSecret
+      ? `${origin}/api/openpay/webhook?secret=${encodeURIComponent(webhookSecret)}`
+      : `${origin}/api/openpay/webhook`;
+
+    const openpayOrder = await createOpenPayOrder({
+      items: validatedItems.map((item, idx) => ({
+        id: idx + 1,
+        name: item.title,
+        quantity: item.quantity,
+        unitPrice: Number(item.unit_price),
+      })),
+      redirectUrls: {
+        success: `${origin}/checkout/success`,
+        failed: `${origin}/checkout/failed`,
+      },
+      webhookUrl,
+      expireLimitMinutes: 1440, // 24 horas
     });
+
+    const orderUuid = openpayOrder.data.attributes.uuid;
+    const checkoutUrl = openpayOrder.data.attributes.links.checkout;
 
     const { error: updateOrderError } = await supabaseAdmin
       .from('web_orders')
       .update({
-        status: 'checkout_generado',
-        mercadopago_preference_id: preference.id,
+        openpay_order_uuid: orderUuid,
+        raw_checkout_payload: toJsonValue({ requested: body, buyer, validatedItems, openpayOrder }),
       })
       .eq('id', order.id);
 
     if (updateOrderError) {
-      throw new Error(`Se creó la preferencia pero no se pudo actualizar el pedido: ${updateOrderError.message}`);
+      throw new Error(`Se creó la orden OpenPay pero no se pudo actualizar el pedido: ${updateOrderError.message}`);
     }
 
-    return NextResponse.json(preference);
+    return NextResponse.json({ checkoutUrl, orderUuid, orderId: order.id });
   } catch (error) {
     if (error instanceof CheckoutValidationError) {
       return NextResponse.json({ error: error.message }, { status: error.status });
     }
 
-    const message = error instanceof Error ? error.message : 'No se pudo generar el checkout de Mercado Pago.';
+    const message = error instanceof Error ? error.message : 'No se pudo generar el checkout de OpenPay.';
     return NextResponse.json({ error: message }, { status: 500 });
   }
 }

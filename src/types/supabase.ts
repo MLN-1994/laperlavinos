@@ -170,6 +170,8 @@ export interface Database {
           imagen_url: string | null;
           destacado: boolean | null;
           activo: boolean | null;
+          en_oferta: boolean | null;
+          descuento_porcentaje: number | null;
           created_at: string | null;
           updated_at: string | null;
         };
@@ -183,6 +185,8 @@ export interface Database {
           imagen_url?: string | null;
           destacado?: boolean | null;
           activo?: boolean | null;
+          en_oferta?: boolean | null;
+          descuento_porcentaje?: number | null;
           created_at?: string | null;
           updated_at?: string | null;
         };
@@ -196,6 +200,8 @@ export interface Database {
           imagen_url?: string | null;
           destacado?: boolean | null;
           activo?: boolean | null;
+          en_oferta?: boolean | null;
+          descuento_porcentaje?: number | null;
           created_at?: string | null;
           updated_at?: string | null;
         };
@@ -248,6 +254,7 @@ export interface Database {
           external_reference: string;
           mercadopago_preference_id: string | null;
           mercadopago_payment_id: string | null;
+          openpay_order_uuid: string | null;
           payment_provider: string | null;
           buyer_name: string;
           buyer_email: string | null;
@@ -275,6 +282,7 @@ export interface Database {
           external_reference: string;
           mercadopago_preference_id?: string | null;
           mercadopago_payment_id?: string | null;
+          openpay_order_uuid?: string | null;
           payment_provider?: string | null;
           buyer_name: string;
           buyer_email?: string | null;
@@ -302,6 +310,7 @@ export interface Database {
           external_reference?: string;
           mercadopago_preference_id?: string | null;
           mercadopago_payment_id?: string | null;
+          openpay_order_uuid?: string | null;
           payment_provider?: string | null;
           buyer_name?: string;
           buyer_email?: string | null;
