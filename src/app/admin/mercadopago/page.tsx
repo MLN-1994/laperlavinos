@@ -214,7 +214,7 @@ export default function MercadoPagoAdminPage() {
               </div>
             </div>
 
-            {account.mode !== 'direct' && (
+            {account.mode !== 'direct' ? (
               <div className="flex flex-wrap gap-3 pt-2 border-t border-[#beb9b1]/10">
                 <a
                   href="/api/mercadopago/oauth/authorize"
@@ -239,6 +239,18 @@ export default function MercadoPagoAdminPage() {
                 >
                   {disconnecting ? 'Desconectando...' : 'Desconectar'}
                 </button>
+              </div>
+            ) : (
+              <div className="pt-2 border-t border-[#beb9b1]/10">
+                <a
+                  href="/api/mercadopago/oauth/authorize"
+                  className="text-xs uppercase tracking-widest text-[#a68a5c] hover:opacity-80 transition-opacity"
+                >
+                  Conectar cuenta de la clienta
+                </a>
+                <p className="mt-1 text-xs text-[#beb9b1]/35">
+                  Ahora esta usando tu cuenta personal. Conecta la cuenta de quien va a recibir los pagos.
+                </p>
               </div>
             )}
           </div>
