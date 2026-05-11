@@ -350,6 +350,7 @@ export async function exchangeMercadoPagoOAuthCode(
 
   if (!tokenRes.ok) {
     const text = await tokenRes.text().catch(() => '');
+    console.error('[MP OAuth] token exchange failed', tokenRes.status, text, { redirectUri, clientId });
     throw new Error(`Mercado Pago OAuth error ${tokenRes.status}: ${text}`);
   }
 
