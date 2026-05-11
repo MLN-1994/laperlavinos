@@ -1,12 +1,8 @@
 import { NextResponse } from 'next/server';
 import { randomBytes } from 'crypto';
-import { requireAdminApiUser } from '@/lib/adminAuth';
 import { getBaseUrl } from '@/lib/mercadoPago';
 
 export async function GET(request: Request) {
-  const authError = await requireAdminApiUser();
-  if (authError) return authError;
-
   const clientId = process.env.MERCADOPAGO_CLIENT_ID?.trim();
   const clientSecret = process.env.MERCADOPAGO_CLIENT_SECRET?.trim();
 
