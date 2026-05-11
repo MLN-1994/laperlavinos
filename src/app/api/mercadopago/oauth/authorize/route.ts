@@ -21,6 +21,7 @@ export async function GET(request: Request) {
     platform_id: 'mp',
     redirect_uri: redirectUri,
     state,
+    prompt: 'login',
   });
 
   const authUrl = `https://auth.mercadopago.com/authorization?${params.toString()}`;
