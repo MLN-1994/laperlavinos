@@ -13,7 +13,7 @@ export function useHermesProductList() {
   const [pageSize] = useState(10);
   const { productos: hermesProducts, loading: loadingHermes, error: errorHermes } = useHermesProducts();
   const { productos: publishedProducts, refetch: refetchPublished } = usePublishedProducts();
-  const { publishProduct, unpublishProduct, loading, error, success } = useProductPublication();
+  const { publishProduct, unpublishProduct, editProduct, loading, error, success } = useProductPublication();
   const [selectedImage, setSelectedImage] = useState<{ [hermes_id: number]: File | null }>({});
   const [search, setSearch] = useState("");
   const [group, setGroup] = useState("");
@@ -47,6 +47,18 @@ export function useHermesProductList() {
     refetchPublished();
     return result;
   }, [publishProduct, refetchPublished, selectedImage]);
+
+  const handleEdit = useCallback(async (hermes_id: number, description: string, enOferta: boolean, descuentoPorcentaje: number | null, newImage: File | null) => {
+    const result = await editProduct({
+      hermes_id,
+      descripcion: description,
+      en_oferta: enOferta,
+      descuento_porcentaje: descuentoPorcentaje,
+      imagen: newImage,
+    });
+    refetchPublished();
+    return result;
+  }, [editProduct, refetchPublished]);
 
   const handleUnpublish = useCallback(async (hermes_id: number) => {
     const result = await unpublishProduct(hermes_id);
@@ -139,5 +151,6 @@ export function useHermesProductList() {
     isPublished,
     handlePublish,
     handleUnpublish,
+    handleEdit,
   };
 }

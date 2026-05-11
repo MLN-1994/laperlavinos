@@ -13,6 +13,7 @@ export default function HermesProductList() {
   const [loadingProduct, setLoadingProduct] = useState<{ [hermes_id: number]: boolean }>({});
   const {
     hermesProducts,
+    publishedProducts,
     loadingHermes,
     errorHermes,
     error,
@@ -35,6 +36,7 @@ export default function HermesProductList() {
     isPublished,
     handlePublish,
     handleUnpublish,
+    handleEdit,
   } = useHermesProductList();
 
   // Estado para controlar el toast
@@ -59,10 +61,17 @@ export default function HermesProductList() {
   }, [success, error]);
 
   // Handler para publicar con loading individual
-  const handlePublishWithLoading = async (product: HermesProduct) => {
+  const handlePublishWithLoading = async (product: HermesProduct, description: string, enOferta: boolean, descuentoPorcentaje: number | null) => {
     setLoadingProduct(prev => ({ ...prev, [product.hermes_id]: true }));
-    await handlePublish(product);
+    await handlePublish(product, description, enOferta, descuentoPorcentaje);
     setLoadingProduct(prev => ({ ...prev, [product.hermes_id]: false }));
+  };
+
+  // Handler para editar con loading individual
+  const handleEditWithLoading = async (hermes_id: number, description: string, enOferta: boolean, descuentoPorcentaje: number | null, newImage: File | null) => {
+    setLoadingProduct(prev => ({ ...prev, [hermes_id]: true }));
+    await handleEdit(hermes_id, description, enOferta, descuentoPorcentaje, newImage);
+    setLoadingProduct(prev => ({ ...prev, [hermes_id]: false }));
   };
 
   // Handler para quitar con loading individual
@@ -109,11 +118,13 @@ export default function HermesProductList() {
                 key={product.hermes_id ?? 'sinid'}
                 product={product}
                 isPublished={isPublished}
+                publishedProduct={publishedProducts.find(p => p.hermes_id === product.hermes_id)}
                 selectedImage={selectedImage}
                 setSelectedImage={setSelectedImage}
                 loading={!!loadingProduct[product.hermes_id]}
                 onPublish={handlePublishWithLoading}
                 onUnpublish={handleUnpublishWithLoading}
+                onEdit={handleEditWithLoading}
               />
             ))}
           </ul>

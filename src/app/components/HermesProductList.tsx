@@ -36,6 +36,7 @@ export default function HermesProductList() {
     isPublished,
     handlePublish,
     handleUnpublish,
+    handleEdit,
   } = useHermesProductList();
 
   // Estado para controlar el toast
@@ -55,6 +56,20 @@ export default function HermesProductList() {
 
     if (result.ok) {
       showToast('El producto fue publicado correctamente.', 'success', 'Producto publicado');
+      return;
+    }
+
+    showToast(result.message, 'error');
+  };
+
+  // Handler para editar con loading individual
+  const handleEditWithLoading = async (hermes_id: number, description: string, enOferta: boolean, descuentoPorcentaje: number | null, newImage: File | null) => {
+    setLoadingProduct(prev => ({ ...prev, [hermes_id]: true }));
+    const result = await handleEdit(hermes_id, description, enOferta, descuentoPorcentaje, newImage);
+    setLoadingProduct(prev => ({ ...prev, [hermes_id]: false }));
+
+    if (result.ok) {
+      showToast('El producto fue actualizado correctamente.', 'success', 'Producto actualizado');
       return;
     }
 
@@ -155,11 +170,13 @@ export default function HermesProductList() {
                 key={product.hermes_id ?? 'sinid'}
                 product={product}
                 isPublished={isPublished}
+                publishedProduct={publishedProducts.find(p => p.hermes_id === product.hermes_id)}
                 selectedImage={selectedImage}
                 setSelectedImage={setSelectedImage}
                 loading={!!loadingProduct[product.hermes_id]}
                 onPublish={handlePublishWithLoading}
                 onUnpublish={handleUnpublishWithLoading}
+                onEdit={handleEditWithLoading}
               />
             ))}
           </ul>

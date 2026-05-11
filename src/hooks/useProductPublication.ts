@@ -122,11 +122,58 @@ export function useProductPublication() {
     }
   };
 
+  // Editar producto publicado
+  const editProduct = async (options: Omit<PublishOptions, 'nombre' | 'precio' | 'activo' | 'destacado'>): Promise<PublicationResult> => {
+    setLoading(true);
+    setError(null);
+    setSuccess(null);
+
+    if (!isValidHermesId(options.hermes_id)) {
+      const message = 'Este producto no tiene un hermes_id valido y no se puede editar.';
+      setError(message);
+      setLoading(false);
+      return { ok: false, message };
+    }
+
+    try {
+      const formData = new FormData();
+      formData.append('hermes_id', String(options.hermes_id));
+      formData.append('descripcion', options.descripcion ?? '');
+      formData.append('en_oferta', String(options.en_oferta ?? false));
+      if (options.descuento_porcentaje != null) {
+        formData.append('descuento_porcentaje', String(options.descuento_porcentaje));
+      }
+      if (options.imagen) {
+        formData.append('imagen', options.imagen);
+      }
+
+      const response = await fetch('/api/admin/published-products', {
+        method: 'PATCH',
+        body: formData,
+      });
+      const data = (await response.json()) as { error?: string };
+
+      if (!response.ok) {
+        throw new Error(data.error ?? 'Error al editar producto');
+      }
+
+      setSuccess('¡Producto actualizado!');
+      return { ok: true, message: '¡Producto actualizado!' };
+    } catch (editError) {
+      const message = editError instanceof Error ? editError.message : 'Error al editar producto';
+      setError(message);
+      return { ok: false, message };
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return {
     loading,
     error,
     success,
     publishProduct,
     unpublishProduct,
+    editProduct,
   };
 }
