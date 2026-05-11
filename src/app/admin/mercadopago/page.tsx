@@ -247,8 +247,14 @@ export default function MercadoPagoAdminPage() {
                   className="text-xs uppercase tracking-widest text-[#beb9b1]/50 hover:text-[#beb9b1] transition-colors"
                 >
                   Cambiar cuenta
-                </a>
-              </div>
+                </a>                <span className="text-[#beb9b1]/20">·</span>
+                <button
+                  type="button"
+                  onClick={() => { setShowManualForm((v) => !v); setSaveError(null); }}
+                  className="text-xs uppercase tracking-widest text-[#beb9b1]/30 hover:text-[#beb9b1]/60 transition-colors"
+                >
+                  {showManualForm ? 'Cancelar' : 'Usar token manual'}
+                </button>              </div>
             )}
           </div>
         ) : (

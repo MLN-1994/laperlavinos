@@ -11,7 +11,8 @@ export async function GET(request: Request) {
   const clientSecret = process.env.MERCADOPAGO_CLIENT_SECRET?.trim();
 
   if (!clientId || !clientSecret) {
-    const adminUrl = `${getBaseUrl()}/admin/mercadopago?oauth=error&reason=no_credentials`;
+    const reason = encodeURIComponent('Falta configurar las credenciales OAuth en el servidor. Contacta al administrador.');
+    const adminUrl = `${getBaseUrl()}/admin/mercadopago?oauth=error&reason=${reason}`;
     return NextResponse.redirect(adminUrl);
   }
 
