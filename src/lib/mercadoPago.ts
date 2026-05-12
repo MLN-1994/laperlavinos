@@ -288,9 +288,9 @@ export async function createMercadoPagoCheckoutPreference(params: {
       statement_descriptor: 'LAPERLA VINOS',
       external_reference: externalReference,
       back_urls: {
-        success: `${baseUrl}/?checkout=success`,
-        failure: `${baseUrl}/?checkout=failure`,
-        pending: `${baseUrl}/?checkout=pending`,
+        success: `${baseUrl}/pago/resultado`,
+        failure: `${baseUrl}/pago/resultado`,
+        pending: `${baseUrl}/pago/resultado`,
       },
       notification_url: `${baseUrl}/api/mercadopago/webhook?source_news=webhooks`,
       auto_return: 'approved',

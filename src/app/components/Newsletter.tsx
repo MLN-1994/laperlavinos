@@ -2,12 +2,35 @@
 
 import { useState } from 'react';
 
+type Status = 'idle' | 'loading' | 'success' | 'error';
+
 export default function Newsletter() {
   const [email, setEmail] = useState('');
+  const [status, setStatus] = useState<Status>('idle');
+  const [errorMsg, setErrorMsg] = useState('');
 
-  function handleSubmit(e: React.FormEvent) {
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    // TODO: integrar con Resend / proveedor de email
+    setStatus('loading');
+    setErrorMsg('');
+    try {
+      const res = await fetch('/api/newsletter', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email }),
+      });
+      const data = (await res.json()) as { ok?: boolean; error?: string };
+      if (!res.ok || !data.ok) {
+        setErrorMsg(data.error ?? 'No se pudo suscribir. Intentá nuevamente.');
+        setStatus('error');
+      } else {
+        setStatus('success');
+        setEmail('');
+      }
+    } catch {
+      setErrorMsg('Error de conexión. Intentá nuevamente.');
+      setStatus('error');
+    }
   }
 
   return (
@@ -24,33 +47,48 @@ export default function Newsletter() {
               Newsletter
             </p>
             <h2 className="font-serif text-2xl font-light tracking-tight text-neutral-200 sm:text-3xl">
-              10% OFF en tu primera compra
+              Novedades y recomendaciones
             </h2>
             <p className="mt-1 max-w-sm text-sm leading-relaxed text-neutral-400">
-              Suscribite y recibí novedades, recomendaciones y descuentos exclusivos.
+              Suscribite y enterate primero de nuevos vinos, llegadas exclusivas y eventos.
             </p>
           </div>
 
           {/* Formulario */}
-          <form
-            onSubmit={handleSubmit}
-            className="flex w-full max-w-md flex-col gap-3 sm:flex-row sm:gap-0"
-          >
-            <input
-              type="email"
-              required
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="tu mail..."
-              className="flex-1 rounded-l-[4px] rounded-r-none border border-neutral-700 bg-neutral-800/60 px-4 py-3 text-sm text-neutral-200 placeholder-neutral-500 outline-none transition focus:border-[#a68a5c]/70 focus:ring-1 focus:ring-[#a68a5c]/30 sm:rounded-r-none"
-            />
-            <button
-              type="submit"
-              className="rounded-r-[4px] rounded-l-none border border-l-0 border-neutral-700 bg-neutral-800 px-6 py-3 text-xs font-semibold uppercase tracking-[0.2em] text-neutral-200 transition-colors duration-200 hover:bg-[#a68a5c] hover:border-[#a68a5c] hover:text-neutral-900 sm:rounded-l-none"
+          {status === 'success' ? (
+            <div className="flex w-full max-w-md items-center justify-center rounded-[4px] border border-[#a68a5c]/40 bg-[#a68a5c]/10 px-6 py-4">
+              <p className="text-sm text-[#c9a96e]">
+                ¡Listo! Ya estás suscripto/a. Pronto vas a recibir novedades.
+              </p>
+            </div>
+          ) : (
+            <form
+              onSubmit={handleSubmit}
+              className="flex w-full max-w-md flex-col gap-3 sm:flex-row sm:gap-0"
             >
-              Enviar
-            </button>
-          </form>
+              <input
+                type="email"
+                required
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                disabled={status === 'loading'}
+                placeholder="tu mail..."
+                className="flex-1 rounded-l-[4px] rounded-r-none border border-neutral-700 bg-neutral-800/60 px-4 py-3 text-sm text-neutral-200 placeholder-neutral-500 outline-none transition focus:border-[#a68a5c]/70 focus:ring-1 focus:ring-[#a68a5c]/30 sm:rounded-r-none disabled:opacity-60"
+              />
+              <button
+                type="submit"
+                disabled={status === 'loading'}
+                className="rounded-r-[4px] rounded-l-none border border-l-0 border-neutral-700 bg-neutral-800 px-6 py-3 text-xs font-semibold uppercase tracking-[0.2em] text-neutral-200 transition-colors duration-200 hover:bg-[#a68a5c] hover:border-[#a68a5c] hover:text-neutral-900 sm:rounded-l-none disabled:opacity-60"
+              >
+                {status === 'loading' ? '...' : 'Enviar'}
+              </button>
+              {status === 'error' && (
+                <p className="w-full text-xs text-red-400 sm:absolute sm:bottom-3">
+                  {errorMsg}
+                </p>
+              )}
+            </form>
+          )}
         </div>
       </div>
 

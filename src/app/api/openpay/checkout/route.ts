@@ -309,8 +309,8 @@ export async function POST(request: Request) {
         unitPrice: Number(item.unit_price),
       })),
       redirectUrls: {
-        success: `${origin}/checkout/success`,
-        failed: `${origin}/checkout/failed`,
+        success: `${origin}/pago/resultado?status=success&ref=${encodeURIComponent(externalReference)}`,
+        failed: `${origin}/pago/resultado?status=failure`,
       },
       webhookUrl,
       expireLimitMinutes: 1440, // 24 horas

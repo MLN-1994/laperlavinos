@@ -2,6 +2,7 @@ import { NextResponse, after } from 'next/server';
 import { createHmac, timingSafeEqual } from 'crypto';
 import { fetchMercadoPagoPayment } from '@/lib/mercadoPago';
 import { getSupabaseAdmin, hasSupabaseAdminConfig } from '@/lib/supabaseAdmin';
+import { sendOrderConfirmationEmail } from '@/lib/orderEmail';
 import type { Database, Json } from '@/types/supabase';
 
 type WebOrderUpdate = Database['public']['Tables']['web_orders']['Update'];
@@ -338,6 +339,41 @@ export async function POST(request: Request) {
       // Usamos after() para garantizar que el fetch se complete aunque la respuesta ya fue enviada.
       // En Vercel serverless, el fire-and-log sin after() puede ser cancelado antes de ejecutarse.
       after(async () => {
+        // Email de confirmación al comprador
+        try {
+          const supabase = getSupabaseAdmin();
+          const { data: fullOrder } = await supabase
+            .from('web_orders')
+            .select('id, buyer_name, buyer_email, external_reference, mercadopago_payment_id, total_amount, currency_id')
+            .eq('id', orderId)
+            .maybeSingle();
+
+          if (fullOrder?.buyer_email) {
+            const { data: items } = await supabase
+              .from('web_order_items')
+              .select('title, quantity, unit_price, line_total')
+              .eq('order_id', orderId);
+
+            await sendOrderConfirmationEmail({
+              buyerName: fullOrder.buyer_name,
+              buyerEmail: fullOrder.buyer_email,
+              externalReference: fullOrder.external_reference,
+              mercadopagoPaymentId: fullOrder.mercadopago_payment_id,
+              totalAmount: fullOrder.total_amount,
+              currencyId: fullOrder.currency_id,
+              items: (items ?? []).map((i) => ({
+                title: i.title,
+                quantity: i.quantity ?? 1,
+                unitPrice: i.unit_price ?? 0,
+                lineTotal: i.line_total ?? 0,
+              })),
+            });
+          }
+        } catch (err) {
+          console.error(`[MercadoPago webhook] Error enviando email de confirmación order=${orderId}`, err);
+        }
+
+        // Registro en Hermes
         try {
           const res = await fetch(hermesUrl, {
             method: 'POST',

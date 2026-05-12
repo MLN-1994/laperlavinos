@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import Pagination from './Pagination';
 
 interface AdminOrderItemView {
@@ -30,6 +30,7 @@ interface AdminOrderView {
   shippingAmount: number | null;
   currencyId: string;
   notes: string | null;
+  notasInternas: string | null;
   createdAt: string | null;
   updatedAt: string | null;
   items: AdminOrderItemView[];
@@ -77,6 +78,32 @@ export default function AdminOrdersPanel({ orders }: AdminOrdersPanelProps) {
   const [statusFilter, setStatusFilter] = useState('all');
   const [page, setPage] = useState(1);
   const [selectedOrderId, setSelectedOrderId] = useState<string | null>(orders[0]?.id ?? null);
+  const detailRef = useRef<HTMLDivElement>(null);
+  const [notasDraft, setNotasDraft] = useState<Record<string, string>>({});
+  const [notasSaving, setNotasSaving] = useState<Record<string, boolean>>({});
+  const [notasSaved, setNotasSaved] = useState<Record<string, boolean>>({});
+
+  function getNotaValue(order: AdminOrderView) {
+    return notasDraft[order.id] ?? order.notasInternas ?? '';
+  }
+
+  async function saveNota(orderId: string) {
+    setNotasSaving((prev) => ({ ...prev, [orderId]: true }));
+    setNotasSaved((prev) => ({ ...prev, [orderId]: false }));
+    try {
+      const res = await fetch(`/api/admin/orders/${orderId}/notes`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ notas_internas: notasDraft[orderId] ?? '' }),
+      });
+      if (res.ok) {
+        setNotasSaved((prev) => ({ ...prev, [orderId]: true }));
+        setTimeout(() => setNotasSaved((prev) => ({ ...prev, [orderId]: false })), 2500);
+      }
+    } finally {
+      setNotasSaving((prev) => ({ ...prev, [orderId]: false }));
+    }
+  }
 
   const filteredOrders = useMemo(() => {
     const searchNeedle = search.trim().toLowerCase();
@@ -188,7 +215,12 @@ export default function AdminOrdersPanel({ orders }: AdminOrdersPanelProps) {
               <button
                 key={order.id}
                 type="button"
-                onClick={() => setSelectedOrderId(order.id)}
+                onClick={() => {
+                  setSelectedOrderId(order.id);
+                  setTimeout(() => {
+                    detailRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                  }, 50);
+                }}
                 className={`w-full rounded-sm border p-5 text-left transition ${
                   order.id === selectedOrder?.id
                     ? 'border-[#a68a5c]/40 bg-[#a68a5c]/10'
@@ -232,7 +264,7 @@ export default function AdminOrdersPanel({ orders }: AdminOrdersPanelProps) {
           />
         </div>
 
-        <div className="rounded-sm border border-[#beb9b1]/10 bg-[#2a2725] p-6 sm:p-8">
+        <div ref={detailRef} className="rounded-sm border border-[#beb9b1]/10 bg-[#2a2725] p-6 sm:p-8">
           {selectedOrder ? (
             <div className="space-y-6">
               <div className="space-y-3 border-b border-[#beb9b1]/10 pb-5">
@@ -298,7 +330,33 @@ export default function AdminOrdersPanel({ orders }: AdminOrdersPanelProps) {
                   <p><span className="text-[#beb9b1]/40">Envío:</span> {selectedOrder.shippingAmount !== null ? formatCurrency(selectedOrder.shippingAmount, selectedOrder.currencyId) : 'No calculado'}</p>
                   <p><span className="text-[#beb9b1]/40">Total:</span> <span className="text-[#c9a96e] font-semibold">{formatCurrency(selectedOrder.totalAmount, selectedOrder.currencyId)}</span></p>
                   <p><span className="text-[#beb9b1]/40">Preferencia:</span> {selectedOrder.mercadopagoPreferenceId || 'No informada'}</p>
-                  <p><span className="text-[#beb9b1]/40">Notas:</span> {selectedOrder.notes || 'Sin observaciones del comprador'}</p>
+                  <p><span className="text-[#beb9b1]/40">Notas del comprador:</span> {selectedOrder.notes || 'Sin observaciones'}</p>
+                </div>
+              </div>
+
+              <div className="rounded-sm border border-[#a68a5c]/20 bg-[#1a1a1a]/20 p-4">
+                <p className="text-[10px] uppercase tracking-[0.22em] text-[#a68a5c]/70">Notas internas</p>
+                <textarea
+                  rows={3}
+                  value={getNotaValue(selectedOrder)}
+                  onChange={(e) =>
+                    setNotasDraft((prev) => ({ ...prev, [selectedOrder.id]: e.target.value }))
+                  }
+                  placeholder="Observaciones internas sobre este pedido..."
+                  className="mt-3 w-full resize-none rounded-sm border border-[#beb9b1]/15 bg-[#2a2725] px-3 py-2.5 text-sm text-[#f5efe3] placeholder-[#beb9b1]/30 outline-none transition focus:border-[#a68a5c]/60"
+                />
+                <div className="mt-2 flex items-center justify-end gap-3">
+                  {notasSaved[selectedOrder.id] && (
+                    <span className="text-xs text-[#a68a5c]">Guardado</span>
+                  )}
+                  <button
+                    type="button"
+                    disabled={notasSaving[selectedOrder.id]}
+                    onClick={() => saveNota(selectedOrder.id)}
+                    className="rounded-sm border border-[#a68a5c]/40 bg-[#a68a5c]/10 px-4 py-1.5 text-xs font-semibold uppercase tracking-[0.18em] text-[#c9a96e] transition hover:bg-[#a68a5c]/20 disabled:opacity-50"
+                  >
+                    {notasSaving[selectedOrder.id] ? 'Guardando...' : 'Guardar nota'}
+                  </button>
                 </div>
               </div>
             </div>

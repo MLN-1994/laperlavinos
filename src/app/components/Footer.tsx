@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { HiOutlineMail, HiOutlinePhone } from "react-icons/hi";
 import { FaWhatsapp, FaInstagram } from "react-icons/fa";
 
@@ -64,12 +65,27 @@ export default function Footer() {
           {/* Columna 3: Legal */}
           <div className="flex flex-col gap-4">
             <p className="text-[10px] font-semibold uppercase tracking-[0.28em] text-neutral-400">
-              Aviso legal
+              Información legal
             </p>
-            <p className="text-sm leading-relaxed text-neutral-500">
-              Beber con moderación.
-            </p>
-            <p className="text-sm leading-relaxed text-neutral-500">
+            <ul className="flex flex-col gap-2 text-sm text-neutral-500">
+              <li>
+                <Link href="/legal/terminos" className="transition-colors hover:text-neutral-900">
+                  Términos y Condiciones
+                </Link>
+              </li>
+              <li>
+                <Link href="/legal/privacidad" className="transition-colors hover:text-neutral-900">
+                  Política de Privacidad
+                </Link>
+              </li>
+              <li>
+                <Link href="/legal/devoluciones" className="transition-colors hover:text-neutral-900">
+                  Cambios y Devoluciones
+                </Link>
+              </li>
+            </ul>
+            <p className="mt-1 text-xs leading-relaxed text-neutral-500">
+              Beber con moderación.<br />
               Prohibida su venta a menores de 18 años.
             </p>
           </div>
@@ -78,10 +94,7 @@ export default function Footer() {
         {/* Divider + Copyright */}
         <div className="mt-12 border-t border-neutral-200 pt-6 flex flex-col items-center gap-1 text-center sm:flex-row sm:justify-between">
           <p className="text-xs text-neutral-400">
-            © {new Date().getFullYear()} La Perla Vinos. Todos los derechos reservados.
-          </p>
-          <p className="text-xs text-neutral-400 italic">
-            Tienda en desarrollo — gestión interna conectada a Hermes.
+            © {new Date().getFullYear()} Ultra Premium Drink S.R.L. · CUIT 30-71722318-3 · Todos los derechos reservados.
           </p>
         </div>
       </div>

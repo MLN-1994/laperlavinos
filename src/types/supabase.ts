@@ -296,6 +296,7 @@ export interface Database {
           raw_checkout_payload: Json;
           raw_webhook_payload: Json;
           notes: string | null;
+          notas_internas: string | null;
           created_at: string | null;
           updated_at: string | null;
         };
@@ -324,6 +325,7 @@ export interface Database {
           raw_checkout_payload?: Json;
           raw_webhook_payload?: Json;
           notes?: string | null;
+          notas_internas?: string | null;
           created_at?: string | null;
           updated_at?: string | null;
         };
@@ -352,6 +354,7 @@ export interface Database {
           raw_checkout_payload?: Json;
           raw_webhook_payload?: Json;
           notes?: string | null;
+          notas_internas?: string | null;
           created_at?: string | null;
           updated_at?: string | null;
         };

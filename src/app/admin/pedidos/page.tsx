@@ -7,7 +7,7 @@ export default async function AdminPedidosPage() {
   const supabaseAdmin = getSupabaseAdmin();
   const { data: orders, error: ordersError } = await supabaseAdmin
     .from('web_orders')
-    .select('id, status, payment_status, external_reference, mercadopago_preference_id, mercadopago_payment_id, buyer_name, buyer_email, buyer_phone, buyer_document_type, buyer_document_number, buyer_address, subtotal_amount, shipping_amount, total_amount, currency_id, notes, created_at, updated_at')
+    .select('id, status, payment_status, external_reference, mercadopago_preference_id, mercadopago_payment_id, buyer_name, buyer_email, buyer_phone, buyer_document_type, buyer_document_number, buyer_address, subtotal_amount, shipping_amount, total_amount, currency_id, notes, notas_internas, created_at, updated_at')
     .order('created_at', { ascending: false })
     .limit(100);
 
@@ -54,6 +54,7 @@ export default async function AdminPedidosPage() {
     totalAmount: order.total_amount,
     currencyId: order.currency_id,
     notes: order.notes,
+    notasInternas: order.notas_internas,
     createdAt: order.created_at,
     updatedAt: order.updated_at,
     items: (itemsByOrderId.get(order.id) ?? []).map((item) => ({

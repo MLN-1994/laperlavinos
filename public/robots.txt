@@ -1,0 +1,10 @@
+User-agent: *
+Allow: /
+
+# Rutas privadas
+Disallow: /admin
+Disallow: /admin-login
+Disallow: /api/
+Disallow: /pago/resultado
+
+Sitemap: https://laperlavinos.com/sitemap.xml

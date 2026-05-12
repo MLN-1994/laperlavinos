@@ -160,7 +160,7 @@ export default function ProductDetail({ product }: ProductDetailProps) {
 
             {product.stock != null && product.stock <= 5 && product.stock > 0 && (
               <p className="text-xs text-amber-600 tracking-wide">
-                ¡Solo quedan {product.stock} unidades!
+                Sujeto a disponibilidad. Verificamos el stock al confirmar tu pedido.
               </p>
             )}
           </div>

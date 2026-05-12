@@ -1,4 +1,6 @@
 import { notFound } from 'next/navigation';
+import type { Metadata } from 'next';
+import type { Metadata } from 'next';
 import { getSupabaseAdmin } from '@/lib/supabaseAdmin';
 import Header from '@/app/components/Header';
 import BannerList from '@/app/components/BannerList';
@@ -9,6 +11,62 @@ import { ProductoPublicado } from '@/types';
 
 interface Props {
   params: Promise<{ id: string }>;
+}
+
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const { id } = await params;
+  const { data } = await getSupabaseAdmin()
+    .from('productos_publicados')
+    .select('nombre, descripcion, imagen_url, categoria_id')
+    .eq('id', id)
+    .single();
+
+  if (!data) {
+    return { title: 'Producto no encontrado' };
+  }
+
+  const title = `${data.nombre}`;
+  const description = data.descripcion
+    ? data.descripcion.slice(0, 155)
+    : `Comprá ${data.nombre} en La Perla Vinos. Vinos de alta gama con envío a todo el país.`;
+
+  return {
+    title,
+    description,
+    openGraph: {
+      title,
+      description,
+      images: data.imagen_url ? [{ url: data.imagen_url, alt: data.nombre }] : [],
+    },
+  };
+}
+
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const { id } = await params;
+  const { data } = await getSupabaseAdmin()
+    .from('productos_publicados')
+    .select('nombre, descripcion, imagen_url, categoria_id')
+    .eq('id', id)
+    .single();
+
+  if (!data) {
+    return { title: 'Producto no encontrado' };
+  }
+
+  const title = `${data.nombre} — La Perla Vinos`;
+  const description = data.descripcion
+    ? data.descripcion.slice(0, 155)
+    : `Comprá ${data.nombre} en La Perla Vinos. Vinos de alta gama con envío a todo el país.`;
+
+  return {
+    title,
+    description,
+    openGraph: {
+      title,
+      description,
+      images: data.imagen_url ? [{ url: data.imagen_url, alt: data.nombre }] : [],
+    },
+  };
 }
 
 export default async function ProductoPage({ params }: Props) {
