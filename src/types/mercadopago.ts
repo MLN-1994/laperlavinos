@@ -54,5 +54,8 @@ export interface CheckoutBuyerInput {
   documentType: string;
   documentNumber: string;
   address: string;
+  city: string;
+  postalCode: string;
+  province: string;
   notes?: string;
 }

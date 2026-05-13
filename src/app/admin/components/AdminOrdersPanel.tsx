@@ -25,6 +25,7 @@ interface AdminOrderView {
   buyerDocumentType: string | null;
   buyerDocumentNumber: string | null;
   buyerAddress: string | null;
+  shippingPayload: { province?: string; city?: string; postalCode?: string } | null;
   totalAmount: number;
   subtotalAmount: number | null;
   shippingAmount: number | null;
@@ -298,6 +299,12 @@ export default function AdminOrdersPanel({ orders }: AdminOrdersPanelProps) {
                     <p><span className="text-[#beb9b1]/40">Teléfono:</span> {selectedOrder.buyerPhone || 'No informado'}</p>
                     <p><span className="text-[#beb9b1]/40">Documento:</span> {selectedOrder.buyerDocumentType || '-'} {selectedOrder.buyerDocumentNumber || ''}</p>
                     <p><span className="text-[#beb9b1]/40">Dirección:</span> {selectedOrder.buyerAddress || 'No informada'}</p>
+                    {selectedOrder.shippingPayload && (
+                      <p className="sm:col-span-2">
+                        <span className="text-[#beb9b1]/40">Destino de envío:</span>{' '}
+                        {[selectedOrder.shippingPayload.city, selectedOrder.shippingPayload.province, selectedOrder.shippingPayload.postalCode ? `CP ${selectedOrder.shippingPayload.postalCode}` : null].filter(Boolean).join(', ')}
+                      </p>
+                    )}
                   </div>
                 </div>
               </div>

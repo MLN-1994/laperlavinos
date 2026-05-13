@@ -4,10 +4,17 @@ import { getHermesProducts } from '@/lib/hermesClient';
 import { getSupabaseAdmin, hasSupabaseAdminConfig } from '@/lib/supabaseAdmin';
 import type { CheckoutBuyerInput, CheckoutItemInput } from '@/types/mercadopago';
 import type { Database, Json } from '@/types/supabase';
+import { getShippingCost } from '@/lib/shipping';
 
 interface CheckoutRequestBody {
   items?: CheckoutItemInput[];
   buyer?: CheckoutBuyerInput;
+  shipping?: {
+    province?: string;
+    city?: string;
+    postalCode?: string;
+    amount?: number;
+  };
 }
 
 type WebOrderInsert = Database['public']['Tables']['web_orders']['Insert'];
@@ -254,8 +261,30 @@ export async function POST(request: Request) {
 
     const validatedItems = await revalidateCheckoutItems(items);
     const supabaseAdmin = getSupabaseAdmin();
-    const totalAmount = calculateTotalAmount(validatedItems);
+    const productsTotal = calculateTotalAmount(validatedItems);
+
+    // Validar envío
+    const shippingProvince = sanitizeText(body.shipping?.province);
+    const shippingCity = sanitizeText(body.shipping?.city);
+    const shippingPostalCode = sanitizeText(body.shipping?.postalCode);
+    if (!shippingProvince) {
+      return NextResponse.json({ error: 'Seleccioná una provincia de destino para el envío.' }, { status: 400 });
+    }
+    const expectedShipping = getShippingCost(shippingProvince, productsTotal) ?? 0;
+    const shippingAmount = expectedShipping;
+
+    const totalAmount = productsTotal + shippingAmount;
     const externalReference = buildExternalReference();
+
+    const shippingItem: CheckoutItemInput = {
+      id: 'envio-domicilio',
+      title: 'Envío a domicilio',
+      description: `Andreani — ${shippingCity ? shippingCity + ', ' : ''}${shippingProvince} (${shippingPostalCode})`,
+      quantity: 1,
+      unit_price: shippingAmount,
+      currency_id: 'ARS',
+    };
+
     const orderPayload: WebOrderInsert = {
       status: 'checkout_generado',
       external_reference: externalReference,
@@ -265,7 +294,11 @@ export async function POST(request: Request) {
       buyer_document_type: buyer.documentType,
       buyer_document_number: buyer.documentNumber,
       buyer_address: buyer.address,
-      subtotal_amount: totalAmount,
+      subtotal_amount: productsTotal,
+      shipping_amount: shippingAmount,
+      shipping_provider: 'andreani',
+      shipping_service: 'domicilio',
+      shipping_payload: { province: shippingProvince, city: shippingCity, postalCode: shippingPostalCode } as Json,
       total_amount: totalAmount,
       currency_id: validatedItems[0]?.currency_id ?? 'ARS',
       raw_checkout_payload: toJsonValue({ requested: body, buyer, validatedItems }),
@@ -291,7 +324,7 @@ export async function POST(request: Request) {
     }
 
     const preference = await createMercadoPagoCheckoutPreference({
-      items: validatedItems,
+      items: [...validatedItems, shippingItem],
       origin: new URL(request.url).origin,
       externalReference,
     });

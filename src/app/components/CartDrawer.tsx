@@ -5,6 +5,8 @@ import { Fragment, useState } from 'react';
 import { useCartStore } from '../../store/useCartStore';
 import { XMarkIcon, TrashIcon, ShoppingBagIcon, ChevronDownIcon, MapPinIcon } from '@heroicons/react/24/outline';
 import type { CheckoutBuyerInput } from '@/types/mercadopago';
+import { SiMercadopago, SiVisa, SiMastercard, SiAmericanexpress } from 'react-icons/si';
+import { getShippingCost, FREE_SHIPPING_THRESHOLD } from '@/lib/shipping';
 
 interface CartDrawerProps {
   isOpen: boolean;
@@ -18,6 +20,9 @@ const initialBuyerForm: CheckoutBuyerInput = {
   documentType: 'DNI',
   documentNumber: '',
   address: '',
+  city: '',
+  postalCode: '',
+  province: '',
   notes: '',
 };
 
@@ -25,26 +30,74 @@ function isValidEmail(value: string) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
 }
 
-// TODO: Integrar API de Andreani aquí.
-function ShippingCalculator() {
+const ARGENTINA_PROVINCES = [
+  'Buenos Aires',
+  'CABA',
+  'Catamarca',
+  'Chaco',
+  'Chubut',
+  'Córdoba',
+  'Corrientes',
+  'Entre Ríos',
+  'Formosa',
+  'Jujuy',
+  'La Pampa',
+  'La Rioja',
+  'Mendoza',
+  'Misiones',
+  'Neuquén',
+  'Río Negro',
+  'Salta',
+  'San Juan',
+  'San Luis',
+  'Santa Cruz',
+  'Santa Fe',
+  'Santiago del Estero',
+  'Tierra del Fuego',
+  'Tucumán',
+];
+
+const PATAGONIA_PROVINCES = ['Neuquén', 'Río Negro', 'Chubut', 'Santa Cruz', 'Tierra del Fuego'];
+
+function ShippingEstimate({ province, subtotal, onProvinceChange }: { province: string; subtotal: number; onProvinceChange: (p: string) => void }) {
+  const cost = getShippingCost(province, subtotal);
+  const isFree = !!province && cost === 0;
   return (
     <div className="mt-4 rounded-sm border border-neutral-200 bg-neutral-50 px-4 py-4">
       <div className="flex items-center gap-2 mb-3">
         <MapPinIcon className="h-4 w-4 text-neutral-400" />
-        <p className="text-[10px] uppercase tracking-[0.25em] text-neutral-400">Costo de envío</p>
+        <p className="text-[10px] uppercase tracking-[0.25em] text-neutral-400">Envío a domicilio — Andreani</p>
       </div>
       <label className="flex flex-col gap-1 text-[10px] uppercase tracking-[0.18em] text-neutral-400">
-        Código Postal
-        <input
-          type="text"
-          maxLength={8}
-          placeholder="Ej: 1900"
-          className="w-36 rounded-sm border border-neutral-200 bg-white px-3 py-2 text-sm normal-case tracking-normal text-neutral-800 outline-none transition focus:border-neutral-400"
-        />
+        Provincia de destino <span className="text-red-400">*</span>
+        <select
+          value={province}
+          onChange={(e) => onProvinceChange(e.target.value)}
+          className="w-full rounded-sm border border-neutral-200 bg-white px-3 py-2 text-sm normal-case tracking-normal text-neutral-800 outline-none transition focus:border-neutral-400"
+        >
+          <option value="">Seleccioná una provincia...</option>
+          {ARGENTINA_PROVINCES.map((p) => (
+            <option key={p} value={p}>{p}</option>
+          ))}
+        </select>
       </label>
-      <p className="mt-2 text-[10px] text-neutral-400 italic">
-        Cálculo de envío disponible próximamente.
-      </p>
+      {isFree ? (
+        <p className="mt-3 text-sm font-semibold text-green-600">¡Envío gratis! Tu pedido supera ${FREE_SHIPPING_THRESHOLD.toLocaleString('es-AR')}.</p>
+      ) : cost !== null ? (
+        <p className="mt-3 text-sm text-neutral-700">
+          Envío estimado:{' '}
+          <span className="font-semibold">${cost.toLocaleString('es-AR')}</span>
+        </p>
+      ) : (
+        <>
+          <p className="mt-2 text-[10px] text-neutral-400 italic">
+            Seleccioná tu provincia para ver el costo de envío.
+          </p>
+          <p className="mt-1 text-[10px] text-green-600 italic">
+            Envío gratis en pedidos mayores a ${FREE_SHIPPING_THRESHOLD.toLocaleString('es-AR')}.
+          </p>
+        </>
+      )}
     </div>
   );
 }
@@ -78,10 +131,15 @@ export default function CartDrawer({ isOpen, setIsOpen }: CartDrawerProps) {
     if (!buyerForm.documentType.trim()) return 'Selecciona el tipo de documento.';
     if (buyerForm.documentNumber.trim().length < 5) return 'Ingresa un documento valido.';
     if (buyerForm.address.trim().length < 8) return 'Ingresa una direccion valida para el pedido.';
+    if (buyerForm.city.trim().length < 2) return 'Ingresa la ciudad o localidad de entrega.';
+    if (!/^\d{4,8}$/.test(buyerForm.postalCode.trim())) return 'Ingresa un código postal válido (ej: 1900).';
+    if (!buyerForm.province.trim()) return 'Seleccioná la provincia de destino para calcular el envío.';
     return null;
   };
 
-  const buildCheckoutPayload = () => ({
+  const buildCheckoutPayload = () => {
+    const shippingCost = getShippingCost(buyerForm.province, subtotal) ?? 0;
+    return {
     buyer: {
       name: buyerForm.name.trim(),
       email: buyerForm.email.trim(),
@@ -89,7 +147,14 @@ export default function CartDrawer({ isOpen, setIsOpen }: CartDrawerProps) {
       documentType: buyerForm.documentType.trim(),
       documentNumber: buyerForm.documentNumber.trim(),
       address: buyerForm.address.trim(),
+      province: buyerForm.province.trim(),
       notes: buyerForm.notes?.trim() || undefined,
+    },
+    shipping: {
+      province: buyerForm.province.trim(),
+      city: buyerForm.city.trim(),
+      postalCode: buyerForm.postalCode.trim(),
+      amount: shippingCost,
     },
     items: cart.map((product) => ({
       id: product.id,
@@ -101,7 +166,8 @@ export default function CartDrawer({ isOpen, setIsOpen }: CartDrawerProps) {
       picture_url: product.image,
       category_id: product.category,
     })),
-  });
+  };
+  };
 
   const handleCheckout = async () => {
     if (cart.length === 0 || checkoutLoading) return;
@@ -323,10 +389,11 @@ export default function CartDrawer({ isOpen, setIsOpen }: CartDrawerProps) {
 
                           {isFormOpen && (
                             <div className="mt-2 rounded-sm border border-neutral-200 bg-white px-4 py-4">
+                              <p className="text-[10px] text-red-400 mb-3"><span className="font-bold">*</span> Campos obligatorios</p>
                               <div className="grid gap-3">
 
                                 <label className={labelClass}>
-                                  Nombre y apellido
+                                  Nombre y apellido <span className="text-red-400">*</span>
                                   <input
                                     type="text"
                                     value={buyerForm.name}
@@ -340,7 +407,7 @@ export default function CartDrawer({ isOpen, setIsOpen }: CartDrawerProps) {
                                 {/* Email / Teléfono — 1 col en mobile, 2 col en sm+ */}
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                                   <label className={labelClass}>
-                                    Email
+                                    Email <span className="text-red-400">*</span>
                                     <input
                                       type="email"
                                       value={buyerForm.email}
@@ -353,7 +420,7 @@ export default function CartDrawer({ isOpen, setIsOpen }: CartDrawerProps) {
                                     />
                                   </label>
                                   <label className={labelClass}>
-                                    Teléfono
+                                    Teléfono <span className="text-red-400">*</span>
                                     <input
                                       type="tel"
                                       value={buyerForm.phone}
@@ -370,7 +437,7 @@ export default function CartDrawer({ isOpen, setIsOpen }: CartDrawerProps) {
                                 {/* Documento / Número — siempre 2 columnas */}
                                 <div className="grid grid-cols-[130px_minmax(0,1fr)] gap-3">
                                   <label className={labelClass}>
-                                    Documento
+                                    Documento <span className="text-red-400">*</span>
                                     <select
                                       value={buyerForm.documentType}
                                       onChange={(e) =>
@@ -385,7 +452,7 @@ export default function CartDrawer({ isOpen, setIsOpen }: CartDrawerProps) {
                                     </select>
                                   </label>
                                   <label className={labelClass}>
-                                    Número
+                                    Número <span className="text-red-400">*</span>
                                     <input
                                       type="text"
                                       value={buyerForm.documentNumber}
@@ -399,7 +466,7 @@ export default function CartDrawer({ isOpen, setIsOpen }: CartDrawerProps) {
                                 </div>
 
                                 <label className={labelClass}>
-                                  Dirección
+                                  Dirección <span className="text-red-400">*</span>
                                   <input
                                     type="text"
                                     value={buyerForm.address}
@@ -411,6 +478,33 @@ export default function CartDrawer({ isOpen, setIsOpen }: CartDrawerProps) {
                                     placeholder="Dirección completa o referencia para coordinar"
                                   />
                                 </label>
+
+                                {/* Ciudad / CP — 2 columnas */}
+                                <div className="grid grid-cols-[minmax(0,1fr)_120px] gap-3">
+                                  <label className={labelClass}>
+                                    Ciudad / Localidad <span className="text-red-400">*</span>
+                                    <input
+                                      type="text"
+                                      value={buyerForm.city}
+                                      onChange={(e) => handleBuyerFieldChange('city', e.target.value)}
+                                      autoComplete="address-level2"
+                                      className={inputClass}
+                                      placeholder="Ej: Mar del Plata"
+                                    />
+                                  </label>
+                                  <label className={labelClass}>
+                                    Cód. Postal <span className="text-red-400">*</span>
+                                    <input
+                                      type="text"
+                                      value={buyerForm.postalCode}
+                                      onChange={(e) => handleBuyerFieldChange('postalCode', e.target.value)}
+                                      autoComplete="postal-code"
+                                      maxLength={8}
+                                      className={inputClass}
+                                      placeholder="7600"
+                                    />
+                                  </label>
+                                </div>
 
                                 <label className={labelClass}>
                                   Observaciones
@@ -429,8 +523,12 @@ export default function CartDrawer({ isOpen, setIsOpen }: CartDrawerProps) {
                             </div>
                           )}
 
-                          {/* Sección de envío — placeholder Andreani */}
-                          <ShippingCalculator />
+                          {/* Sección de envío */}
+                          <ShippingEstimate
+                            province={buyerForm.province}
+                            subtotal={subtotal}
+                            onProvinceChange={(p) => handleBuyerFieldChange('province', p)}
+                          />
 
                         </div>
                       )}
@@ -439,17 +537,38 @@ export default function CartDrawer({ isOpen, setIsOpen }: CartDrawerProps) {
                     {/* ── FOOTER (fijo abajo, siempre al alcance del pulgar) ── */}
                     {cart.length > 0 && (
                       <div className="flex-shrink-0 z-10 border-t border-neutral-200 bg-white px-6 py-5">
-                        <div className="flex items-baseline justify-between mb-1">
-                          <p className="text-xs font-serif uppercase tracking-[0.2em] text-neutral-500">
-                            Total Estimado
-                          </p>
-                          <p className="text-xl font-serif text-neutral-800">
-                            ${subtotal.toLocaleString('es-AR')}
-                          </p>
-                        </div>
-                        <p className="text-[10px] text-neutral-400 uppercase tracking-widest italic mb-4">
-                          Impuestos y envíos calculados al finalizar.
-                        </p>
+                        {(() => {
+                          const shippingCost = getShippingCost(buyerForm.province, subtotal);
+                          const total = subtotal + (shippingCost ?? 0);
+                          return (
+                            <>
+                              <div className="flex items-baseline justify-between mb-1">
+                                <p className="text-xs font-serif uppercase tracking-[0.2em] text-neutral-500">Productos</p>
+                                <p className="text-sm font-serif text-neutral-600">${subtotal.toLocaleString('es-AR')}</p>
+                              </div>
+                              {shippingCost !== null && (
+                                <div className="flex items-baseline justify-between mb-1">
+                                  <p className="text-xs font-serif uppercase tracking-[0.2em] text-neutral-500">Envío</p>
+                                  <p className="text-sm font-serif">
+                                    {shippingCost === 0
+                                      ? <span className="text-green-600 font-semibold">Gratis</span>
+                                      : <span className="text-neutral-600">${shippingCost.toLocaleString('es-AR')}</span>
+                                    }
+                                  </p>
+                                </div>
+                              )}
+                              <div className="flex items-baseline justify-between mb-4">
+                                <p className="text-xs font-serif uppercase tracking-[0.2em] text-neutral-500">Total</p>
+                                <p className="text-xl font-serif text-neutral-800">${total.toLocaleString('es-AR')}</p>
+                              </div>
+                              {shippingCost === null && (
+                                <p className="text-[10px] text-neutral-400 uppercase tracking-widest italic mb-2">
+                                  Seleccioná tu provincia para ver el costo de envío.
+                                </p>
+                              )}
+                            </>
+                          );
+                        })()}
 
                         {checkoutError && (
                           <p className="mb-3 rounded border border-red-200 bg-red-50 px-3 py-2 text-[11px] uppercase tracking-[0.15em] text-red-600">
@@ -467,9 +586,10 @@ export default function CartDrawer({ isOpen, setIsOpen }: CartDrawerProps) {
                           type="button"
                           onClick={() => void handleCheckout()}
                           disabled={checkoutLoading || openPayLoading}
-                          className="group relative w-full flex items-center justify-center overflow-hidden border border-[#009ee3] bg-transparent px-6 py-3.5 text-xs font-bold uppercase tracking-[0.25em] text-[#009ee3] transition-all hover:text-white disabled:opacity-50 disabled:cursor-not-allowed mb-2"
+                          className="group relative w-full flex items-center justify-center gap-2 overflow-hidden border border-[#009ee3] bg-transparent px-6 py-3.5 text-xs font-bold uppercase tracking-[0.25em] text-[#009ee3] transition-all hover:text-white disabled:opacity-50 disabled:cursor-not-allowed mb-2"
                         >
                           <span className="absolute inset-0 z-0 bg-[#009ee3] transition-transform duration-500 translate-y-full group-hover:translate-y-0" />
+                          <SiMercadopago className="relative z-10 h-4 w-4 flex-shrink-0" />
                           <span className="relative z-10">
                             {checkoutLoading ? 'Generando...' : 'Mercado Pago'}
                           </span>
@@ -484,9 +604,20 @@ export default function CartDrawer({ isOpen, setIsOpen }: CartDrawerProps) {
                         >
                           <span className="absolute inset-0 z-0 bg-neutral-800 transition-transform duration-500 translate-y-full group-hover:translate-y-0" />
                           <span className="relative z-10">
-                            {openPayLoading ? 'Generando...' : 'OpenPay / BBVA'}
+                            {openPayLoading ? 'Generando...' : 'Tarjetas / Débito'}
                           </span>
                         </button>
+
+                        {/* Logos tarjetas OpenPay */}
+                        <div className="mt-2 flex flex-wrap items-center justify-center gap-2">
+                          <SiVisa className="h-5 w-auto text-[#1a1f71]" title="Visa" />
+                          <SiMastercard className="h-5 w-auto text-[#eb001b]" title="Mastercard" />
+                          <SiAmericanexpress className="h-5 w-auto text-[#2e77bc]" title="American Express" />
+                          {['Cabal', 'Naranja', 'Maestro'].map((brand) => (
+                            <span key={brand} className="rounded border border-neutral-300 px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wide text-neutral-500">{brand}</span>
+                          ))}
+                        </div>
+                        <p className="mt-1 text-center text-[9px] uppercase tracking-[0.2em] text-neutral-400">crédito y débito</p>
                       </div>
                     )}
 

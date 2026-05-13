@@ -18,8 +18,6 @@ export default function HermesProductList() {
     publishedProducts,
     loadingHermes,
     errorHermes,
-    selectedImage,
-    setSelectedImage,
     search,
     setSearch,
     group,
@@ -35,8 +33,8 @@ export default function HermesProductList() {
     totalPages,
     isPublished,
     handlePublish,
-    handleUnpublish,
     handleEdit,
+    handleUnpublish,
   } = useHermesProductList();
 
   // Estado para controlar el toast
@@ -49,9 +47,9 @@ export default function HermesProductList() {
   }, []);
 
   // Handler para publicar con loading individual
-  const handlePublishWithLoading = async (product: HermesProduct, description: string, enOferta: boolean, descuentoPorcentaje: number | null) => {
+  const handlePublishWithLoading = async (product: HermesProduct, description: string, enOferta: boolean, descuentoPorcentaje: number | null, images: File[]) => {
     setLoadingProduct(prev => ({ ...prev, [product.hermes_id]: true }));
-    const result = await handlePublish(product, description, enOferta, descuentoPorcentaje);
+    const result = await handlePublish(product, description, enOferta, descuentoPorcentaje, images);
     setLoadingProduct(prev => ({ ...prev, [product.hermes_id]: false }));
 
     if (result.ok) {
@@ -62,17 +60,14 @@ export default function HermesProductList() {
     showToast(result.message, 'error');
   };
 
-  // Handler para editar con loading individual
-  const handleEditWithLoading = async (hermes_id: number, description: string, enOferta: boolean, descuentoPorcentaje: number | null, newImage: File | null) => {
+  const handleEditWithLoading = async (hermes_id: number, description: string, enOferta: boolean, descuentoPorcentaje: number | null) => {
     setLoadingProduct(prev => ({ ...prev, [hermes_id]: true }));
-    const result = await handleEdit(hermes_id, description, enOferta, descuentoPorcentaje, newImage);
+    const result = await handleEdit(hermes_id, description, enOferta, descuentoPorcentaje);
     setLoadingProduct(prev => ({ ...prev, [hermes_id]: false }));
-
     if (result.ok) {
-      showToast('El producto fue actualizado correctamente.', 'success', 'Producto actualizado');
+      showToast('El producto fue actualizado correctamente.', 'success', 'Producto editado');
       return;
     }
-
     showToast(result.message, 'error');
   };
 
@@ -169,10 +164,9 @@ export default function HermesProductList() {
               <HermesProductItem
                 key={product.hermes_id ?? 'sinid'}
                 product={product}
-                isPublished={isPublished}
+                publishedProductId={publishedProducts.find(p => p.hermes_id === product.hermes_id)?.id}
                 publishedProduct={publishedProducts.find(p => p.hermes_id === product.hermes_id)}
-                selectedImage={selectedImage}
-                setSelectedImage={setSelectedImage}
+                isPublished={isPublished}
                 loading={!!loadingProduct[product.hermes_id]}
                 onPublish={handlePublishWithLoading}
                 onUnpublish={handleUnpublishWithLoading}

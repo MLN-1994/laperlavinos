@@ -32,7 +32,12 @@ export async function GET() {
       });
     }
 
-    const hermesProducts = await getHermesProducts();
+    let hermesProducts: unknown[] = [];
+    try {
+      hermesProducts = (await getHermesProducts()) as unknown[];
+    } catch {
+      // Hermes no disponible — se muestran precios/nombres de Supabase
+    }
     const hermesMap = new Map<number, Record<string, unknown>>();
 
     for (const product of Array.isArray(hermesProducts) ? hermesProducts : []) {

@@ -6,6 +6,14 @@ export interface Categoria {
   descripcion?: string;
 }
 
+export interface ProductImage {
+  id: string;
+  product_id: string;
+  url: string;
+  orden: number;
+  created_at?: string | null;
+}
+
 export interface ProductoPublicado {
   id: string;
   hermes_id?: number;
@@ -21,6 +29,7 @@ export interface ProductoPublicado {
   marca?: string | null;
   en_oferta?: boolean | null;
   descuento_porcentaje?: number | null;
+  imagenes?: ProductImage[];
 }
 
 export interface Banner {

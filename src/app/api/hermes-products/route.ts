@@ -20,7 +20,12 @@ export async function GET() {
   }
 
   try {
-    const products = await getHermesProducts();
+    let products: unknown;
+    try {
+      products = await getHermesProducts();
+    } catch {
+      return NextResponse.json({ error: 'Hermes no disponible. Verificá la conexión.' }, { status: 503 });
+    }
     const safeProducts = Array.isArray(products) ? (products as HermesRawProduct[]) : [];
     const mapped: HermesProduct[] = safeProducts.map((product) => ({
       hermes_id: product.Codigo !== undefined && product.Codigo !== null ? parseInt(String(product.Codigo), 10) : 0,

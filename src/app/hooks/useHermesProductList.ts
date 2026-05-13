@@ -14,7 +14,6 @@ export function useHermesProductList() {
   const { productos: hermesProducts, loading: loadingHermes, error: errorHermes } = useHermesProducts();
   const { productos: publishedProducts, refetch: refetchPublished } = usePublishedProducts();
   const { publishProduct, unpublishProduct, editProduct, loading, error, success } = useProductPublication();
-  const [selectedImage, setSelectedImage] = useState<{ [hermes_id: number]: File | null }>({});
   const [search, setSearch] = useState("");
   const [group, setGroup] = useState("");
   const [tab, setTab] = useState<'todos' | 'publicados'>("todos");
@@ -33,29 +32,22 @@ export function useHermesProductList() {
     [publishedProducts],
   );
 
-  const handlePublish = useCallback(async (product: HermesProduct, description?: string, enOferta?: boolean, descuentoPorcentaje?: number | null) => {
+  const handlePublish = useCallback(async (product: HermesProduct, description?: string, enOferta?: boolean, descuentoPorcentaje?: number | null, images?: File[]) => {
     const result = await publishProduct({
       hermes_id: product.hermes_id,
       nombre: product.nombre,
       descripcion: description?.trim() || product.descripcion,
       precio: product.precio,
-      imagen: selectedImage[product.hermes_id] || null,
+      images: images ?? [],
       en_oferta: enOferta ?? false,
       descuento_porcentaje: descuentoPorcentaje ?? null,
     });
-    setSelectedImage((prev) => ({ ...prev, [product.hermes_id]: null }));
     refetchPublished();
     return result;
-  }, [publishProduct, refetchPublished, selectedImage]);
+  }, [publishProduct, refetchPublished]);
 
-  const handleEdit = useCallback(async (hermes_id: number, description: string, enOferta: boolean, descuentoPorcentaje: number | null, newImage: File | null) => {
-    const result = await editProduct({
-      hermes_id,
-      descripcion: description,
-      en_oferta: enOferta,
-      descuento_porcentaje: descuentoPorcentaje,
-      imagen: newImage,
-    });
+  const handleEdit = useCallback(async (hermes_id: number, description: string, enOferta: boolean, descuentoPorcentaje: number | null) => {
+    const result = await editProduct({ hermes_id, descripcion: description, en_oferta: enOferta, descuento_porcentaje: descuentoPorcentaje });
     refetchPublished();
     return result;
   }, [editProduct, refetchPublished]);
@@ -132,8 +124,6 @@ export function useHermesProductList() {
     loading,
     error,
     success,
-    selectedImage,
-    setSelectedImage,
     search,
     setSearch: setSearchAndResetPage,
     group,
@@ -150,7 +140,7 @@ export function useHermesProductList() {
     totalPages,
     isPublished,
     handlePublish,
-    handleUnpublish,
     handleEdit,
+    handleUnpublish,
   };
 }

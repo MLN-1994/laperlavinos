@@ -4,13 +4,14 @@ import { useState } from "react";
 import { HiOutlineShoppingCart, HiOutlineCheckCircle, HiMinus, HiPlus, HiArrowLeft } from "react-icons/hi2";
 import { useCartStore } from "../../store/useCartStore";
 import { useRouter } from "next/navigation";
-import { ProductoPublicado } from "../../types";
+import { ProductoPublicado, ProductImage } from "../../types";
 
 interface ProductDetailProps {
   product: ProductoPublicado;
+  images?: ProductImage[];
 }
 
-export default function ProductDetail({ product }: ProductDetailProps) {
+export default function ProductDetail({ product, images = [] }: ProductDetailProps) {
   const [quantity, setQuantity] = useState(1);
   const [added, setAdded] = useState(false);
   const addToCart = useCartStore((s) => s.addToCart);
@@ -20,6 +21,14 @@ export default function ProductDetail({ product }: ProductDetailProps) {
   const precioFinal = enOferta
     ? Math.round(product.precio * (1 - (product.descuento_porcentaje ?? 0) / 100))
     : product.precio;
+
+  // Galería: combinar imagen_url principal con las imágenes adicionales
+  const allImages: string[] = images.length > 0
+    ? images.sort((a, b) => a.orden - b.orden).map((img) => img.url)
+    : [product.imagen_url ?? "/placeholder.png"];
+
+  const [activeIdx, setActiveIdx] = useState(0);
+  const activeImage = allImages[activeIdx] ?? "/placeholder.png";
 
   const handleBack = () => {
     if (window.history.length > 1) {
@@ -59,18 +68,45 @@ export default function ProductDetail({ product }: ProductDetailProps) {
       </button>
 
       <div className="mx-auto max-w-5xl grid grid-cols-1 gap-10 lg:grid-cols-2">
-        {/* Imagen */}
-        <div className="relative aspect-square overflow-hidden rounded-sm border border-neutral-200 bg-neutral-100">
-          <img
-            src={product.imagen_url || "/placeholder.png"}
-            alt={product.nombre}
-            className="h-full w-full object-cover opacity-90"
-          />
-          {product.categoria_id && (
-            <span className="absolute top-4 left-4 bg-[#a68a5c] px-3 py-1 text-[9px] font-bold uppercase tracking-[0.2em] text-white shadow-xl">
-              {product.categoria_id}
-            </span>
+        {/* Galería estilo ML: miniaturas izquierda + imagen principal */}
+        <div className="flex gap-3">
+          {/* Columna de miniaturas (solo si hay más de 1) */}
+          {allImages.length > 1 && (
+            <div className="flex flex-col gap-2 overflow-y-auto max-h-[480px] pr-0.5">
+              {allImages.map((url, idx) => (
+                <button
+                  key={idx}
+                  onClick={() => setActiveIdx(idx)}
+                  className={`flex-shrink-0 h-16 w-16 overflow-hidden rounded-sm border-2 transition-all ${
+                    idx === activeIdx
+                      ? 'border-[#a68a5c]'
+                      : 'border-neutral-200 hover:border-neutral-400'
+                  }`}
+                >
+                  <img
+                    src={url}
+                    alt={`Vista ${idx + 1}`}
+                    className="h-full w-full object-cover"
+                  />
+                </button>
+              ))}
+            </div>
           )}
+
+          {/* Imagen principal */}
+          <div className="relative flex-1 aspect-square overflow-hidden rounded-sm border border-neutral-200 bg-neutral-100">
+            <img
+              key={activeImage}
+              src={activeImage}
+              alt={product.nombre}
+              className="h-full w-full object-cover opacity-90 transition-opacity duration-300"
+            />
+            {product.categoria_id && (
+              <span className="absolute top-4 left-4 bg-[#a68a5c] px-3 py-1 text-[9px] font-bold uppercase tracking-[0.2em] text-white shadow-xl">
+                {product.categoria_id}
+              </span>
+            )}
+          </div>
         </div>
 
         {/* Info */}
@@ -160,7 +196,7 @@ export default function ProductDetail({ product }: ProductDetailProps) {
 
             {product.stock != null && product.stock <= 5 && product.stock > 0 && (
               <p className="text-xs text-amber-600 tracking-wide">
-                Sujeto a disponibilidad. Verificamos el stock al confirmar tu pedido.
+                ¡Solo quedan {product.stock} unidades!
               </p>
             )}
           </div>

@@ -4,10 +4,17 @@ import { getHermesProducts } from '@/lib/hermesClient';
 import { getSupabaseAdmin, hasSupabaseAdminConfig } from '@/lib/supabaseAdmin';
 import type { CheckoutBuyerInput, CheckoutItemInput } from '@/types/mercadopago';
 import type { Database, Json } from '@/types/supabase';
+import { getShippingCost } from '@/lib/shipping';
 
 interface CheckoutRequestBody {
   items?: CheckoutItemInput[];
   buyer?: CheckoutBuyerInput;
+  shipping?: {
+    province?: string;
+    city?: string;
+    postalCode?: string;
+    amount?: number;
+  };
 }
 
 type WebOrderInsert = Database['public']['Tables']['web_orders']['Insert'];
@@ -256,7 +263,18 @@ export async function POST(request: Request) {
 
     const validatedItems = await revalidateCheckoutItems(items);
     const supabaseAdmin = getSupabaseAdmin();
-    const totalAmount = calculateTotalAmount(validatedItems);
+    const productsTotal = calculateTotalAmount(validatedItems);
+
+    // Validar envío
+    const shippingProvince = sanitizeText(body.shipping?.province);
+    const shippingCity = sanitizeText(body.shipping?.city);
+    const shippingPostalCode = sanitizeText(body.shipping?.postalCode);
+    if (!shippingProvince) {
+      return NextResponse.json({ error: 'Seleccioná una provincia de destino para el envío.' }, { status: 400 });
+    }
+    const shippingAmount = getShippingCost(shippingProvince, productsTotal) ?? 0;
+    const totalAmount = productsTotal + shippingAmount;
+
     const externalReference = buildExternalReference();
     const origin = new URL(request.url).origin;
 
@@ -270,7 +288,11 @@ export async function POST(request: Request) {
       buyer_document_type: buyer.documentType,
       buyer_document_number: buyer.documentNumber,
       buyer_address: buyer.address,
-      subtotal_amount: totalAmount,
+      subtotal_amount: productsTotal,
+      shipping_amount: shippingAmount,
+      shipping_provider: 'andreani',
+      shipping_service: 'domicilio',
+      shipping_payload: { province: shippingProvince, city: shippingCity, postalCode: shippingPostalCode } as Json,
       total_amount: totalAmount,
       currency_id: validatedItems[0]?.currency_id ?? 'ARS',
       raw_checkout_payload: toJsonValue({ requested: body, buyer, validatedItems }),
@@ -302,12 +324,20 @@ export async function POST(request: Request) {
       : `${origin}/api/openpay/webhook`;
 
     const openpayOrder = await createOpenPayOrder({
-      items: validatedItems.map((item, idx) => ({
-        id: idx + 1,
-        name: item.title,
-        quantity: item.quantity,
-        unitPrice: Number(item.unit_price),
-      })),
+      items: [
+        ...validatedItems.map((item, idx) => ({
+          id: idx + 1,
+          name: item.title,
+          quantity: item.quantity,
+          unitPrice: Number(item.unit_price),
+        })),
+        {
+          id: validatedItems.length + 1,
+          name: `Envío a domicilio — ${shippingCity ? shippingCity + ', ' : ''}${shippingProvince}`,
+          quantity: 1,
+          unitPrice: shippingAmount,
+        },
+      ],
       redirectUrls: {
         success: `${origin}/pago/resultado?status=success&ref=${encodeURIComponent(externalReference)}`,
         failed: `${origin}/pago/resultado?status=failure`,

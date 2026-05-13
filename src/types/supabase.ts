@@ -96,30 +96,6 @@ export interface Database {
         };
         Relationships: [];
       };
-      openpay_config: {
-        Row: {
-          id: string;
-          client_id: string;
-          client_secret: string;
-          environment: string;
-          updated_at: string;
-        };
-        Insert: {
-          id?: string;
-          client_id: string;
-          client_secret: string;
-          environment?: string;
-          updated_at?: string;
-        };
-        Update: {
-          id?: string;
-          client_id?: string;
-          client_secret?: string;
-          environment?: string;
-          updated_at?: string;
-        };
-        Relationships: [];
-      };
       mercado_pago_accounts: {
         Row: {
           id: string;
@@ -177,10 +153,58 @@ export interface Database {
         };
         Relationships: [];
       };
+      openpay_config: {
+        Row: {
+          id: string;
+          client_id: string;
+          client_secret: string;
+          environment: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          client_id: string;
+          client_secret: string;
+          environment?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          client_id?: string;
+          client_secret?: string;
+          environment?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
       products_publicados_placeholder: {
         Row: never;
         Insert: never;
         Update: never;
+        Relationships: [];
+      };
+      producto_imagenes: {
+        Row: {
+          id: string;
+          product_id: string;
+          url: string;
+          orden: number;
+          created_at: string | null;
+        };
+        Insert: {
+          id?: string;
+          product_id: string;
+          url: string;
+          orden?: number;
+          created_at?: string | null;
+        };
+        Update: {
+          id?: string;
+          product_id?: string;
+          url?: string;
+          orden?: number;
+          created_at?: string | null;
+        };
         Relationships: [];
       };
       productos_publicados: {
@@ -278,7 +302,6 @@ export interface Database {
           external_reference: string;
           mercadopago_preference_id: string | null;
           mercadopago_payment_id: string | null;
-          openpay_order_uuid: string | null;
           payment_provider: string | null;
           buyer_name: string;
           buyer_email: string | null;
@@ -297,6 +320,7 @@ export interface Database {
           raw_webhook_payload: Json;
           notes: string | null;
           notas_internas: string | null;
+          openpay_order_uuid: string | null;
           created_at: string | null;
           updated_at: string | null;
         };
@@ -307,7 +331,6 @@ export interface Database {
           external_reference: string;
           mercadopago_preference_id?: string | null;
           mercadopago_payment_id?: string | null;
-          openpay_order_uuid?: string | null;
           payment_provider?: string | null;
           buyer_name: string;
           buyer_email?: string | null;
@@ -326,6 +349,7 @@ export interface Database {
           raw_webhook_payload?: Json;
           notes?: string | null;
           notas_internas?: string | null;
+          openpay_order_uuid?: string | null;
           created_at?: string | null;
           updated_at?: string | null;
         };
@@ -336,7 +360,6 @@ export interface Database {
           external_reference?: string;
           mercadopago_preference_id?: string | null;
           mercadopago_payment_id?: string | null;
-          openpay_order_uuid?: string | null;
           payment_provider?: string | null;
           buyer_name?: string;
           buyer_email?: string | null;
@@ -355,6 +378,7 @@ export interface Database {
           raw_webhook_payload?: Json;
           notes?: string | null;
           notas_internas?: string | null;
+          openpay_order_uuid?: string | null;
           created_at?: string | null;
           updated_at?: string | null;
         };

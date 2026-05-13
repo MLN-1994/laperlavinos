@@ -5,7 +5,7 @@ interface PublishOptions {
   nombre: string;
   descripcion: string;
   precio: number;
-  imagen?: File | null;
+  images: File[];
   destacado?: boolean;
   activo?: boolean;
   en_oferta?: boolean;
@@ -39,8 +39,8 @@ export function useProductPublication() {
       return { ok: false, message };
     }
 
-    if (!options.imagen) {
-      const message = 'Selecciona una imagen antes de publicar el producto.';
+    if (!options.images || options.images.length === 0) {
+      const message = 'Seleccioná al menos una imagen antes de publicar el producto.';
       setError(message);
       setLoading(false);
       return { ok: false, message };
@@ -58,19 +58,30 @@ export function useProductPublication() {
       if (options.descuento_porcentaje != null) {
         formData.append('descuento_porcentaje', String(options.descuento_porcentaje));
       }
-
-      if (options.imagen) {
-        formData.append('imagen', options.imagen);
-      }
+      // La primera imagen va como imagen_url principal
+      formData.append('imagen', options.images[0]);
 
       const response = await fetch('/api/admin/published-products', {
         method: 'POST',
         body: formData,
       });
-      const data = (await response.json()) as { error?: string };
+      const data = (await response.json()) as { error?: string; id?: string };
 
       if (!response.ok) {
         throw new Error(data.error ?? 'Error al publicar producto');
+      }
+
+      // Subir todas las imágenes a producto_imagenes
+      if (data.id && options.images.length > 0) {
+        const imagesFormData = new FormData();
+        imagesFormData.append('product_id', data.id);
+        for (const img of options.images) {
+          imagesFormData.append('imagenes', img);
+        }
+        await fetch('/api/admin/product-images', {
+          method: 'POST',
+          body: imagesFormData,
+        });
       }
 
       setSuccess('¡Producto publicado!');
@@ -122,8 +133,8 @@ export function useProductPublication() {
     }
   };
 
-  // Editar producto publicado
-  const editProduct = async (options: Omit<PublishOptions, 'nombre' | 'precio' | 'activo' | 'destacado'>): Promise<PublicationResult> => {
+  // Editar producto publicado (descripción, oferta, descuento)
+  const editProduct = async (options: { hermes_id: number; descripcion: string; en_oferta?: boolean; descuento_porcentaje?: number | null }): Promise<PublicationResult> => {
     setLoading(true);
     setError(null);
     setSuccess(null);
@@ -142,9 +153,6 @@ export function useProductPublication() {
       formData.append('en_oferta', String(options.en_oferta ?? false));
       if (options.descuento_porcentaje != null) {
         formData.append('descuento_porcentaje', String(options.descuento_porcentaje));
-      }
-      if (options.imagen) {
-        formData.append('imagen', options.imagen);
       }
 
       const response = await fetch('/api/admin/published-products', {
