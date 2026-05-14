@@ -61,6 +61,7 @@ function formatDate(value: string | null) {
   return new Intl.DateTimeFormat('es-AR', {
     dateStyle: 'short',
     timeStyle: 'short',
+    timeZone: 'America/Argentina/Buenos_Aires',
   }).format(new Date(value));
 }
 
@@ -82,6 +83,7 @@ export default function AdminOrdersPanel({ orders }: AdminOrdersPanelProps) {
   const [page, setPage] = useState(1);
   const [selectedOrderId, setSelectedOrderId] = useState<string | null>(orders[0]?.id ?? null);
   const detailRef = useRef<HTMLDivElement>(null);
+  const listRef = useRef<HTMLDivElement>(null);
   const [notasDraft, setNotasDraft] = useState<Record<string, string>>({});
   const [notasSaving, setNotasSaving] = useState<Record<string, boolean>>({});
   const [notasSaved, setNotasSaved] = useState<Record<string, boolean>>({});
@@ -208,7 +210,7 @@ export default function AdminOrdersPanel({ orders }: AdminOrdersPanelProps) {
       </div>
 
       <div className="grid gap-6 xl:grid-cols-[minmax(0,1.2fr)_minmax(360px,0.8fr)]">
-        <div className="space-y-4">
+        <div ref={listRef} className="space-y-4">
           {paginatedOrders.length === 0 ? (
               <div className="rounded-sm border border-[#beb9b1]/10 bg-[#2a2725] p-8 text-sm text-[#beb9b1]/50">
               No hay pedidos que coincidan con los filtros actuales.
@@ -306,8 +308,14 @@ export default function AdminOrdersPanel({ orders }: AdminOrdersPanelProps) {
                     {selectedOrder.buyerEmail && (
                       <button
                         type="button"
-                        onClick={() => { setSearch(selectedOrder.buyerEmail!); setPage(1); }}
-                        className="text-[10px] uppercase tracking-[0.18em] text-[#a68a5c] hover:text-[#c9a96e] transition-colors"
+                        onClick={() => {
+                          setSearch(selectedOrder.buyerEmail!);
+                          setPage(1);
+                          setTimeout(() => {
+                            listRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                          }, 50);
+                        }}
+                        className="cursor-pointer text-[10px] uppercase tracking-[0.18em] text-[#a68a5c] hover:text-[#c9a96e] transition-colors"
                       >
                         Ver todos sus pedidos →
                       </button>
