@@ -26,7 +26,7 @@ export default function SidebarNav({ onNavClick }: SidebarNavProps) {
           className={`rounded-2xl px-4 py-3 text-sm font-medium tracking-[0.02em] transition-all md:px-4 md:py-3 ${
             pathname === item.href
               ? "border border-[#a68a5c]/30 bg-[#a68a5c]/15 text-[#c9a96e]"
-              : "border border-transparent bg-white/0 text-[#beb9b1]/60 hover:border-white/8 hover:bg-white/5 hover:text-[#beb9b1]"
+              : "border border-transparent bg-transparent text-neutral-400 hover:border-neutral-700 hover:bg-neutral-800 hover:text-neutral-200"
           }`}
           onClick={onNavClick}
         >

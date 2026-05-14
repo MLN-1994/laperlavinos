@@ -1,4 +1,4 @@
-import { useState } from "react";
+﻿import { useState } from "react";
 import { GoUpload } from "react-icons/go";
 
 type Props = {
@@ -81,7 +81,7 @@ export default function AdminProductForm({ onSubmit, subiendo, mensaje }: Props)
       <button
         type="submit"
         disabled={subiendo}
-        className="w-full bg-[#3c3c3b] text-white py-3 rounded-xl font-bold hover:bg-[#2c2c2b] active:scale-95 transition shadow-lg shadow-indigo-100 disabled:opacity-50 flex items-center justify-center gap-2 text-lg"
+        className="w-full bg-neutral-800 text-white py-3 rounded-xl font-bold hover:bg-neutral-700 active:scale-95 transition shadow-lg shadow-indigo-100 disabled:opacity-50 flex items-center justify-center gap-2 text-lg"
       >
         {subiendo && (
           <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
@@ -93,7 +93,7 @@ export default function AdminProductForm({ onSubmit, subiendo, mensaje }: Props)
       </button>
 
       {mensaje && (
-        <p className="text-base text-center text-[#3c3c3b] bg-[#e0e0e0] py-2 rounded-lg font-medium mt-2 animate-fade-in">
+        <p className="text-base text-center text-neutral-800 bg-neutral-200 py-2 rounded-lg font-medium mt-2 animate-fade-in">
           {mensaje}
         </p>
       )}

@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useMemo, useRef, useState } from 'react';
 import Pagination from './Pagination';
@@ -71,9 +71,9 @@ function getStatusStyles(status: string) {
       return 'border-[#a68a5c]/30 bg-[#a68a5c]/10 text-[#c9a96e]';
     case 'pago_rechazado':
     case 'pago_cancelado':
-      return 'border-[#d03416]/30 bg-[#d03416]/10 text-[#f3c3ba]';
+      return 'border-red-200 bg-red-50 text-red-600';
     default:
-      return 'border-[#beb9b1]/15 bg-[#beb9b1]/5 text-[#beb9b1]/60';
+      return 'border-neutral-200 bg-neutral-100 text-neutral-500';
   }
 }
 
@@ -151,34 +151,34 @@ export default function AdminOrdersPanel({ orders }: AdminOrdersPanelProps) {
 
   return (
     <section className="space-y-6">
-      <div className="overflow-hidden rounded-sm border border-[#beb9b1]/10 bg-[linear-gradient(135deg,_rgba(49,44,40,0.98),_rgba(63,56,51,0.94))] p-6 text-[#f7f0e2] shadow-xl shadow-[#2f2b28]/10 sm:p-8">
+      <div className="overflow-hidden rounded-sm border border-neutral-200 bg-white p-6 text-neutral-800 shadow-sm sm:p-8">
         <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
           <div>
-            <div className="mb-3 inline-flex rounded-full border border-white/10 bg-white/5 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.24em] text-[#cbbca3]">
+            <div className="mb-3 inline-flex rounded-full border border-[#a68a5c]/20 bg-[#a68a5c]/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.24em] text-[#a68a5c]">
               Operacion de pedidos
             </div>
             <h1 className="text-3xl font-semibold tracking-tight sm:text-[2.1rem]">Pedidos web</h1>
-            <p className="mt-3 max-w-2xl text-sm leading-6 text-[#d6cdbf] sm:text-[15px]">
+            <p className="mt-3 max-w-2xl text-sm leading-6 text-neutral-500 sm:text-[15px]">
               Segui pagos, referencias y datos del comprador sin entrar a la base manualmente.
             </p>
           </div>
 
           <div className="grid gap-3 sm:grid-cols-2">
-            <div className="rounded-2xl border border-white/10 bg-white/5 px-4 py-4">
-              <p className="text-[11px] uppercase tracking-[0.22em] text-[#cbbca3]">Aprobados</p>
-              <p className="mt-2 text-3xl font-semibold text-white">{approvedCount}</p>
+            <div className="rounded-2xl border border-neutral-200 bg-neutral-50 px-4 py-4">
+              <p className="text-[11px] uppercase tracking-[0.22em] text-neutral-500">Aprobados</p>
+              <p className="mt-2 text-3xl font-semibold text-neutral-800">{approvedCount}</p>
             </div>
-            <div className="rounded-2xl border border-white/10 bg-white/5 px-4 py-4">
-              <p className="text-[11px] uppercase tracking-[0.22em] text-[#cbbca3]">En checkout</p>
-              <p className="mt-2 text-3xl font-semibold text-white">{pendingCount}</p>
+            <div className="rounded-2xl border border-neutral-200 bg-neutral-50 px-4 py-4">
+              <p className="text-[11px] uppercase tracking-[0.22em] text-neutral-500">En checkout</p>
+              <p className="mt-2 text-3xl font-semibold text-neutral-800">{pendingCount}</p>
             </div>
           </div>
         </div>
       </div>
 
-      <div className="rounded-sm border border-[#beb9b1]/10 bg-[#2a2725] p-6 shadow-sm sm:p-8">
+      <div className="rounded-sm border border-neutral-200 bg-white p-6 shadow-sm sm:p-8">
         <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_220px]">
-          <label className="flex flex-col gap-1.5 text-[10px] uppercase tracking-[0.2em] text-[#beb9b1]/55">
+          <label className="flex flex-col gap-1.5 text-[10px] uppercase tracking-[0.2em] text-neutral-500">
             Buscar por referencia o comprador
             <input
               type="text"
@@ -188,11 +188,11 @@ export default function AdminOrdersPanel({ orders }: AdminOrdersPanelProps) {
                 setPage(1);
               }}
               placeholder="external_reference, email, telefono"
-              className="rounded-sm border border-[#beb9b1]/15 bg-[#1a1a1a]/30 px-3 py-2.5 text-sm text-[#f5efe3] outline-none transition focus:border-[#a68a5c]"
+              className="rounded-sm border border-neutral-200 bg-white px-3 py-2.5 text-sm text-neutral-800 outline-none transition focus:border-[#a68a5c]"
             />
           </label>
 
-          <label className="flex flex-col gap-1.5 text-[10px] uppercase tracking-[0.2em] text-[#beb9b1]/55">
+          <label className="flex flex-col gap-1.5 text-[10px] uppercase tracking-[0.2em] text-neutral-500">
             Estado
             <select
               value={statusFilter}
@@ -200,10 +200,10 @@ export default function AdminOrdersPanel({ orders }: AdminOrdersPanelProps) {
                 setStatusFilter(event.target.value);
                 setPage(1);
               }}
-              className="rounded-sm border border-[#beb9b1]/15 bg-[#1a1a1a]/30 px-3 py-2.5 text-sm text-[#f5efe3] outline-none transition focus:border-[#a68a5c]"
+              className="rounded-sm border border-neutral-200 bg-white px-3 py-2.5 text-sm text-neutral-800 outline-none transition focus:border-[#a68a5c]"
             >
               <option value="all">Todos</option>
-              <option value="pago_aprobado">Aprobados (con/sin Hermes)</option>
+              <option value="pago_aprobado">Aprobados</option>
               <option value="checkout_generado">Checkout generado</option>
               <option value="pago_rechazado">Pago rechazado</option>
               <option value="pago_cancelado">Pago cancelado</option>
@@ -215,7 +215,7 @@ export default function AdminOrdersPanel({ orders }: AdminOrdersPanelProps) {
       <div className="grid gap-6 xl:grid-cols-[minmax(0,1.2fr)_minmax(360px,0.8fr)]">
         <div ref={listRef} className="space-y-4">
           {paginatedOrders.length === 0 ? (
-              <div className="rounded-sm border border-[#beb9b1]/10 bg-[#2a2725] p-8 text-sm text-[#beb9b1]/50">
+              <div className="rounded-sm border border-neutral-200 bg-white p-8 text-sm text-neutral-500">
               No hay pedidos que coincidan con los filtros actuales.
             </div>
           ) : (
@@ -232,7 +232,7 @@ export default function AdminOrdersPanel({ orders }: AdminOrdersPanelProps) {
                 className={`w-full rounded-sm border p-5 text-left transition ${
                   order.id === selectedOrder?.id
                     ? 'border-[#a68a5c]/40 bg-[#a68a5c]/10'
-                    : 'border-[#beb9b1]/10 bg-[#2a2725] hover:border-[#beb9b1]/20'
+                    : 'border-neutral-200 bg-white hover:border-neutral-300'
                 }`}
               >
                 <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
@@ -242,21 +242,21 @@ export default function AdminOrdersPanel({ orders }: AdminOrdersPanelProps) {
                         {order.status.replaceAll('_', ' ')}
                       </span>
                       {order.paymentStatus && (
-                        <span className="rounded-sm border border-[#beb9b1]/15 bg-[#beb9b1]/5 px-3 py-1 text-[11px] uppercase tracking-[0.18em] text-[#beb9b1]/50">
+                        <span className="rounded-sm border border-neutral-200 bg-neutral-100 px-3 py-1 text-[11px] uppercase tracking-[0.18em] text-neutral-500">
                           {order.paymentProvider === 'openpay' ? 'OpenPay' : 'MP'}: {order.paymentStatus}
                         </span>
                       )}
                     </div>
                     <div>
-                      <h2 className="text-lg font-semibold tracking-tight text-[#f5efe3]">{order.buyerName}</h2>
-                      <p className="mt-1 text-sm text-[#beb9b1]/40">{order.externalReference}</p>
+                      <h2 className="text-lg font-semibold tracking-tight text-neutral-800">{order.buyerName}</h2>
+                      <p className="mt-1 text-sm text-neutral-400">{order.externalReference}</p>
                     </div>
                   </div>
 
                   <div className="text-right">
-                    <p className="text-[10px] uppercase tracking-[0.18em] text-[#beb9b1]/40">Total</p>
+                    <p className="text-[10px] uppercase tracking-[0.18em] text-neutral-400">Total</p>
                     <p className="mt-1 text-xl font-semibold text-[#c9a96e]">{formatCurrency(order.totalAmount, order.currencyId)}</p>
-                    <p className="mt-2 text-xs text-[#beb9b1]/40">{formatDate(order.createdAt)}</p>
+                    <p className="mt-2 text-xs text-neutral-400">{formatDate(order.createdAt)}</p>
                   </div>
                 </div>
               </button>
@@ -272,42 +272,42 @@ export default function AdminOrdersPanel({ orders }: AdminOrdersPanelProps) {
           />
         </div>
 
-        <div ref={detailRef} className="rounded-sm border border-[#beb9b1]/10 bg-[#2a2725] p-6 sm:p-8">
+        <div ref={detailRef} className="rounded-sm border border-neutral-200 bg-white p-6 sm:p-8">
           {selectedOrder ? (
             <div className="space-y-6">
-              <div className="space-y-3 border-b border-[#beb9b1]/10 pb-5">
+              <div className="space-y-3 border-b border-neutral-200 pb-5">
                 <div className="flex flex-wrap items-center gap-2">
                   <span className={`rounded-full border px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] ${getStatusStyles(selectedOrder.status)}`}>
                     {selectedOrder.status.replaceAll('_', ' ')}
                   </span>
                   {selectedOrder.paymentStatus && (
-                    <span className="rounded-sm border border-[#beb9b1]/15 bg-[#beb9b1]/5 px-3 py-1 text-[11px] uppercase tracking-[0.18em] text-[#beb9b1]/50">
+                    <span className="rounded-sm border border-neutral-200 bg-neutral-100 px-3 py-1 text-[11px] uppercase tracking-[0.18em] text-neutral-500">
                       {selectedOrder.paymentProvider === 'openpay' ? 'OpenPay / BBVA' : 'Mercado Pago'}: {selectedOrder.paymentStatus}
                     </span>
                   )}
                 </div>
-                <h2 className="text-2xl font-serif tracking-wide text-[#beb9b1]">{selectedOrder.buyerName}</h2>
-                <p className="text-sm text-[#beb9b1]/40">Creado el {formatDate(selectedOrder.createdAt)}</p>
+                <h2 className="text-2xl font-serif tracking-wide text-neutral-800">{selectedOrder.buyerName}</h2>
+                <p className="text-sm text-neutral-400">Creado el {formatDate(selectedOrder.createdAt)}</p>
               </div>
 
               <div className="grid gap-4 sm:grid-cols-2">
-                <div className="rounded-sm border border-[#beb9b1]/10 bg-[#1a1a1a]/20 p-4">
-                  <p className="text-[10px] uppercase tracking-[0.22em] text-[#beb9b1]/40">Referencia</p>
-                  <p className="mt-2 break-all text-sm font-medium text-[#beb9b1]">{selectedOrder.externalReference}</p>
+                <div className="rounded-sm border border-neutral-200 bg-neutral-50 p-4">
+                  <p className="text-[10px] uppercase tracking-[0.22em] text-neutral-400">Referencia</p>
+                  <p className="mt-2 break-all text-sm font-medium text-neutral-700">{selectedOrder.externalReference}</p>
                 </div>
-                <div className="rounded-sm border border-[#beb9b1]/10 bg-[#1a1a1a]/20 p-4">
-                  <p className="text-[10px] uppercase tracking-[0.22em] text-[#beb9b1]/40">
+                <div className="rounded-sm border border-neutral-200 bg-neutral-50 p-4">
+                  <p className="text-[10px] uppercase tracking-[0.22em] text-neutral-400">
                     {selectedOrder.paymentProvider === 'openpay' ? 'OpenPay Order UUID' : 'Pago Mercado Pago'}
                   </p>
-                  <p className="mt-2 break-all text-sm font-medium text-[#beb9b1]">
+                  <p className="mt-2 break-all text-sm font-medium text-neutral-700">
                     {selectedOrder.paymentProvider === 'openpay'
                       ? (selectedOrder.openpayOrderUuid || 'Sin UUID vinculado')
                       : (selectedOrder.mercadopagoPaymentId || 'Sin pago vinculado')}
                   </p>
                 </div>
-                <div className="rounded-sm border border-[#beb9b1]/10 bg-[#1a1a1a]/20 p-4 sm:col-span-2">
+                <div className="rounded-sm border border-neutral-200 bg-neutral-50 p-4 sm:col-span-2">
                   <div className="flex items-center justify-between gap-2 flex-wrap">
-                    <p className="text-[10px] uppercase tracking-[0.22em] text-[#beb9b1]/40">Comprador</p>
+                    <p className="text-[10px] uppercase tracking-[0.22em] text-neutral-400">Comprador</p>
                     {selectedOrder.buyerEmail && (
                       <button
                         type="button"
@@ -324,14 +324,14 @@ export default function AdminOrdersPanel({ orders }: AdminOrdersPanelProps) {
                       </button>
                     )}
                   </div>
-                  <div className="mt-3 grid gap-3 sm:grid-cols-2 text-sm text-[#beb9b1]/70">
-                    <p><span className="text-[#beb9b1]/40">Email:</span> {selectedOrder.buyerEmail || 'No informado'}</p>
-                    <p><span className="text-[#beb9b1]/40">Teléfono:</span> {selectedOrder.buyerPhone || 'No informado'}</p>
-                    <p><span className="text-[#beb9b1]/40">Documento:</span> {selectedOrder.buyerDocumentType || '-'} {selectedOrder.buyerDocumentNumber || ''}</p>
-                    <p><span className="text-[#beb9b1]/40">Dirección:</span> {selectedOrder.buyerAddress || 'No informada'}</p>
+                  <div className="mt-3 grid gap-3 sm:grid-cols-2 text-sm text-neutral-600">
+                    <p><span className="text-neutral-400">Email:</span> {selectedOrder.buyerEmail || 'No informado'}</p>
+                    <p><span className="text-neutral-400">Teléfono:</span> {selectedOrder.buyerPhone || 'No informado'}</p>
+                    <p><span className="text-neutral-400">Documento:</span> {selectedOrder.buyerDocumentType || '-'} {selectedOrder.buyerDocumentNumber || ''}</p>
+                    <p><span className="text-neutral-400">Dirección:</span> {selectedOrder.buyerAddress || 'No informada'}</p>
                     {selectedOrder.shippingPayload && (
                       <p className="sm:col-span-2">
-                        <span className="text-[#beb9b1]/40">
+                        <span className="text-neutral-400">
                           {selectedOrder.shippingPayload.tipo === 'retiro' ? 'Método de entrega:' : 'Destino de envío:'}
                         </span>{' '}
                         {selectedOrder.shippingPayload.tipo === 'retiro'
@@ -343,40 +343,40 @@ export default function AdminOrdersPanel({ orders }: AdminOrdersPanelProps) {
                 </div>
               </div>
 
-              <div className="rounded-sm border border-[#beb9b1]/10 bg-[#1a1a1a]/20 p-4">
+              <div className="rounded-sm border border-neutral-200 bg-neutral-50 p-4">
                 <div className="flex items-center justify-between gap-3">
-                  <p className="text-[10px] uppercase tracking-[0.22em] text-[#beb9b1]/40">Items</p>
-                  <p className="text-xs text-[#beb9b1]/40">{selectedOrder.items.length} item(s)</p>
+                  <p className="text-[10px] uppercase tracking-[0.22em] text-neutral-400">Items</p>
+                  <p className="text-xs text-neutral-400">{selectedOrder.items.length} item(s)</p>
                 </div>
                 <div className="mt-4 space-y-3">
                   {selectedOrder.items.map((item) => (
-                    <div key={item.id} className="rounded-sm border border-[#beb9b1]/10 bg-[#2a2725] px-4 py-3">
+                    <div key={item.id} className="rounded-sm border border-neutral-200 bg-white px-4 py-3">
                       <div className="flex items-start justify-between gap-3">
                         <div>
-                          <p className="text-sm font-semibold text-[#f5efe3]">{item.title}</p>
-                          <p className="mt-1 text-xs text-[#beb9b1]/40">{item.productId || 'Sin product_id'} · {item.quantity} unidad(es)</p>
+                          <p className="text-sm font-semibold text-neutral-800">{item.title}</p>
+                          <p className="mt-1 text-xs text-neutral-400">{item.productId || 'Sin product_id'} · {item.quantity} unidad(es)</p>
                         </div>
                         <p className="text-sm font-semibold text-[#c9a96e]">{formatCurrency(item.lineTotal, selectedOrder.currencyId)}</p>
                       </div>
-                      <p className="mt-2 text-xs text-[#beb9b1]/40">Unitario: {formatCurrency(item.unitPrice, selectedOrder.currencyId)}</p>
+                      <p className="mt-2 text-xs text-neutral-400">Unitario: {formatCurrency(item.unitPrice, selectedOrder.currencyId)}</p>
                     </div>
                   ))}
                 </div>
               </div>
 
-              <div className="rounded-sm border border-[#beb9b1]/10 bg-[#1a1a1a]/20 p-4 text-sm text-[#beb9b1]/70">
-                <p className="text-[10px] uppercase tracking-[0.22em] text-[#beb9b1]/40">Resumen operativo</p>
+              <div className="rounded-sm border border-neutral-200 bg-neutral-50 p-4 text-sm text-neutral-600">
+                <p className="text-[10px] uppercase tracking-[0.22em] text-neutral-400">Resumen operativo</p>
                 <div className="mt-3 space-y-2">
-                  <p><span className="text-[#beb9b1]/40">Subtotal:</span> {formatCurrency(selectedOrder.subtotalAmount ?? selectedOrder.totalAmount, selectedOrder.currencyId)}</p>
-                  <p><span className="text-[#beb9b1]/40">Envío:</span> {selectedOrder.shippingAmount !== null ? formatCurrency(selectedOrder.shippingAmount, selectedOrder.currencyId) : 'No calculado'}</p>
-                  <p><span className="text-[#beb9b1]/40">Total:</span> <span className="text-[#c9a96e] font-semibold">{formatCurrency(selectedOrder.totalAmount, selectedOrder.currencyId)}</span></p>
-                  <p><span className="text-[#beb9b1]/40">Preferencia:</span> {selectedOrder.mercadopagoPreferenceId || 'No informada'}</p>
-                  <p><span className="text-[#beb9b1]/40">Notas del comprador:</span> {selectedOrder.notes || 'Sin observaciones'}</p>
+                  <p><span className="text-neutral-400">Subtotal:</span> {formatCurrency(selectedOrder.subtotalAmount ?? selectedOrder.totalAmount, selectedOrder.currencyId)}</p>
+                  <p><span className="text-neutral-400">Envío:</span> {selectedOrder.shippingAmount !== null ? formatCurrency(selectedOrder.shippingAmount, selectedOrder.currencyId) : 'No calculado'}</p>
+                  <p><span className="text-neutral-400">Total:</span> <span className="text-[#c9a96e] font-semibold">{formatCurrency(selectedOrder.totalAmount, selectedOrder.currencyId)}</span></p>
+                  <p><span className="text-neutral-400">Preferencia:</span> {selectedOrder.mercadopagoPreferenceId || 'No informada'}</p>
+                  <p><span className="text-neutral-400">Notas del comprador:</span> {selectedOrder.notes || 'Sin observaciones'}</p>
                 </div>
               </div>
 
-              <div className="rounded-sm border border-[#a68a5c]/20 bg-[#1a1a1a]/20 p-4">
-                <p className="text-[10px] uppercase tracking-[0.22em] text-[#a68a5c]/70">Notas internas</p>
+              <div className="rounded-sm border border-[#a68a5c]/20 bg-[#a68a5c]/5 p-4">
+                <p className="text-[10px] uppercase tracking-[0.22em] text-[#a68a5c]">Notas internas</p>
                 <textarea
                   rows={3}
                   value={getNotaValue(selectedOrder)}
@@ -384,7 +384,7 @@ export default function AdminOrdersPanel({ orders }: AdminOrdersPanelProps) {
                     setNotasDraft((prev) => ({ ...prev, [selectedOrder.id]: e.target.value }))
                   }
                   placeholder="Observaciones internas sobre este pedido..."
-                  className="mt-3 w-full resize-none rounded-sm border border-[#beb9b1]/15 bg-[#2a2725] px-3 py-2.5 text-sm text-[#f5efe3] placeholder-[#beb9b1]/30 outline-none transition focus:border-[#a68a5c]/60"
+                  className="mt-3 w-full resize-none rounded-sm border border-neutral-200 bg-white px-3 py-2.5 text-sm text-neutral-800 placeholder-neutral-400 outline-none transition focus:border-[#a68a5c]/60"
                 />
                 <div className="mt-2 flex items-center justify-end gap-3">
                   {notasSaved[selectedOrder.id] && (
@@ -402,7 +402,7 @@ export default function AdminOrdersPanel({ orders }: AdminOrdersPanelProps) {
               </div>
             </div>
           ) : (
-            <p className="text-sm text-[#beb9b1]/50">No hay un pedido seleccionado.</p>
+            <p className="text-sm text-neutral-400">No hay un pedido seleccionado.</p>
           )}
         </div>
       </div>

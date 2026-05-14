@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 import React, { useState } from 'react';
 import AdminBannerList from '../components/AdminBannerList';
 import AdminBannerForm from '../components/AdminBannerForm';
@@ -152,14 +152,14 @@ export default function BannersPage() {
 
   return (
     <section className="space-y-7">
-      <div className="overflow-hidden rounded-sm border border-[#beb9b1]/10 bg-[linear-gradient(135deg,_rgba(49,44,40,0.98),_rgba(63,56,51,0.94))] p-6 sm:p-8 text-[#f7f0e2] shadow-xl shadow-[#2f2b28]/10">
+      <div className="overflow-hidden rounded-sm border border-neutral-200 bg-[linear-gradient(135deg,_rgba(49,44,40,0.98),_rgba(63,56,51,0.94))] p-6 sm:p-8 text-neutral-800 shadow-xl shadow-[#2f2b28]/10">
         <div className="flex flex-col gap-7 lg:flex-row lg:items-end lg:justify-between">
           <div className="max-w-2xl">
-            <div className="mb-3 inline-flex rounded-full border border-white/10 bg-white/5 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.24em] text-[#cbbca3]">
+            <div className="mb-3 inline-flex rounded-full border border-[#a68a5c]/20 bg-[#a68a5c]/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.24em] text-neutral-500">
               Contenido principal
             </div>
             <h1 className="text-3xl font-semibold tracking-tight sm:text-[2.1rem]">Banners</h1>
-            <p className="mt-4 max-w-xl text-sm leading-6 text-[#d6cdbf] sm:text-[15px]">
+            <p className="mt-4 max-w-xl text-sm leading-6 text-neutral-500 sm:text-[15px]">
               Administrá piezas visuales activas e inactivas, ordená el contenido promocional y prepará el material visible en la tienda.
             </p>
           </div>
@@ -181,11 +181,11 @@ export default function BannersPage() {
         </div>
       </div>
 
-      <div className="rounded-sm border border-[#beb9b1]/10 bg-[#2a2725] p-6 sm:p-8">
+      <div className="rounded-sm border border-neutral-200 bg-white p-6 sm:p-8">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
           <div>
-            <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[#beb9b1]/50">Gestión visual</p>
-            <h2 className="mt-1 text-2xl font-serif tracking-wide text-[#beb9b1] sm:text-[2rem]">
+            <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-neutral-400">Gestión visual</p>
+            <h2 className="mt-1 text-2xl font-serif tracking-wide text-neutral-700 sm:text-[2rem]">
               {showForm ? (editingBanner ? 'Editar banner' : 'Nuevo banner') : 'Biblioteca de banners'}
             </h2>
           </div>
@@ -203,9 +203,9 @@ export default function BannersPage() {
         </div>
 
         <div className="mt-6 space-y-4">
-          {loading && <div className="rounded-sm border border-[#beb9b1]/10 bg-[#1a1a1a]/20 px-4 py-3 text-sm text-[#beb9b1]/50">Cargando banners...</div>}
-          {error && <div className="rounded-sm border border-[#d03416]/30 bg-[#d03416]/10 px-4 py-3 text-sm text-[#f3c3ba]">Error: {error}</div>}
-          {actionLoading && <div className="rounded-sm border border-[#beb9b1]/10 bg-[#1a1a1a]/20 px-4 py-3 text-sm text-[#beb9b1]/40">Procesando cambios...</div>}
+          {loading && <div className="rounded-sm border border-neutral-200 bg-neutral-50 px-4 py-3 text-sm text-neutral-400">Cargando banners...</div>}
+          {error && <div className="rounded-sm border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-600">Error: {error}</div>}
+          {actionLoading && <div className="rounded-sm border border-neutral-200 bg-neutral-50 px-4 py-3 text-sm text-neutral-400">Procesando cambios...</div>}
 
           {!showForm && (
             <AdminBannerList

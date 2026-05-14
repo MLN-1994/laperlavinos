@@ -84,27 +84,27 @@ const HermesProductItem: React.FC<HermesProductItemProps> = ({
   };
 
   return (
-    <li className="rounded-sm border border-[#beb9b1]/10 bg-[#2a2725] p-4 transition hover:border-[#beb9b1]/20 sm:p-5">
+    <li className="rounded-sm border border-neutral-200 bg-white p-4 transition hover:border-neutral-200 sm:p-5">
       <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-2">
-            <div className="font-medium text-[#f5efe3] flex items-center gap-2 text-base">
+            <div className="font-medium text-neutral-800 flex items-center gap-2 text-base">
               {product.nombre}
             </div>
             {published && (
               <span className="rounded-sm bg-[#a68a5c]/20 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-[#c9a96e]">Publicado</span>
             )}
-            <span className={`rounded-sm px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.14em] ${hasStock ? 'bg-[#a68a5c]/15 text-[#beb9b1]/70' : 'bg-[#beb9b1]/10 text-[#beb9b1]/40'}`}>
+            <span className={`rounded-sm px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.14em] ${hasStock ? 'bg-[#a68a5c]/15 text-neutral-600' : 'bg-neutral-100 text-neutral-400'}`}>
               {hasStock ? `Stock ${stock}` : 'Sin stock'}
             </span>
             {product.grupo ? (
-              <span className="rounded-sm bg-[#beb9b1]/10 px-2.5 py-1 text-[11px] font-medium text-[#beb9b1]/60">
+              <span className="rounded-sm bg-neutral-100 px-2.5 py-1 text-[11px] font-medium text-neutral-500">
                 {product.grupo}
               </span>
             ) : null}
           </div>
-          <div className="mt-2 text-sm leading-6 text-[#beb9b1]/50">{product.descripcion}</div>
-          <div className="mt-3 flex flex-wrap items-center gap-3 text-sm text-[#beb9b1]/60">
+          <div className="mt-2 text-sm leading-6 text-neutral-400">{product.descripcion}</div>
+          <div className="mt-3 flex flex-wrap items-center gap-3 text-sm text-neutral-500">
             <span className="rounded-sm bg-[#a68a5c]/15 px-3 py-1 font-semibold text-[#c9a96e]">
               ${Number(product.precio).toLocaleString('es-AR')}
             </span>
@@ -121,14 +121,14 @@ const HermesProductItem: React.FC<HermesProductItemProps> = ({
           {!published ? (
             /* â”€â”€ FORMULARIO DE PUBLICACIÁ“N â”€â”€ */
             <>
-              <div className="rounded-sm border border-dashed border-[#beb9b1]/20 bg-[#1a1a1a]/30 p-3 space-y-3">
+              <div className="rounded-sm border border-dashed border-neutral-200 bg-neutral-50 p-3 space-y-3">
                 {/* Descripción */}
                 <div>
-                  <label className="block text-[11px] font-semibold uppercase tracking-[0.15em] text-[#beb9b1]/50 mb-1.5">
+                  <label className="block text-[11px] font-semibold uppercase tracking-[0.15em] text-neutral-400 mb-1.5">
                     Descripción (opcional)
                   </label>
                   <textarea
-                    className="w-full rounded-sm border border-[#beb9b1]/15 bg-[#1a1a1a]/40 px-3 py-2 text-xs text-[#f5efe3] placeholder-[#beb9b1]/30 resize-none focus:border-[#a68a5c]/50 focus:outline-none transition disabled:opacity-40"
+                    className="w-full rounded-sm border border-neutral-200 bg-neutral-50 px-3 py-2 text-xs text-neutral-800 placeholder-neutral-400 resize-none focus:border-[#a68a5c]/50 focus:outline-none transition disabled:opacity-40"
                     rows={3}
                     placeholder="Descripción del producto para la tienda..."
                     value={customDescription}
@@ -153,7 +153,7 @@ const HermesProductItem: React.FC<HermesProductItemProps> = ({
                     />
                     <label
                       htmlFor={`oferta-${product.hermes_id}`}
-                      className="text-[11px] font-semibold uppercase tracking-[0.15em] text-[#beb9b1]/60 cursor-pointer select-none"
+                      className="text-[11px] font-semibold uppercase tracking-[0.15em] text-neutral-500 cursor-pointer select-none"
                     >
                       En oferta
                     </label>
@@ -169,9 +169,9 @@ const HermesProductItem: React.FC<HermesProductItemProps> = ({
                         value={descuentoPorcentaje}
                         onChange={e => setDescuentoPorcentaje(e.target.value)}
                         disabled={!hasValidHermesId || loading}
-                        className="w-20 rounded-sm border border-[#a68a5c]/30 bg-[#1a1a1a]/40 px-2 py-1.5 text-xs text-[#c9a96e] text-center placeholder-[#beb9b1]/30 focus:border-[#a68a5c]/60 focus:outline-none transition disabled:opacity-40"
+                        className="w-20 rounded-sm border border-[#a68a5c]/30 bg-neutral-50 px-2 py-1.5 text-xs text-[#c9a96e] text-center placeholder-neutral-400 focus:border-[#a68a5c]/60 focus:outline-none transition disabled:opacity-40"
                       />
-                      <span className="text-[11px] text-[#beb9b1]/50">% descuento</span>
+                      <span className="text-[11px] text-neutral-400">% descuento</span>
                       {descuentoPorcentaje && Number(descuentoPorcentaje) > 0 && (
                         <span className="ml-1 text-[11px] font-semibold text-[#c9a96e]">
                           = ${Math.round(Number(product.precio) * (1 - Number(descuentoPorcentaje) / 100)).toLocaleString('es-AR')}
@@ -183,10 +183,10 @@ const HermesProductItem: React.FC<HermesProductItemProps> = ({
 
                 {/* Selector de imágenes múltiples */}
                 <div>
-                  <label className="block text-[11px] font-semibold uppercase tracking-[0.15em] text-[#beb9b1]/50 mb-1.5">
+                  <label className="block text-[11px] font-semibold uppercase tracking-[0.15em] text-neutral-400 mb-1.5">
                     Imágenes del producto
                   </label>
-                  <label className={`flex cursor-pointer items-center justify-center gap-2 rounded-sm border border-[#beb9b1]/20 px-3 py-2.5 text-xs font-semibold uppercase tracking-[0.15em] transition ${hasValidHermesId ? 'text-[#beb9b1]/60 hover:text-[#beb9b1]' : 'cursor-not-allowed text-[#beb9b1]/30'}`}>
+                  <label className={`flex cursor-pointer items-center justify-center gap-2 rounded-sm border border-neutral-200 px-3 py-2.5 text-xs font-semibold uppercase tracking-[0.15em] transition ${hasValidHermesId ? 'text-neutral-500 hover:text-neutral-800' : 'cursor-not-allowed text-neutral-300'}`}>
                     + Agregar imágenes
                     <input
                       ref={imageInputRef}
@@ -202,7 +202,7 @@ const HermesProductItem: React.FC<HermesProductItemProps> = ({
                   {pendingImages.length > 0 && (
                     <div className="mt-2 grid grid-cols-3 gap-1.5">
                       {pendingImages.map((file, idx) => (
-                        <div key={idx} className="group relative aspect-square overflow-hidden rounded-sm border border-[#beb9b1]/10 bg-[#1a1a1a]/30">
+                        <div key={idx} className="group relative aspect-square overflow-hidden rounded-sm border border-neutral-200 bg-neutral-50">
                           <img
                             src={URL.createObjectURL(file)}
                             alt={file.name}
@@ -225,13 +225,13 @@ const HermesProductItem: React.FC<HermesProductItemProps> = ({
                     </div>
                   )}
                   {pendingImages.length === 0 && (
-                    <p className="mt-2 text-xs text-[#beb9b1]/40">Cargá al menos una imagen para publicar.</p>
+                    <p className="mt-2 text-xs text-neutral-400">Cargá al menos una imagen para publicar.</p>
                   )}
                 </div>
               </div>
 
               <button
-                className={`group relative flex items-center justify-center overflow-hidden gap-2 rounded-sm px-4 py-3 text-xs font-bold uppercase tracking-[0.2em] transition ${hasValidHermesId ? 'border border-[#a68a5c] text-[#a68a5c] hover:text-[#3c3c3b]' : 'cursor-not-allowed border border-[#beb9b1]/10 text-[#beb9b1]/30'}`}
+                className={`group relative flex items-center justify-center overflow-hidden gap-2 rounded-sm px-4 py-3 text-xs font-bold uppercase tracking-[0.2em] transition ${hasValidHermesId ? 'border border-[#a68a5c] text-[#a68a5c] hover:text-neutral-800' : 'cursor-not-allowed border border-neutral-200 text-[#beb9b1]/30'}`}
                 onClick={() => {
                   const pct = enOferta && descuentoPorcentaje ? Number(descuentoPorcentaje) : null;
                   onPublish(product, customDescription, enOferta, pct, pendingImages);
@@ -261,7 +261,7 @@ const HermesProductItem: React.FC<HermesProductItemProps> = ({
                     </button>
                   )}
                   <button
-                    className="flex flex-1 items-center justify-center gap-2 rounded-sm border border-[#d03416]/25 px-3 py-2.5 text-xs font-semibold uppercase tracking-[0.15em] text-[#d03416]/55 transition hover:border-[#d03416]/50 hover:text-[#d03416] disabled:opacity-40"
+                    className="flex flex-1 items-center justify-center gap-2 rounded-sm border border-red-200 px-3 py-2.5 text-xs font-semibold uppercase tracking-[0.15em] text-red-600/55 transition hover:border-red-400 hover:text-red-600 disabled:opacity-40"
                     onClick={() => onUnpublish(product.hermes_id)}
                     disabled={loading}
                   >
@@ -273,11 +273,11 @@ const HermesProductItem: React.FC<HermesProductItemProps> = ({
 
               {/* Formulario de edición */}
               {editMode && (
-                <div className="rounded-sm border border-[#a68a5c]/20 bg-[#1a1a1a]/40 p-3 space-y-3">
+                <div className="rounded-sm border border-[#a68a5c]/20 bg-neutral-50 p-3 space-y-3">
                   <div>
-                    <label className="block text-[11px] font-semibold uppercase tracking-[0.15em] text-[#beb9b1]/50 mb-1.5">Descripción</label>
+                    <label className="block text-[11px] font-semibold uppercase tracking-[0.15em] text-neutral-400 mb-1.5">Descripción</label>
                     <textarea
-                      className="w-full rounded-sm border border-[#beb9b1]/15 bg-[#1a1a1a]/40 px-3 py-2 text-xs text-[#f5efe3] placeholder-[#beb9b1]/30 resize-none focus:border-[#a68a5c]/50 focus:outline-none transition"
+                      className="w-full rounded-sm border border-neutral-200 bg-neutral-50 px-3 py-2 text-xs text-neutral-800 placeholder-neutral-400 resize-none focus:border-[#a68a5c]/50 focus:outline-none transition"
                       rows={3}
                       value={editDescription}
                       onChange={e => setEditDescription(e.target.value)}
@@ -294,7 +294,7 @@ const HermesProductItem: React.FC<HermesProductItemProps> = ({
                         disabled={loading}
                         className="h-3.5 w-3.5 accent-[#a68a5c] cursor-pointer"
                       />
-                      <label htmlFor={`edit-oferta-${product.hermes_id}`} className="text-[11px] font-semibold uppercase tracking-[0.15em] text-[#beb9b1]/60 cursor-pointer select-none">
+                      <label htmlFor={`edit-oferta-${product.hermes_id}`} className="text-[11px] font-semibold uppercase tracking-[0.15em] text-neutral-500 cursor-pointer select-none">
                         En oferta
                       </label>
                     </div>
@@ -305,9 +305,9 @@ const HermesProductItem: React.FC<HermesProductItemProps> = ({
                           value={editDescuento}
                           onChange={e => setEditDescuento(e.target.value)}
                           disabled={loading}
-                          className="w-16 rounded-sm border border-[#a68a5c]/30 bg-[#1a1a1a]/40 px-2 py-1.5 text-xs text-[#c9a96e] text-center placeholder-[#beb9b1]/30 focus:border-[#a68a5c]/60 focus:outline-none transition"
+                          className="w-16 rounded-sm border border-[#a68a5c]/30 bg-neutral-50 px-2 py-1.5 text-xs text-[#c9a96e] text-center placeholder-neutral-400 focus:border-[#a68a5c]/60 focus:outline-none transition"
                         />
-                        <span className="text-[11px] text-[#beb9b1]/50">% desc.</span>
+                        <span className="text-[11px] text-neutral-400">% desc.</span>
                         {editDescuento && Number(editDescuento) > 0 && (
                           <span className="text-[11px] font-semibold text-[#c9a96e]">
                             = ${Math.round(Number(product.precio) * (1 - Number(editDescuento) / 100)).toLocaleString('es-AR')}
@@ -325,7 +325,7 @@ const HermesProductItem: React.FC<HermesProductItemProps> = ({
                       {loading ? <Spinner size={12} colorClass="border-current" /> : <FiCheck size={13} />} Guardar
                     </button>
                     <button
-                      className="flex flex-1 items-center justify-center gap-1.5 rounded-sm border border-[#beb9b1]/15 px-3 py-2.5 text-xs font-semibold uppercase tracking-[0.15em] text-[#beb9b1]/50 transition hover:text-[#beb9b1] disabled:opacity-40"
+                      className="flex flex-1 items-center justify-center gap-1.5 rounded-sm border border-neutral-200 px-3 py-2.5 text-xs font-semibold uppercase tracking-[0.15em] text-neutral-400 transition hover:text-neutral-800 disabled:opacity-40"
                       onClick={() => setEditMode(false)}
                       disabled={loading}
                     >
@@ -338,7 +338,7 @@ const HermesProductItem: React.FC<HermesProductItemProps> = ({
               {/* Imágenes del producto */}
               {publishedProductId && (
                 loadingImages ? (
-                  <div className="flex items-center gap-2 text-xs text-[#beb9b1]/40">
+                  <div className="flex items-center gap-2 text-xs text-neutral-400">
                     <Spinner size={12} colorClass="border-[#8f7a58]" /> Cargando imágenes...
                   </div>
                 ) : (

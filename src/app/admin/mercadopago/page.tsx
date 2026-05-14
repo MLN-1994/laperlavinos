@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useEffect, useState } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
@@ -161,15 +161,15 @@ export default function MercadoPagoAdminPage() {
     } catch { setManualError('No se pudo copiar.'); }
   };
 
-  const inputClass = 'rounded-sm border border-[#beb9b1]/15 bg-[#1a1a1a]/30 px-3 py-2.5 text-sm normal-case tracking-normal text-[#f5efe3] outline-none transition focus:border-[#a68a5c]';
+  const inputClass = 'rounded-sm border border-neutral-200 bg-neutral-50 px-3 py-2.5 text-sm normal-case tracking-normal text-neutral-800 outline-none transition focus:border-[#a68a5c]';
 
   return (
     <section className="mx-auto max-w-2xl space-y-5">
 
       {/* Header */}
       <div>
-        <h1 className="text-2xl font-serif tracking-wide text-[#beb9b1]">Mercado Pago</h1>
-        <p className="mt-1 text-sm text-[#beb9b1]/50">
+        <h1 className="text-2xl font-serif tracking-wide text-neutral-700">Mercado Pago</h1>
+        <p className="mt-1 text-sm text-neutral-400">
           Configurá la cuenta con la que se reciben los pagos de la tienda.
         </p>
       </div>
@@ -179,31 +179,31 @@ export default function MercadoPagoAdminPage() {
         <div className={`rounded-sm border px-4 py-3 text-sm ${
           flash.tone === 'ok'
             ? 'border-[#a68a5c]/30 bg-[#a68a5c]/10 text-[#c9a96e]'
-            : 'border-[#d03416]/30 bg-[#d03416]/10 text-[#f3c3ba]'
+            : 'border-red-200 bg-red-50 text-red-600'
         }`}>
           {flash.msg}
         </div>
       )}
 
       {/* ── CUENTA CONECTADA ─────────────────────────────── */}
-      <div className="rounded-sm border border-[#beb9b1]/10 bg-[#2a2725] p-6">
-        <p className="text-[10px] font-semibold uppercase tracking-[0.25em] text-[#beb9b1]/50 mb-4">
+      <div className="rounded-sm border border-neutral-200 bg-white p-6">
+        <p className="text-[10px] font-semibold uppercase tracking-[0.25em] text-neutral-400 mb-4">
           Cuenta conectada
         </p>
 
         {account.loading ? (
-          <p className="text-sm text-[#beb9b1]/40 animate-pulse">Verificando cuenta...</p>
+          <p className="text-sm text-neutral-400 animate-pulse">Verificando cuenta...</p>
         ) : account.error ? (
-          <p className="text-sm text-[#f3c3ba]">{account.error}</p>
+          <p className="text-sm text-red-600">{account.error}</p>
         ) : account.connected ? (
           <div className="space-y-4">
             <div className="flex items-start gap-4">
               <div className="mt-0.5 h-3 w-3 rounded-full bg-emerald-400 flex-shrink-0" />
               <div className="flex-1 min-w-0">
-                <p className="text-base font-serif text-[#f5efe3]">
+                <p className="text-base font-serif text-neutral-800">
                   {account.nickname ?? 'Cuenta activa'}
                 </p>
-                <p className="mt-0.5 text-sm text-[#beb9b1]/60 truncate">
+                <p className="mt-0.5 text-sm text-neutral-500 truncate">
                   {account.email ?? ''}
                 </p>
                 {account.liveMode === false && (
@@ -215,44 +215,44 @@ export default function MercadoPagoAdminPage() {
             </div>
 
             {account.mode !== 'direct' ? (
-              <div className="flex flex-wrap gap-3 pt-2 border-t border-[#beb9b1]/10">
+              <div className="flex flex-wrap gap-3 pt-2 border-t border-neutral-200">
                 <a
                   href="/api/mercadopago/oauth/authorize"
-                  className="text-xs uppercase tracking-widest text-[#beb9b1]/50 hover:text-[#beb9b1] transition-colors"
+                  className="text-xs uppercase tracking-widest text-neutral-400 hover:text-neutral-700 transition-colors"
                 >
                   Cambiar cuenta
                 </a>
-                <span className="text-[#beb9b1]/20">·</span>
+                <span className="text-neutral-700/20">·</span>
                 <button
                   type="button"
                   onClick={() => { setShowManualForm((v) => !v); setSaveError(null); }}
-                  className="text-xs uppercase tracking-widest text-[#beb9b1]/30 hover:text-[#beb9b1]/60 transition-colors"
+                  className="text-xs uppercase tracking-widest text-neutral-300 hover:text-neutral-500 transition-colors"
                 >
                   {showManualForm ? 'Cancelar' : 'Usar token manual'}
                 </button>
-                <span className="text-[#beb9b1]/20">·</span>
+                <span className="text-neutral-700/20">·</span>
                 <button
                   type="button"
                   onClick={() => void handleDisconnect()}
                   disabled={disconnecting}
-                  className="text-xs uppercase tracking-widest text-[#d03416]/60 hover:text-[#d03416] transition-colors disabled:opacity-40"
+                  className="text-xs uppercase tracking-widest text-red-500 hover:text-red-600 transition-colors disabled:opacity-40"
                 >
                   {disconnecting ? 'Desconectando...' : 'Desconectar'}
                 </button>
               </div>
             ) : (
-              <div className="flex flex-wrap gap-3 pt-2 border-t border-[#beb9b1]/10">
+              <div className="flex flex-wrap gap-3 pt-2 border-t border-neutral-200">
                 <a
                   href="/api/mercadopago/oauth/authorize"
-                  className="text-xs uppercase tracking-widest text-[#beb9b1]/50 hover:text-[#beb9b1] transition-colors"
+                  className="text-xs uppercase tracking-widest text-neutral-400 hover:text-neutral-700 transition-colors"
                 >
                   Cambiar cuenta
                 </a>
-                <span className="text-[#beb9b1]/20">&middot;</span>
+                <span className="text-neutral-700/20">&middot;</span>
                 <button
                   type="button"
                   onClick={() => { setShowManualForm((v) => !v); setSaveError(null); }}
-                  className="text-xs uppercase tracking-widest text-[#beb9b1]/30 hover:text-[#beb9b1]/60 transition-colors"
+                  className="text-xs uppercase tracking-widest text-neutral-300 hover:text-neutral-500 transition-colors"
                 >
                   {showManualForm ? 'Cancelar' : 'Usar token manual'}
                 </button>
@@ -265,8 +265,8 @@ export default function MercadoPagoAdminPage() {
             <div className="flex items-start gap-4">
               <div className="mt-0.5 h-3 w-3 rounded-full bg-red-400 flex-shrink-0" />
               <div>
-                <p className="text-base font-serif text-[#f3c3ba]">Sin cuenta conectada</p>
-                <p className="mt-0.5 text-sm text-[#beb9b1]/50">
+                <p className="text-base font-serif text-red-600">Sin cuenta conectada</p>
+                <p className="mt-0.5 text-sm text-neutral-400">
                   Conecta tu cuenta de Mercado Pago para empezar a recibir pagos.
                 </p>
               </div>
@@ -284,16 +284,16 @@ export default function MercadoPagoAdminPage() {
               <span className="relative z-10">Conectar con Mercado Pago</span>
             </a>
 
-            <p className="text-xs text-[#beb9b1]/35 text-center">
+            <p className="text-xs text-neutral-700/35 text-center">
               Se abre el login de Mercado Pago. Cuando termines, volveras automaticamente aqui.
             </p>
 
             {/* Alternativa manual */}
-            <div className="pt-1 border-t border-[#beb9b1]/8">
+            <div className="pt-1 border-t border-neutral-200">
               <button
                 type="button"
                 onClick={() => { setShowManualForm((v) => !v); setSaveError(null); }}
-                className="text-xs uppercase tracking-widest text-[#beb9b1]/30 hover:text-[#beb9b1]/60 transition-colors"
+                className="text-xs uppercase tracking-widest text-neutral-300 hover:text-neutral-500 transition-colors"
               >
                 {showManualForm ? 'Cancelar' : 'Prefiero ingresar el token manualmente'}
               </button>
@@ -303,25 +303,25 @@ export default function MercadoPagoAdminPage() {
 
         {/* Formulario token manual (secundario) */}
         {showManualForm && (
-          <form className="mt-5 pt-5 border-t border-[#beb9b1]/10 grid gap-5" onSubmit={handleSave}>
+          <form className="mt-5 pt-5 border-t border-neutral-200 grid gap-5" onSubmit={handleSave}>
 
             {/* Guia paso a paso */}
-            <div className="rounded-sm bg-[#1a1a1a]/40 border border-[#beb9b1]/8 p-4 space-y-3">
+            <div className="rounded-sm bg-neutral-50 border border-neutral-200 p-4 space-y-3">
               <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[#a68a5c]/80">
                 Como obtener el token (3 pasos)
               </p>
               <ol className="space-y-2.5">
-                <li className="flex gap-3 text-sm text-[#beb9b1]/70">
+                <li className="flex gap-3 text-sm text-neutral-600">
                   <span className="flex-shrink-0 w-5 h-5 rounded-full bg-[#a68a5c]/20 text-[#a68a5c] text-[10px] font-bold flex items-center justify-center">1</span>
                   <span>Hace clic en el boton de abajo para abrir Mercado Pago. Inicia sesion con la cuenta que queres usar para recibir los pagos.</span>
                 </li>
-                <li className="flex gap-3 text-sm text-[#beb9b1]/70">
+                <li className="flex gap-3 text-sm text-neutral-600">
                   <span className="flex-shrink-0 w-5 h-5 rounded-full bg-[#a68a5c]/20 text-[#a68a5c] text-[10px] font-bold flex items-center justify-center">2</span>
-                  <span>Una vez adentro, hace clic en <strong className="text-[#beb9b1]/85">Mis aplicaciones</strong> en el menu izquierdo y entra a tu aplicacion.</span>
+                  <span>Una vez adentro, hace clic en <strong className="text-neutral-700/85">Mis aplicaciones</strong> en el menu izquierdo y entra a tu aplicacion.</span>
                 </li>
-                <li className="flex gap-3 text-sm text-[#beb9b1]/70">
+                <li className="flex gap-3 text-sm text-neutral-600">
                   <span className="flex-shrink-0 w-5 h-5 rounded-full bg-[#a68a5c]/20 text-[#a68a5c] text-[10px] font-bold flex items-center justify-center">3</span>
-                  <span>En la seccion <strong className="text-[#beb9b1]/85">Credenciales de produccion</strong>, copia el <strong className="text-[#beb9b1]/85">Access token</strong> y pegalo abajo.</span>
+                  <span>En la seccion <strong className="text-neutral-700/85">Credenciales de produccion</strong>, copia el <strong className="text-neutral-700/85">Access token</strong> y pegalo abajo.</span>
                 </li>
               </ol>
               <a
@@ -339,8 +339,8 @@ export default function MercadoPagoAdminPage() {
               </a>
             </div>
 
-            <label className="flex flex-col gap-1.5 text-[10px] uppercase tracking-[0.2em] text-[#beb9b1]/55">
-              Access token <span className="text-[#d03416]/70 normal-case tracking-normal">(pegar aqui)</span>
+            <label className="flex flex-col gap-1.5 text-[10px] uppercase tracking-[0.2em] text-neutral-500">
+              Access token <span className="text-red-500 normal-case tracking-normal">(pegar aqui)</span>
               <textarea
                 value={accessToken}
                 onChange={(e) => setAccessToken(e.target.value)}
@@ -350,8 +350,8 @@ export default function MercadoPagoAdminPage() {
               />
             </label>
 
-            <label className="flex flex-col gap-1.5 text-[10px] uppercase tracking-[0.2em] text-[#beb9b1]/55">
-              Clave publica <span className="text-[#beb9b1]/30 normal-case tracking-normal">(de la misma seccion, opcional)</span>
+            <label className="flex flex-col gap-1.5 text-[10px] uppercase tracking-[0.2em] text-neutral-500">
+              Clave publica <span className="text-neutral-300 normal-case tracking-normal">(de la misma seccion, opcional)</span>
               <input
                 type="text"
                 value={publicKey}
@@ -362,7 +362,7 @@ export default function MercadoPagoAdminPage() {
             </label>
 
             {saveError && (
-              <p className="rounded-sm border border-[#d03416]/30 bg-[#d03416]/10 px-3 py-2 text-xs text-[#f3c3ba]">
+              <p className="rounded-sm border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-600">
                 {saveError}
               </p>
             )}
@@ -380,17 +380,17 @@ export default function MercadoPagoAdminPage() {
       </div>
 
       {/* ── COBRO PUNTUAL ────────────────────────────────── */}
-      <div className="rounded-sm border border-[#beb9b1]/10 bg-[#2a2725] p-6">
-        <p className="text-[10px] font-semibold uppercase tracking-[0.25em] text-[#beb9b1]/50 mb-1">
+      <div className="rounded-sm border border-neutral-200 bg-white p-6">
+        <p className="text-[10px] font-semibold uppercase tracking-[0.25em] text-neutral-400 mb-1">
           Generar link de cobro
         </p>
-        <p className="text-sm text-[#beb9b1]/60 mb-5">
+        <p className="text-sm text-neutral-500 mb-5">
           Creá un link para cobrarle a un cliente por cualquier concepto y monto.
           El cliente entra al link y paga con su tarjeta.
         </p>
 
         <form className="grid gap-4 sm:grid-cols-2" onSubmit={handleCreateLink}>
-          <label className="flex flex-col gap-1.5 text-[10px] uppercase tracking-[0.2em] text-[#beb9b1]/55 sm:col-span-2">
+          <label className="flex flex-col gap-1.5 text-[10px] uppercase tracking-[0.2em] text-neutral-500 sm:col-span-2">
             ¿Por qué es el cobro?
             <input
               type="text"
@@ -401,7 +401,7 @@ export default function MercadoPagoAdminPage() {
             />
           </label>
 
-          <label className="flex flex-col gap-1.5 text-[10px] uppercase tracking-[0.2em] text-[#beb9b1]/55">
+          <label className="flex flex-col gap-1.5 text-[10px] uppercase tracking-[0.2em] text-neutral-500">
             Monto ($)
             <input
               type="number"
@@ -414,7 +414,7 @@ export default function MercadoPagoAdminPage() {
             />
           </label>
 
-          <label className="flex flex-col gap-1.5 text-[10px] uppercase tracking-[0.2em] text-[#beb9b1]/55">
+          <label className="flex flex-col gap-1.5 text-[10px] uppercase tracking-[0.2em] text-neutral-500">
             Cantidad
             <input
               type="number"
@@ -428,7 +428,7 @@ export default function MercadoPagoAdminPage() {
           </label>
 
           {manualError && (
-            <p className="sm:col-span-2 rounded-sm border border-[#d03416]/30 bg-[#d03416]/10 px-3 py-2 text-xs text-[#f3c3ba]">
+            <p className="sm:col-span-2 rounded-sm border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-600">
               {manualError}
             </p>
           )}
@@ -448,9 +448,9 @@ export default function MercadoPagoAdminPage() {
         </form>
 
         {preferredLink && (
-          <div className="mt-5 rounded-sm border border-[#a68a5c]/20 bg-[#1a1a1a]/30 p-5 space-y-4">
+          <div className="mt-5 rounded-sm border border-[#a68a5c]/20 bg-neutral-50 p-5 space-y-4">
             <div>
-              <p className="text-[10px] uppercase tracking-[0.2em] text-[#beb9b1]/50 mb-1">
+              <p className="text-[10px] uppercase tracking-[0.2em] text-neutral-400 mb-1">
                 ✓ Link listo para compartir
               </p>
               <a
@@ -469,7 +469,7 @@ export default function MercadoPagoAdminPage() {
               <button
                 type="button"
                 onClick={() => void handleCopy()}
-                className="text-xs uppercase tracking-widest text-[#beb9b1]/60 hover:text-[#beb9b1] transition-colors border border-[#beb9b1]/15 px-4 py-2 rounded-sm"
+                className="text-xs uppercase tracking-widest text-neutral-500 hover:text-neutral-700 transition-colors border border-neutral-200 px-4 py-2 rounded-sm"
               >
                 {copied ? '✓ Copiado' : 'Copiar link'}
               </button>

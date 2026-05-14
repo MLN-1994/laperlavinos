@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import React, { useRef, useState } from "react";
 import Spinner from "../../components/Spinner";
@@ -77,7 +77,7 @@ export default function AdminProductImages({
 
   return (
     <div className="space-y-3">
-      <label className="block text-[11px] font-semibold uppercase tracking-[0.15em] text-[#beb9b1]/50">
+      <label className="block text-[11px] font-semibold uppercase tracking-[0.15em] text-neutral-400">
         Imágenes del producto
       </label>
 
@@ -90,7 +90,7 @@ export default function AdminProductImages({
             .map((img, idx) => (
               <div
                 key={img.id}
-                className="group relative aspect-square overflow-hidden rounded-sm border border-[#beb9b1]/10 bg-[#1a1a1a]/30"
+                className="group relative aspect-square overflow-hidden rounded-sm border border-neutral-200 bg-neutral-50"
               >
                 <img
                   src={img.url}
@@ -123,7 +123,7 @@ export default function AdminProductImages({
 
       {/* Botón agregar */}
       <label
-        className={`flex cursor-pointer items-center justify-center gap-2 rounded-sm border border-dashed border-[#beb9b1]/20 px-3 py-2.5 text-xs font-semibold uppercase tracking-[0.15em] text-[#beb9b1]/60 transition hover:border-[#a68a5c]/40 hover:text-[#c9a96e] ${uploading ? "pointer-events-none opacity-50" : ""}`}
+        className={`flex cursor-pointer items-center justify-center gap-2 rounded-sm border border-dashed border-neutral-200 px-3 py-2.5 text-xs font-semibold uppercase tracking-[0.15em] text-neutral-500 transition hover:border-[#a68a5c]/40 hover:text-[#c9a96e] ${uploading ? "pointer-events-none opacity-50" : ""}`}
       >
         {uploading ? (
           <>
@@ -145,7 +145,7 @@ export default function AdminProductImages({
       </label>
 
       {error && (
-        <p className="text-[11px] text-[#d03416]">{error}</p>
+        <p className="text-[11px] text-red-600">{error}</p>
       )}
     </div>
   );

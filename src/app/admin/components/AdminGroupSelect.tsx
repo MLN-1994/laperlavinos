@@ -1,4 +1,4 @@
-import React from "react";
+﻿import React from "react";
 
 interface AdminGroupSelectProps {
 	value: string;
@@ -9,11 +9,11 @@ interface AdminGroupSelectProps {
 const AdminGroupSelect: React.FC<AdminGroupSelectProps> = ({ value, onChange, options }) => {
 	return (
 		<div className="space-y-1.5">
-			<label className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[#beb9b1]/50">
+			<label className="text-[10px] font-semibold uppercase tracking-[0.2em] text-neutral-400">
 				Grupo
 			</label>
 			<select
-				className="w-full rounded-sm border border-[#beb9b1]/15 bg-[#1a1a1a]/30 px-3 py-2.5 text-sm text-[#f5efe3] outline-none transition focus:border-[#a68a5c]"
+				className="w-full rounded-sm border border-neutral-200 bg-neutral-50 px-3 py-2.5 text-sm text-neutral-800 outline-none transition focus:border-[#a68a5c]"
 				value={value}
 				onChange={e => onChange(e.target.value)}
 			>

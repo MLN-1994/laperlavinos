@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useEffect, useState } from 'react';
 import { publicityIconOptions, defaultPublicityConfig } from '@/lib/publicity';
@@ -97,26 +97,26 @@ export default function PublicidadPage() {
 
   return (
     <section className="space-y-7">
-      <div className="overflow-hidden rounded-sm border border-[#beb9b1]/10 bg-[linear-gradient(135deg,_rgba(49,44,40,0.98),_rgba(63,56,51,0.94))] p-6 sm:p-8 text-[#f7f0e2] shadow-xl shadow-[#2f2b28]/10">
+      <div className="overflow-hidden rounded-sm border border-neutral-200 bg-white p-6 sm:p-8 shadow-sm">
         <div className="max-w-2xl">
-          <div className="mb-3 inline-flex rounded-full border border-white/10 bg-white/5 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.24em] text-[#cbbca3]">
+          <div className="mb-3 inline-flex rounded-full border border-[#a68a5c]/20 bg-[#a68a5c]/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.24em] text-[#a68a5c]">
             Campañas y promociones
           </div>
-          <h1 className="text-3xl font-semibold tracking-tight sm:text-[2.1rem]">Publicidad</h1>
-          <p className="mt-4 max-w-xl text-sm leading-6 text-[#d6cdbf] sm:text-[15px]">
+          <h1 className="text-3xl font-semibold tracking-tight sm:text-[2.1rem] text-neutral-800">Publicidad</h1>
+          <p className="mt-4 max-w-xl text-sm leading-6 text-neutral-500 sm:text-[15px]">
             Editá la promo principal y los beneficios que aparecen entre el banner y los productos en la home.
           </p>
         </div>
       </div>
 
-      <div className="rounded-sm border border-[#beb9b1]/10 bg-[#2a2725] p-6 sm:p-8">
+      <div className="rounded-sm border border-neutral-200 bg-white p-6 sm:p-8 shadow-sm">
         {loading ? (
-          <div className="rounded-sm border border-[#beb9b1]/10 bg-[#1a1a1a]/20 px-4 py-3 text-sm text-[#beb9b1]/50">Cargando publicidad...</div>
+          <div className="rounded-sm border border-neutral-200 bg-neutral-50 px-4 py-3 text-sm text-neutral-400">Cargando publicidad...</div>
         ) : (
           <form onSubmit={handleSubmit} className="space-y-6">
-            <div className="rounded-sm border border-[#beb9b1]/10 bg-[#1a1a1a]/20 p-5">
-              <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[#beb9b1]/50">Barra de anuncio (sobre el header)</p>
-              <label className="mt-5 inline-flex items-center gap-3 rounded-sm border border-[#beb9b1]/10 bg-[#2a2725] px-4 py-3 text-sm text-[#beb9b1]/70 cursor-pointer">
+            <div className="rounded-sm border border-neutral-200 bg-neutral-50 p-5">
+              <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-neutral-400">Barra de anuncio (sobre el header)</p>
+              <label className="mt-5 inline-flex items-center gap-3 rounded-sm border border-neutral-200 bg-white px-4 py-3 text-sm text-neutral-600 cursor-pointer">
                 <input
                   type="checkbox"
                   checked={form.strip_active}
@@ -126,34 +126,34 @@ export default function PublicidadPage() {
                 <span>Mostrar barra de anuncio en la web</span>
               </label>
               <div className="mt-5 grid gap-5 md:grid-cols-2">
-                <label className="flex flex-col gap-1.5 text-[10px] uppercase tracking-[0.2em] text-[#beb9b1]/55 md:col-span-2">
+                <label className="flex flex-col gap-1.5 text-[10px] uppercase tracking-[0.2em] text-neutral-500 md:col-span-2">
                   <span>Texto del anuncio</span>
-                  <input className="w-full rounded-sm border border-[#beb9b1]/15 bg-[#1a1a1a]/30 px-3 py-2.5 text-sm normal-case tracking-normal text-[#f5efe3] outline-none transition focus:border-[#a68a5c]" value={form.strip_text} onChange={(event) => updateField('strip_text', event.target.value)} placeholder="Ej: Envío gratis en CABA desde $200.000" />
+                  <input className="w-full rounded-sm border border-neutral-200 bg-neutral-50 px-3 py-2.5 text-sm normal-case tracking-normal text-neutral-800 outline-none transition focus:border-[#a68a5c]" value={form.strip_text} onChange={(event) => updateField('strip_text', event.target.value)} placeholder="Ej: Envío gratis en CABA desde $200.000" />
                 </label>
-                <label className="flex flex-col gap-1.5 text-[10px] uppercase tracking-[0.2em] text-[#beb9b1]/55 md:col-span-2">
+                <label className="flex flex-col gap-1.5 text-[10px] uppercase tracking-[0.2em] text-neutral-500 md:col-span-2">
                   <span>URL (opcional — si quiere que sea un link)</span>
-                  <input className="w-full rounded-sm border border-[#beb9b1]/15 bg-[#1a1a1a]/30 px-3 py-2.5 text-sm normal-case tracking-normal text-[#f5efe3] outline-none transition focus:border-[#a68a5c]" value={form.strip_link ?? ''} onChange={(event) => updateField('strip_link', event.target.value)} placeholder="https://..." />
+                  <input className="w-full rounded-sm border border-neutral-200 bg-neutral-50 px-3 py-2.5 text-sm normal-case tracking-normal text-neutral-800 outline-none transition focus:border-[#a68a5c]" value={form.strip_link ?? ''} onChange={(event) => updateField('strip_link', event.target.value)} placeholder="https://..." />
                 </label>
-                <label className="flex flex-col gap-1.5 text-[10px] uppercase tracking-[0.2em] text-[#beb9b1]/55">
+                <label className="flex flex-col gap-1.5 text-[10px] uppercase tracking-[0.2em] text-neutral-500">
                   <span>Color de fondo</span>
                   <div className="flex items-center gap-3">
-                    <input type="color" value={form.strip_bg_color} onChange={(event) => updateField('strip_bg_color', event.target.value)} className="h-9 w-12 cursor-pointer rounded-sm border border-[#beb9b1]/15 bg-transparent p-0.5" />
-                    <input className="flex-1 rounded-sm border border-[#beb9b1]/15 bg-[#1a1a1a]/30 px-3 py-2.5 text-sm normal-case tracking-normal text-[#f5efe3] outline-none transition focus:border-[#a68a5c]" value={form.strip_bg_color} onChange={(event) => updateField('strip_bg_color', event.target.value)} placeholder="#a68a5c" />
+                    <input type="color" value={form.strip_bg_color} onChange={(event) => updateField('strip_bg_color', event.target.value)} className="h-9 w-12 cursor-pointer rounded-sm border border-neutral-200 bg-transparent p-0.5" />
+                    <input className="flex-1 rounded-sm border border-neutral-200 bg-neutral-50 px-3 py-2.5 text-sm normal-case tracking-normal text-neutral-800 outline-none transition focus:border-[#a68a5c]" value={form.strip_bg_color} onChange={(event) => updateField('strip_bg_color', event.target.value)} placeholder="#a68a5c" />
                   </div>
                 </label>
-                <label className="flex flex-col gap-1.5 text-[10px] uppercase tracking-[0.2em] text-[#beb9b1]/55">
+                <label className="flex flex-col gap-1.5 text-[10px] uppercase tracking-[0.2em] text-neutral-500">
                   <span>Color del texto</span>
                   <div className="flex items-center gap-3">
-                    <input type="color" value={form.strip_text_color} onChange={(event) => updateField('strip_text_color', event.target.value)} className="h-9 w-12 cursor-pointer rounded-sm border border-[#beb9b1]/15 bg-transparent p-0.5" />
-                    <input className="flex-1 rounded-sm border border-[#beb9b1]/15 bg-[#1a1a1a]/30 px-3 py-2.5 text-sm normal-case tracking-normal text-[#f5efe3] outline-none transition focus:border-[#a68a5c]" value={form.strip_text_color} onChange={(event) => updateField('strip_text_color', event.target.value)} placeholder="#1a1806" />
+                    <input type="color" value={form.strip_text_color} onChange={(event) => updateField('strip_text_color', event.target.value)} className="h-9 w-12 cursor-pointer rounded-sm border border-neutral-200 bg-transparent p-0.5" />
+                    <input className="flex-1 rounded-sm border border-neutral-200 bg-neutral-50 px-3 py-2.5 text-sm normal-case tracking-normal text-neutral-800 outline-none transition focus:border-[#a68a5c]" value={form.strip_text_color} onChange={(event) => updateField('strip_text_color', event.target.value)} placeholder="#1a1806" />
                   </div>
                 </label>
               </div>
             </div>
 
-            <div className="rounded-sm border border-[#beb9b1]/10 bg-[#1a1a1a]/20 p-5">
-              <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[#beb9b1]/50">Bloque principal</p>
-              <label className="mt-5 inline-flex items-center gap-3 rounded-sm border border-[#beb9b1]/10 bg-[#2a2725] px-4 py-3 text-sm text-[#beb9b1]/70 cursor-pointer">
+            <div className="rounded-sm border border-neutral-200 bg-neutral-50 p-5">
+              <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-neutral-400">Bloque principal</p>
+              <label className="mt-5 inline-flex items-center gap-3 rounded-sm border border-neutral-200 bg-white px-4 py-3 text-sm text-neutral-600 cursor-pointer">
                 <input
                   type="checkbox"
                   checked={form.promo_active}
@@ -163,37 +163,37 @@ export default function PublicidadPage() {
                 <span>Mostrar bloque superior en la home</span>
               </label>
               <div className="mt-5 grid gap-5 md:grid-cols-2">
-                <label className="flex flex-col gap-1.5 text-[10px] uppercase tracking-[0.2em] text-[#beb9b1]/55 md:col-span-2">
+                <label className="flex flex-col gap-1.5 text-[10px] uppercase tracking-[0.2em] text-neutral-500 md:col-span-2">
                   <span>Título principal</span>
-                  <input className="w-full rounded-sm border border-[#beb9b1]/15 bg-[#1a1a1a]/30 px-3 py-2.5 text-sm normal-case tracking-normal text-[#f5efe3] outline-none transition focus:border-[#a68a5c]" value={form.promo_title} onChange={(event) => updateField('promo_title', event.target.value)} />
+                  <input className="w-full rounded-sm border border-neutral-200 bg-neutral-50 px-3 py-2.5 text-sm normal-case tracking-normal text-neutral-800 outline-none transition focus:border-[#a68a5c]" value={form.promo_title} onChange={(event) => updateField('promo_title', event.target.value)} />
                 </label>
 
-                <label className="flex flex-col gap-1.5 text-[10px] uppercase tracking-[0.2em] text-[#beb9b1]/55 md:col-span-2">
+                <label className="flex flex-col gap-1.5 text-[10px] uppercase tracking-[0.2em] text-neutral-500 md:col-span-2">
                   <span>Subtítulo</span>
-                  <input className="w-full rounded-sm border border-[#beb9b1]/15 bg-[#1a1a1a]/30 px-3 py-2.5 text-sm normal-case tracking-normal text-[#f5efe3] outline-none transition focus:border-[#a68a5c]" value={form.promo_subtitle} onChange={(event) => updateField('promo_subtitle', event.target.value)} />
+                  <input className="w-full rounded-sm border border-neutral-200 bg-neutral-50 px-3 py-2.5 text-sm normal-case tracking-normal text-neutral-800 outline-none transition focus:border-[#a68a5c]" value={form.promo_subtitle} onChange={(event) => updateField('promo_subtitle', event.target.value)} />
                 </label>
 
-                <label className="flex flex-col gap-1.5 text-[10px] uppercase tracking-[0.2em] text-[#beb9b1]/55">
+                <label className="flex flex-col gap-1.5 text-[10px] uppercase tracking-[0.2em] text-neutral-500">
                   <span>Título secundario</span>
-                  <input className="w-full rounded-sm border border-[#beb9b1]/15 bg-[#1a1a1a]/30 px-3 py-2.5 text-sm normal-case tracking-normal text-[#f5efe3] outline-none transition focus:border-[#a68a5c]" value={form.promo_heading} onChange={(event) => updateField('promo_heading', event.target.value)} />
+                  <input className="w-full rounded-sm border border-neutral-200 bg-neutral-50 px-3 py-2.5 text-sm normal-case tracking-normal text-neutral-800 outline-none transition focus:border-[#a68a5c]" value={form.promo_heading} onChange={(event) => updateField('promo_heading', event.target.value)} />
                 </label>
 
-                <label className="flex flex-col gap-1.5 text-[10px] uppercase tracking-[0.2em] text-[#beb9b1]/55">
+                <label className="flex flex-col gap-1.5 text-[10px] uppercase tracking-[0.2em] text-neutral-500">
                   <span>Texto del botón</span>
-                  <input className="w-full rounded-sm border border-[#beb9b1]/15 bg-[#1a1a1a]/30 px-3 py-2.5 text-sm normal-case tracking-normal text-[#f5efe3] outline-none transition focus:border-[#a68a5c]" value={form.promo_cta_label} onChange={(event) => updateField('promo_cta_label', event.target.value)} />
+                  <input className="w-full rounded-sm border border-neutral-200 bg-neutral-50 px-3 py-2.5 text-sm normal-case tracking-normal text-neutral-800 outline-none transition focus:border-[#a68a5c]" value={form.promo_cta_label} onChange={(event) => updateField('promo_cta_label', event.target.value)} />
                 </label>
 
-                <label className="flex flex-col gap-1.5 text-[10px] uppercase tracking-[0.2em] text-[#beb9b1]/55 md:col-span-2">
+                <label className="flex flex-col gap-1.5 text-[10px] uppercase tracking-[0.2em] text-neutral-500 md:col-span-2">
                   <span>URL del botón</span>
-                  <input className="w-full rounded-sm border border-[#beb9b1]/15 bg-[#1a1a1a]/30 px-3 py-2.5 text-sm normal-case tracking-normal text-[#f5efe3] outline-none transition focus:border-[#a68a5c]" value={form.promo_cta_href ?? ''} onChange={(event) => updateField('promo_cta_href', event.target.value)} placeholder="https://..." />
+                  <input className="w-full rounded-sm border border-neutral-200 bg-neutral-50 px-3 py-2.5 text-sm normal-case tracking-normal text-neutral-800 outline-none transition focus:border-[#a68a5c]" value={form.promo_cta_href ?? ''} onChange={(event) => updateField('promo_cta_href', event.target.value)} placeholder="https://..." />
                 </label>
               </div>
             </div>
 
-            <div className="rounded-sm border border-[#beb9b1]/10 bg-[#1a1a1a]/20 p-5">
-              <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[#beb9b1]/50">Beneficios</p>
+            <div className="rounded-sm border border-neutral-200 bg-neutral-50 p-5">
+              <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-neutral-400">Beneficios</p>
               <div className="mt-5 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-                <label className="inline-flex items-center gap-3 rounded-sm border border-[#beb9b1]/10 bg-[#2a2725] px-4 py-3 text-sm text-[#beb9b1]/70 cursor-pointer">
+                <label className="inline-flex items-center gap-3 rounded-sm border border-neutral-200 bg-white px-4 py-3 text-sm text-neutral-600 cursor-pointer">
                   <input
                     type="checkbox"
                     checked={form.benefits_active}
@@ -202,27 +202,27 @@ export default function PublicidadPage() {
                   />
                   <span>Mostrar bloque inferior en la home</span>
                 </label>
-                <p className="text-sm text-[#beb9b1]/40">Los tres beneficios se mantienen fijos y solo cambia la visibilidad del bloque.</p>
+              <p className="text-sm text-neutral-400">Los tres beneficios se mantienen fijos y solo cambia la visibilidad del bloque.</p>
               </div>
               <div className="mt-5 grid gap-5 lg:grid-cols-3">
                 {form.benefit_items.map((item, index) => (
-                  <div key={`${item.title}-${index}`} className="rounded-sm border border-[#beb9b1]/10 bg-[#2a2725] p-4">
-                    <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[#beb9b1]/50">Beneficio {index + 1}</p>
+                  <div key={`${item.title}-${index}`} className="rounded-sm border border-neutral-200 bg-white p-4">
+                    <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-neutral-400">Beneficio {index + 1}</p>
 
                     <div className="mt-4 space-y-4">
-                      <label className="flex flex-col gap-1.5 text-[10px] uppercase tracking-[0.2em] text-[#beb9b1]/55">
+                      <label className="flex flex-col gap-1.5 text-[10px] uppercase tracking-[0.2em] text-neutral-500">
                         <span>Título</span>
-                        <input className="w-full rounded-sm border border-[#beb9b1]/15 bg-[#1a1a1a]/30 px-3 py-2.5 text-sm normal-case tracking-normal text-[#f5efe3] outline-none transition focus:border-[#a68a5c]" value={item.title} onChange={(event) => updateBenefit(index, 'title', event.target.value)} />
+                        <input className="w-full rounded-sm border border-neutral-200 bg-neutral-50 px-3 py-2.5 text-sm normal-case tracking-normal text-neutral-800 outline-none transition focus:border-[#a68a5c]" value={item.title} onChange={(event) => updateBenefit(index, 'title', event.target.value)} />
                       </label>
 
-                      <label className="flex flex-col gap-1.5 text-[10px] uppercase tracking-[0.2em] text-[#beb9b1]/55">
+                      <label className="flex flex-col gap-1.5 text-[10px] uppercase tracking-[0.2em] text-neutral-500">
                         <span>Descripción</span>
-                        <textarea className="min-h-24 w-full rounded-sm border border-[#beb9b1]/15 bg-[#1a1a1a]/30 px-3 py-2.5 text-sm normal-case tracking-normal text-[#f5efe3] outline-none transition focus:border-[#a68a5c] resize-none" value={item.description} onChange={(event) => updateBenefit(index, 'description', event.target.value)} />
+                        <textarea className="min-h-24 w-full rounded-sm border border-neutral-200 bg-neutral-50 px-3 py-2.5 text-sm normal-case tracking-normal text-neutral-800 outline-none transition focus:border-[#a68a5c] resize-none" value={item.description} onChange={(event) => updateBenefit(index, 'description', event.target.value)} />
                       </label>
 
-                      <label className="flex flex-col gap-1.5 text-[10px] uppercase tracking-[0.2em] text-[#beb9b1]/55">
+                      <label className="flex flex-col gap-1.5 text-[10px] uppercase tracking-[0.2em] text-neutral-500">
                         <span>Ícono</span>
-                        <select className="w-full rounded-sm border border-[#beb9b1]/15 bg-[#1a1a1a]/30 px-3 py-2.5 text-sm normal-case tracking-normal text-[#f5efe3] outline-none transition focus:border-[#a68a5c]" value={item.icon} onChange={(event) => updateBenefit(index, 'icon', event.target.value)}>
+                        <select className="w-full rounded-sm border border-neutral-200 bg-neutral-50 px-3 py-2.5 text-sm normal-case tracking-normal text-neutral-800 outline-none transition focus:border-[#a68a5c]" value={item.icon} onChange={(event) => updateBenefit(index, 'icon', event.target.value)}>
                           {publicityIconOptions.map((option) => (
                             <option key={option.value} value={option.value}>{option.label}</option>
                           ))}
@@ -234,7 +234,7 @@ export default function PublicidadPage() {
               </div>
             </div>
 
-            {error && <div className="rounded-sm border border-[#d03416]/30 bg-[#d03416]/10 px-3 py-2 text-xs text-[#f3c3ba]">{error}</div>}
+            {error && <div className="rounded-sm border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-600">{error}</div>}
             {success && <div className="rounded-sm border border-[#a68a5c]/30 bg-[#a68a5c]/10 px-3 py-2 text-xs text-[#c9a96e]">{success}</div>}
 
             <div className="flex justify-end">

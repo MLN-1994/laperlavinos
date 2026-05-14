@@ -1,7 +1,7 @@
 # Plan operativo austero
 
 Fecha base: 2026-04-01
-Actualizado: 2026-04-17
+Actualizado: 2026-05-12
 
 ## Restricciones y estado confirmado
 
@@ -65,8 +65,8 @@ Criterio de cierre:
 
 - [x] Revalidar precio publicado antes de crear la preferencia y priorizar precio vivo de Hermes cuando esta disponible.
 - [x] Frenar checkout si el producto ya no existe o el precio cambio.
-- [ ] Definir un mensaje honesto cuando la disponibilidad no pueda garantizarse al 100%.
-- [ ] Endurecer stock y disponibilidad con una regla operativa explicita; hoy el precio queda revalidado pero el stock no se puede prometer al 100%.
+- [x] Definir un mensaje honesto cuando la disponibilidad no pueda garantizarse al 100%.
+- [x] Endurecer stock y disponibilidad con una regla operativa explicita; hoy el precio queda revalidado pero el stock no se puede prometer al 100%.
 - [ ] Definir e integrar la logica real de envio. Andreani sigue solo contemplado a nivel de schema (`shipping_amount`, `shipping_provider`, `shipping_service`, `shipping_payload`) pero no esta implementado.
 
 Criterio de cierre:
@@ -79,7 +79,9 @@ Criterio de cierre:
 - [x] Crear vista de pedidos web en admin.
 - [x] Permitir filtrar por estado.
 - [x] Mostrar referencia de Mercado Pago y resumen de items.
-- [ ] Dejar un campo de observaciones internas si hace falta manejo manual.
+- [x] Panel de MP con OAuth de 1 clic para conectar/cambiar cuenta (UX simplificada para clientes).
+- [x] Panel de OpenPay con estado dinamico y cambio de credenciales desde el panel.
+- [x] Dejar un campo de observaciones internas si hace falta manejo manual.
 
 Criterio de cierre:
 
@@ -90,7 +92,7 @@ Criterio de cierre:
 - [ ] Validar tipo y peso de imagenes antes de subir.
 - [ ] Mejorar manejo de errores de Hermes y timeouts.
 - [ ] Agregar tests minimos para checkout, webhook y auth admin.
-- [ ] Revisar textos del frontend para no prometer mas de lo que hoy puede garantizar el sistema.
+- [x] Revisar textos del frontend para no prometer mas de lo que hoy puede garantizar el sistema.
 - [ ] Evaluar si el cambio local a `next dev --webpack` debe quedar documentado como workaround temporal o resolverse de otra forma.
 
 Criterio de cierre:
@@ -122,7 +124,36 @@ Criterio de cierre:
 - Estado operativo al 2026-04-15: checkout ya captura comprador y el admin ya muestra pedidos web; el bloqueo principal para cerrar la fase sigue siendo validar un `pago_aprobado` real por webhook.
 - 2026-04-17: prueba real confirmada. Un cobro real ingreso en Mercado Pago y el pedido correspondiente en `web_orders` quedo actualizado con `status = pago_aprobado`, `payment_status = approved` y `mercadopago_payment_id` persistido.
 - Cierre de fase: la validacion real extremo a extremo de checkout + webhook ya no esta bloqueada.
+- Estado operativo al 2026-05-11: OAuth de MP implementado y funcionando. Paneles admin de MP y OpenPay reescritos con UX simple para clientes. Client Secret de MP renovado. `MERCADOPAGO_ACCESS_TOKEN` eliminado del entorno.
+- 2026-05-12: ruta `/productos` creada (`src/app/productos/page.tsx`); el link del header ya no lleva a 404.
+- 2026-05-12: pagina de resultado de pago implementada en `/pago/resultado` con cuatro estados visuales (aprobado, rechazado, pendiente, desconocido). Limpia el carrito automaticamente al aprobar. `back_urls` de MP y `redirectUrls` de OpenPay actualizados para apuntar a esta ruta.
+- 2026-05-12: variables de entorno en Vercel verificadas. OpenPay completo. `MERCADOPAGO_WEBHOOK_SECRET`, `SUPABASE_SERVICE_ROLE_KEY` y `HERMES_PASSWORD` tienen estado 'Needs Attention' — requieren redeploy para activarse. Andreani pendiente de credenciales externas (requiere +250 envios mensuales para acceso a la API).
+- 2026-05-12: Bloque 1 SEO/estructura completado: metadata global corregida en `layout.tsx` (se reemplazo "Mi Ecommerce" por datos reales de La Perla); `generateMetadata` dinamica en `/producto/[id]` con nombre, descripcion e imagen del producto; metadata estatica en `/productos`; pagina 404 personalizada (`src/app/not-found.tsx`) con diseno acorde a la marca; `public/robots.txt` creado bloqueando admin, api y pago/resultado.
+- 2026-05-12: `src/app/sitemap.ts` creado — genera sitemap dinamico con rutas estaticas (home, productos, legales) y una URL por cada producto publicado en Supabase. Referenciado en robots.txt.
+- 2026-05-12: Mensajes de stock corregidos en publico. `ProductDetail.tsx` ya no muestra "Solo quedan X unidades" — reemplazado por "Sujeto a disponibilidad. Verificamos el stock al confirmar tu pedido.".
+- 2026-05-12: Newsletter integrado con Resend. Endpoint `/api/newsletter` envia email de bienvenida con codigo BIENVENIDA10 y notificacion interna al dueno. Pendiente de activacion cuando se verifique el dominio laperlavinos.com en Resend.
+- 2026-05-12: Webhook de MP reforzado — `MERCADOPAGO_WEBHOOK_SECRET` activado con redeploy en Vercel. Variables `SUPABASE_SERVICE_ROLE_KEY` y `HERMES_PASSWORD` tambien activadas.
+- 2026-05-12: Notas internas en pedidos implementadas. Columna `notas_internas TEXT` agregada a `web_orders`. Endpoint `PATCH /api/admin/orders/[id]/notes` con validacion de sesion admin. Campo editable en panel de pedidos con feedback visual de guardado.
+- 2026-05-12: Boton de WhatsApp flotante agregado en layout global (`WhatsAppButton.tsx`). Abre wa.me/5492915342403 con mensaje pre-cargado.
+- 2026-05-12: Email de confirmacion de compra implementado (`src/lib/orderEmail.ts`). El webhook de MP lo dispara automaticamente con `after()` al recibir pago aprobado. Incluye resumen de items, total, referencia y link al catalogo. Pendiente de activacion con dominio verificado en Resend.
 
+## Proximos pasos concretos (post 2026-05-12)
+
+0. **Newsletter con Resend — pendiente de dominio**: el endpoint `/api/newsletter` y el componente `Newsletter.tsx` ya estan implementados y listos. Para activarlos cuando se conecte el dominio `laperlavinos.com`:
+   - Entrar a resend.com → **Domains** → Add Domain → `laperlavinos.com`
+   - Agregar los registros DNS que pide Resend (TXT + CNAME) en el panel donde este gestionado el dominio
+   - Ir a **API Keys** → Create API key → nombre `laperla-produccion` → permisos "Sending access"
+   - Cargar en Vercel: `RESEND_API_KEY` (la key), `RESEND_FROM_EMAIL` (`La Perla Vinos <noreply@laperlavinos.com>`), `RESEND_NOTIFY_EMAIL` (`laperlavinos@gmail.com`)
+   - Sin estas variables el formulario devuelve 503 y no rompe nada.
+
+1. **Redeploy en Vercel** para que `MERCADOPAGO_WEBHOOK_SECRET`, `SUPABASE_SERVICE_ROLE_KEY` y `HERMES_PASSWORD` tomen efecto (estan cargadas pero marcadas como 'Needs Attention').
+2. **Probar pagina de resultado**: visitar `/pago/resultado?collection_status=approved&external_reference=test` y los otros estados para verificar la UI.
+3. **Probar checkout MP de punta a punta** con tarjeta de prueba MP y verificar que el pedido aparece en `/admin/pedidos` y que la redireccion llega a `/pago/resultado`.
+4. **Probar webhook MP**: confirmar que un pago aprobado actualiza `web_orders` a `pago_aprobado`.
+5. **Probar checkout OpenPay**: consultar con contacto de OpenPay/BBVA si tienen ambiente de pruebas. Si no, coordinar una transaccion real controlada.
+6. **Verificar match Hermes → pedidos**: confirmar que los productos de Hermes tienen los mismos codigos referenciados en `web_order_items`.
+7. **Andreani**: pendiente de credenciales. Requisito de Andreani: +250 envios mensuales para acceder a la API de integracion. Gestionar con ejecutivo comercial cuando se cumpla ese volumen.
+8. **Fase 6**: agregar tests minimos para checkout, webhook y auth admin.
 ## Pendientes post-deploy de esta etapa
 
 - Endurecer stock/disponibilidad con una regla operativa clara.

@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useEffect, useState } from 'react';
 
@@ -119,15 +119,15 @@ export default function OpenPayAdminPage() {
     } catch { setManualError('No se pudo copiar el link.'); }
   };
 
-  const inputClass = 'rounded-sm border border-[#beb9b1]/15 bg-[#1a1a1a]/30 px-3 py-2.5 text-sm normal-case tracking-normal text-[#f5efe3] outline-none transition focus:border-[#a68a5c]';
+  const inputClass = 'rounded-sm border border-neutral-200 bg-white px-3 py-2.5 text-sm normal-case tracking-normal text-neutral-800 outline-none transition focus:border-[#a68a5c]';
 
   return (
     <section className="mx-auto max-w-2xl space-y-5">
 
       {/* Header */}
       <div>
-        <h1 className="text-2xl font-serif tracking-wide text-[#beb9b1]">OpenPay / BBVA</h1>
-        <p className="mt-1 text-sm text-[#beb9b1]/50">
+        <h1 className="text-2xl font-serif tracking-wide text-neutral-800">OpenPay / BBVA</h1>
+        <p className="mt-1 text-sm text-neutral-500">
           Cobros con tarjeta a traves de BBVA OpenPay.
         </p>
       </div>
@@ -137,39 +137,39 @@ export default function OpenPayAdminPage() {
         <div className={`rounded-sm border px-4 py-3 text-sm ${
           flash.tone === 'ok'
             ? 'border-[#a68a5c]/30 bg-[#a68a5c]/10 text-[#c9a96e]'
-            : 'border-[#d03416]/30 bg-[#d03416]/10 text-[#f3c3ba]'
+            : 'border-red-200 bg-red-50 text-red-600'
         }`}>
           {flash.msg}
         </div>
       )}
 
       {/* -- CUENTA CONECTADA -- */}
-      <div className="rounded-sm border border-[#beb9b1]/10 bg-[#2a2725] p-6">
-        <p className="text-[10px] font-semibold uppercase tracking-[0.25em] text-[#beb9b1]/50 mb-4">
+      <div className="rounded-sm border border-neutral-200 bg-white p-6">
+        <p className="text-[10px] font-semibold uppercase tracking-[0.25em] text-neutral-400 mb-4">
           Cuenta conectada
         </p>
 
         {statusLoading ? (
-          <p className="text-sm text-[#beb9b1]/40 animate-pulse">Verificando conexion...</p>
+          <p className="text-sm text-neutral-400 animate-pulse">Verificando conexion...</p>
         ) : status?.connected ? (
           <div className="space-y-4">
             <div className="flex items-start gap-4">
               <div className="mt-0.5 h-3 w-3 rounded-full bg-emerald-400 flex-shrink-0" />
               <div>
-                <p className="text-base font-serif text-[#f5efe3]">Cuenta activa</p>
-                <p className="mt-1 text-sm text-[#beb9b1]/60">
+                <p className="text-base font-serif text-neutral-800">Cuenta activa</p>
+                <p className="mt-1 text-sm text-neutral-500">
                   {status.environment ?? 'Produccion'} &middot; OpenPay Argentina (BBVA)
                 </p>
-                <p className="mt-0.5 text-xs text-[#beb9b1]/30 font-mono">
+                <p className="mt-0.5 text-xs text-neutral-300 font-mono">
                   ID: {status.maskedClientId}
                 </p>
               </div>
             </div>
-            <div className="pt-2 border-t border-[#beb9b1]/10">
+            <div className="pt-2 border-t border-neutral-200">
               <button
                 type="button"
                 onClick={() => { setShowChangeForm((v) => !v); setSaveError(null); }}
-                className="text-xs uppercase tracking-widest text-[#beb9b1]/50 hover:text-[#beb9b1] transition-colors"
+                className="text-xs uppercase tracking-widest text-neutral-400 hover:text-neutral-700 transition-colors"
               >
                 {showChangeForm ? 'Cancelar' : 'Cambiar cuenta'}
               </button>
@@ -180,8 +180,8 @@ export default function OpenPayAdminPage() {
             <div className="flex items-start gap-4">
               <div className="mt-0.5 h-3 w-3 rounded-full bg-red-400 flex-shrink-0" />
               <div>
-                <p className="text-base font-serif text-[#f3c3ba]">Sin conexion</p>
-                <p className="mt-1 text-sm text-[#beb9b1]/50">
+                <p className="text-base font-serif text-red-600">Sin conexion</p>
+                <p className="mt-1 text-sm text-neutral-400">
                   {status?.reason === 'no_config'
                     ? 'Las credenciales de OpenPay no estan configuradas.'
                     : 'No se pudo conectar con OpenPay. Verifica que las credenciales sean correctas.'}
@@ -200,8 +200,8 @@ export default function OpenPayAdminPage() {
 
         {/* Formulario cambio de cuenta */}
         {showChangeForm && (
-          <form className="mt-5 pt-5 border-t border-[#beb9b1]/10 grid gap-4" onSubmit={handleSaveCredentials}>
-            <p className="text-sm text-[#beb9b1]/60">
+          <form className="mt-5 pt-5 border-t border-neutral-200 grid gap-4" onSubmit={handleSaveCredentials}>
+            <p className="text-sm text-neutral-500">
               Obtene las credenciales en el{' '}
               <a
                 href="https://mi.openpayargentina.com.ar"
@@ -211,9 +211,9 @@ export default function OpenPayAdminPage() {
               >
                 portal de OpenPay Argentina
               </a>
-              {' '}&rarr; <strong className="text-[#beb9b1]/70">Mi cuenta</strong> &rarr; <strong className="text-[#beb9b1]/70">Credenciales</strong>.
+              {' '}&rarr; <strong className="text-neutral-600">Mi cuenta</strong> &rarr; <strong className="text-neutral-600">Credenciales</strong>.
             </p>
-            <label className="flex flex-col gap-1.5 text-[10px] uppercase tracking-[0.2em] text-[#beb9b1]/55">
+            <label className="flex flex-col gap-1.5 text-[10px] uppercase tracking-[0.2em] text-neutral-500">
               Client ID
               <input
                 type="text"
@@ -223,7 +223,7 @@ export default function OpenPayAdminPage() {
                 className={inputClass}
               />
             </label>
-            <label className="flex flex-col gap-1.5 text-[10px] uppercase tracking-[0.2em] text-[#beb9b1]/55">
+            <label className="flex flex-col gap-1.5 text-[10px] uppercase tracking-[0.2em] text-neutral-500">
               Client Secret
               <input
                 type="password"
@@ -234,7 +234,7 @@ export default function OpenPayAdminPage() {
               />
             </label>
             {saveError && (
-              <p className="rounded-sm border border-[#d03416]/30 bg-[#d03416]/10 px-3 py-2 text-xs text-[#f3c3ba]">
+              <p className="rounded-sm border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-600">
                 {saveError}
               </p>
             )}
@@ -251,17 +251,17 @@ export default function OpenPayAdminPage() {
       </div>
 
       {/* -- COBRO PUNTUAL -- */}
-      <div className="rounded-sm border border-[#beb9b1]/10 bg-[#2a2725] p-6">
-        <p className="text-[10px] font-semibold uppercase tracking-[0.25em] text-[#beb9b1]/50 mb-1">
+      <div className="rounded-sm border border-neutral-200 bg-white p-6">
+        <p className="text-[10px] font-semibold uppercase tracking-[0.25em] text-neutral-400 mb-1">
           Generar link de cobro
         </p>
-        <p className="text-sm text-[#beb9b1]/60 mb-5">
+        <p className="text-sm text-neutral-500 mb-5">
           Crea un link para cobrarle a un cliente por cualquier concepto y monto.
           El cliente entra al link y paga con su tarjeta.
         </p>
 
         <form className="grid gap-4" onSubmit={handleCreateManualLink}>
-          <label className="flex flex-col gap-1.5 text-[10px] uppercase tracking-[0.2em] text-[#beb9b1]/55">
+          <label className="flex flex-col gap-1.5 text-[10px] uppercase tracking-[0.2em] text-neutral-500">
             Por que es el cobro?
             <input
               type="text"
@@ -272,7 +272,7 @@ export default function OpenPayAdminPage() {
             />
           </label>
 
-          <label className="flex flex-col gap-1.5 text-[10px] uppercase tracking-[0.2em] text-[#beb9b1]/55">
+          <label className="flex flex-col gap-1.5 text-[10px] uppercase tracking-[0.2em] text-neutral-500">
             Monto a cobrar ($)
             <input
               type="number"
@@ -286,7 +286,7 @@ export default function OpenPayAdminPage() {
           </label>
 
           {manualError && (
-            <p className="rounded-sm border border-[#d03416]/30 bg-[#d03416]/10 px-3 py-2 text-xs text-[#f3c3ba]">
+            <p className="rounded-sm border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-600">
               {manualError}
             </p>
           )}
@@ -304,9 +304,9 @@ export default function OpenPayAdminPage() {
         </form>
 
         {manualLink?.checkoutUrl && (
-          <div className="mt-5 rounded-sm border border-[#a68a5c]/20 bg-[#1a1a1a]/30 p-5 space-y-4">
+          <div className="mt-5 rounded-sm border border-[#a68a5c]/20 bg-neutral-50 p-5 space-y-4">
             <div>
-              <p className="text-[10px] uppercase tracking-[0.2em] text-[#beb9b1]/50 mb-1">
+              <p className="text-[10px] uppercase tracking-[0.2em] text-neutral-400 mb-1">
                 Link listo para compartir
               </p>
               <a
@@ -322,7 +322,7 @@ export default function OpenPayAdminPage() {
               <button
                 type="button"
                 onClick={() => void handleCopy()}
-                className="text-xs uppercase tracking-widest text-[#beb9b1]/60 hover:text-[#beb9b1] transition-colors border border-[#beb9b1]/15 px-4 py-2 rounded-sm"
+                className="text-xs uppercase tracking-widest text-neutral-500 hover:text-neutral-700 transition-colors border border-neutral-200 px-4 py-2 rounded-sm"
               >
                 {copied ? 'Copiado' : 'Copiar link'}
               </button>
