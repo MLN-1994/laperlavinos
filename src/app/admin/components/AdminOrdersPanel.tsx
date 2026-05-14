@@ -19,6 +19,8 @@ interface AdminOrderView {
   externalReference: string;
   mercadopagoPreferenceId: string | null;
   mercadopagoPaymentId: string | null;
+  paymentProvider: string | null;
+  openpayOrderUuid: string | null;
   buyerName: string;
   buyerEmail: string | null;
   buyerPhone: string | null;
@@ -236,7 +238,7 @@ export default function AdminOrdersPanel({ orders }: AdminOrdersPanelProps) {
                       </span>
                       {order.paymentStatus && (
                         <span className="rounded-sm border border-[#beb9b1]/15 bg-[#beb9b1]/5 px-3 py-1 text-[11px] uppercase tracking-[0.18em] text-[#beb9b1]/50">
-                          MP: {order.paymentStatus}
+                          {order.paymentProvider === 'openpay' ? 'OpenPay' : 'MP'}: {order.paymentStatus}
                         </span>
                       )}
                     </div>
@@ -275,7 +277,7 @@ export default function AdminOrdersPanel({ orders }: AdminOrdersPanelProps) {
                   </span>
                   {selectedOrder.paymentStatus && (
                     <span className="rounded-sm border border-[#beb9b1]/15 bg-[#beb9b1]/5 px-3 py-1 text-[11px] uppercase tracking-[0.18em] text-[#beb9b1]/50">
-                      Mercado Pago: {selectedOrder.paymentStatus}
+                      {selectedOrder.paymentProvider === 'openpay' ? 'OpenPay / BBVA' : 'Mercado Pago'}: {selectedOrder.paymentStatus}
                     </span>
                   )}
                 </div>
@@ -289,11 +291,28 @@ export default function AdminOrdersPanel({ orders }: AdminOrdersPanelProps) {
                   <p className="mt-2 break-all text-sm font-medium text-[#beb9b1]">{selectedOrder.externalReference}</p>
                 </div>
                 <div className="rounded-sm border border-[#beb9b1]/10 bg-[#1a1a1a]/20 p-4">
-                  <p className="text-[10px] uppercase tracking-[0.22em] text-[#beb9b1]/40">Pago Mercado Pago</p>
-                  <p className="mt-2 break-all text-sm font-medium text-[#beb9b1]">{selectedOrder.mercadopagoPaymentId || 'Sin pago vinculado'}</p>
+                  <p className="text-[10px] uppercase tracking-[0.22em] text-[#beb9b1]/40">
+                    {selectedOrder.paymentProvider === 'openpay' ? 'OpenPay Order UUID' : 'Pago Mercado Pago'}
+                  </p>
+                  <p className="mt-2 break-all text-sm font-medium text-[#beb9b1]">
+                    {selectedOrder.paymentProvider === 'openpay'
+                      ? (selectedOrder.openpayOrderUuid || 'Sin UUID vinculado')
+                      : (selectedOrder.mercadopagoPaymentId || 'Sin pago vinculado')}
+                  </p>
                 </div>
                 <div className="rounded-sm border border-[#beb9b1]/10 bg-[#1a1a1a]/20 p-4 sm:col-span-2">
-                  <p className="text-[10px] uppercase tracking-[0.22em] text-[#beb9b1]/40">Comprador</p>
+                  <div className="flex items-center justify-between gap-2 flex-wrap">
+                    <p className="text-[10px] uppercase tracking-[0.22em] text-[#beb9b1]/40">Comprador</p>
+                    {selectedOrder.buyerEmail && (
+                      <button
+                        type="button"
+                        onClick={() => { setSearch(selectedOrder.buyerEmail!); setPage(1); }}
+                        className="text-[10px] uppercase tracking-[0.18em] text-[#a68a5c] hover:text-[#c9a96e] transition-colors"
+                      >
+                        Ver todos sus pedidos →
+                      </button>
+                    )}
+                  </div>
                   <div className="mt-3 grid gap-3 sm:grid-cols-2 text-sm text-[#beb9b1]/70">
                     <p><span className="text-[#beb9b1]/40">Email:</span> {selectedOrder.buyerEmail || 'No informado'}</p>
                     <p><span className="text-[#beb9b1]/40">Teléfono:</span> {selectedOrder.buyerPhone || 'No informado'}</p>

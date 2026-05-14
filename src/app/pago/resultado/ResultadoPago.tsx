@@ -1,10 +1,25 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { CheckCircleIcon, XCircleIcon, ClockIcon, QuestionMarkCircleIcon } from '@heroicons/react/24/outline';
 import { useCartStore } from '@/store/useCartStore';
+
+interface OrderSummary {
+  buyerName: string;
+  subtotalAmount: number | null;
+  shippingAmount: number | null;
+  shippingService: string | null;
+  shippingPayload: { tipo?: string; direccion?: string; city?: string; province?: string } | null;
+  totalAmount: number;
+  currencyId: string;
+  items: { title: string; quantity: number; unitPrice: number; lineTotal: number }[];
+}
+
+function formatARS(amount: number) {
+  return new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS', maximumFractionDigits: 0 }).format(amount);
+}
 
 type PaymentStatus = 'success' | 'failure' | 'pending' | 'unknown';
 
@@ -85,6 +100,8 @@ const STATUS_CONFIG: Record<PaymentStatus, StatusConfig> = {
 export default function ResultadoPago() {
   const params = useSearchParams();
   const clearCart = useCartStore((s) => s.clearCart);
+  const [orderSummary, setOrderSummary] = useState<OrderSummary | null>(null);
+  const [loadingSummary, setLoadingSummary] = useState(false);
 
   const status = resolveStatus(params);
   // MP envía external_reference; OpenPay envía ref
@@ -98,6 +115,17 @@ export default function ResultadoPago() {
       clearCart();
     }
   }, [status, clearCart]);
+
+  useEffect(() => {
+    if (status === 'success' && ref) {
+      setLoadingSummary(true);
+      fetch(`/api/orders/summary?ref=${encodeURIComponent(ref)}`)
+        .then((res) => (res.ok ? res.json() : null))
+        .then((data: OrderSummary | null) => setOrderSummary(data))
+        .catch(() => null)
+        .finally(() => setLoadingSummary(false));
+    }
+  }, [status, ref]);
 
   return (
     <div className="w-full max-w-md mx-auto">
@@ -126,6 +154,54 @@ export default function ResultadoPago() {
               Referencia de pedido
             </p>
             <p className="font-mono text-xs text-[#c9a96e] break-all">{ref}</p>
+          </div>
+        )}
+
+        {/* Detalle del pedido */}
+        {status === 'success' && (
+          <div className="mt-4 rounded-sm border border-neutral-800 bg-neutral-800/30 px-4 py-4 text-left">
+            {loadingSummary ? (
+              <div className="flex justify-center py-4">
+                <div className="h-5 w-5 animate-spin rounded-full border-b-2 border-[#a68a5c]" />
+              </div>
+            ) : orderSummary ? (
+              <>
+                <p className="text-[10px] uppercase tracking-[0.2em] text-neutral-500 mb-3">Detalle del pedido</p>
+                <ul className="space-y-2">
+                  {orderSummary.items.map((item, i) => (
+                    <li key={i} className="flex justify-between gap-4 text-xs text-neutral-300">
+                      <span className="flex-1 leading-snug">
+                        {item.title}
+                        <span className="ml-1 text-neutral-500">×{item.quantity}</span>
+                      </span>
+                      <span className="whitespace-nowrap text-neutral-200">{formatARS(item.lineTotal)}</span>
+                    </li>
+                  ))}
+                </ul>
+                <div className="mt-4 space-y-1 border-t border-neutral-700 pt-3 text-xs text-neutral-400">
+                  {orderSummary.subtotalAmount != null && orderSummary.subtotalAmount !== orderSummary.totalAmount && (
+                    <div className="flex justify-between">
+                      <span>Subtotal</span>
+                      <span>{formatARS(orderSummary.subtotalAmount)}</span>
+                    </div>
+                  )}
+                  <div className="flex justify-between">
+                    <span>Envío</span>
+                    <span>
+                      {orderSummary.shippingService === 'retiro_en_local'
+                        ? 'Retiro en local'
+                        : orderSummary.shippingAmount
+                          ? formatARS(orderSummary.shippingAmount)
+                          : 'Gratis'}
+                    </span>
+                  </div>
+                  <div className="flex justify-between font-semibold text-neutral-100 pt-1 border-t border-neutral-700">
+                    <span>Total</span>
+                    <span className="text-[#c9a96e]">{formatARS(orderSummary.totalAmount)}</span>
+                  </div>
+                </div>
+              </>
+            ) : null}
           </div>
         )}
 
