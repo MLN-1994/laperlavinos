@@ -10,6 +10,7 @@ interface CheckoutRequestBody {
   items?: CheckoutItemInput[];
   buyer?: CheckoutBuyerInput;
   shipping?: {
+    tipo?: string;
     province?: string;
     city?: string;
     postalCode?: string;
@@ -266,13 +267,14 @@ export async function POST(request: Request) {
     const productsTotal = calculateTotalAmount(validatedItems);
 
     // Validar envío
+    const isRetiro = body.shipping?.tipo === 'retiro';
     const shippingProvince = sanitizeText(body.shipping?.province);
     const shippingCity = sanitizeText(body.shipping?.city);
     const shippingPostalCode = sanitizeText(body.shipping?.postalCode);
-    if (!shippingProvince) {
+    if (!isRetiro && !shippingProvince) {
       return NextResponse.json({ error: 'Seleccioná una provincia de destino para el envío.' }, { status: 400 });
     }
-    const shippingAmount = getShippingCost(shippingProvince, productsTotal) ?? 0;
+    const shippingAmount = isRetiro ? 0 : (getShippingCost(shippingProvince!, productsTotal) ?? 0);
     const totalAmount = productsTotal + shippingAmount;
 
     const externalReference = buildExternalReference();
@@ -290,9 +292,11 @@ export async function POST(request: Request) {
       buyer_address: buyer.address,
       subtotal_amount: productsTotal,
       shipping_amount: shippingAmount,
-      shipping_provider: 'andreani',
-      shipping_service: 'domicilio',
-      shipping_payload: { province: shippingProvince, city: shippingCity, postalCode: shippingPostalCode } as Json,
+      shipping_provider: isRetiro ? 'retiro' : 'andreani',
+      shipping_service: isRetiro ? 'retiro_en_local' : 'domicilio',
+      shipping_payload: isRetiro
+        ? { tipo: 'retiro', direccion: 'Pilmaiquén 292, Bahía Blanca', postalCode: '8000' } as Json
+        : { province: shippingProvince, city: shippingCity, postalCode: shippingPostalCode } as Json,
       total_amount: totalAmount,
       currency_id: validatedItems[0]?.currency_id ?? 'ARS',
       raw_checkout_payload: toJsonValue({ requested: body, buyer, validatedItems }),
@@ -331,12 +335,12 @@ export async function POST(request: Request) {
           quantity: item.quantity,
           unitPrice: Number(item.unit_price),
         })),
-        {
+        ...(shippingAmount > 0 ? [{
           id: validatedItems.length + 1,
           name: `Envío a domicilio — ${shippingCity ? shippingCity + ', ' : ''}${shippingProvince}`,
           quantity: 1,
           unitPrice: shippingAmount,
-        },
+        }] : []),
       ],
       redirectUrls: {
         success: `${origin}/pago/resultado?status=success&ref=${encodeURIComponent(externalReference)}`,

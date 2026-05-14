@@ -3,7 +3,7 @@
 import { Dialog, Transition } from '@headlessui/react';
 import { Fragment, useState } from 'react';
 import { useCartStore } from '../../store/useCartStore';
-import { XMarkIcon, TrashIcon, ShoppingBagIcon, ChevronDownIcon, MapPinIcon } from '@heroicons/react/24/outline';
+import { XMarkIcon, TrashIcon, ShoppingBagIcon, ChevronDownIcon, MapPinIcon, BuildingStorefrontIcon } from '@heroicons/react/24/outline';
 import type { CheckoutBuyerInput } from '@/types/mercadopago';
 import { SiMercadopago, SiVisa, SiMastercard, SiAmericanexpress } from 'react-icons/si';
 import { getShippingCost, FREE_SHIPPING_THRESHOLD } from '@/lib/shipping';
@@ -114,6 +114,7 @@ export default function CartDrawer({ isOpen, setIsOpen }: CartDrawerProps) {
   const [checkoutError, setCheckoutError] = useState<string | null>(null);
   const [buyerForm, setBuyerForm] = useState<CheckoutBuyerInput>(initialBuyerForm);
   const [isFormOpen, setIsFormOpen] = useState(false);
+  const [deliveryMethod, setDeliveryMethod] = useState<'envio' | 'retiro'>('envio');
 
   const subtotal = cart.reduce((acc: number, item) => acc + item.price * item.quantity, 0);
 
@@ -130,15 +131,17 @@ export default function CartDrawer({ isOpen, setIsOpen }: CartDrawerProps) {
     if (buyerForm.phone.trim().length < 6) return 'Ingresa un telefono valido.';
     if (!buyerForm.documentType.trim()) return 'Selecciona el tipo de documento.';
     if (buyerForm.documentNumber.trim().length < 5) return 'Ingresa un documento valido.';
-    if (buyerForm.address.trim().length < 8) return 'Ingresa una direccion valida para el pedido.';
-    if (buyerForm.city.trim().length < 2) return 'Ingresa la ciudad o localidad de entrega.';
-    if (!/^\d{4,8}$/.test(buyerForm.postalCode.trim())) return 'Ingresa un código postal válido (ej: 1900).';
-    if (!buyerForm.province.trim()) return 'Seleccioná la provincia de destino para calcular el envío.';
+    if (deliveryMethod === 'envio') {
+      if (buyerForm.address.trim().length < 5) return 'Ingresa una dirección válida para el envío.';
+      if (buyerForm.city.trim().length < 2) return 'Ingresa la ciudad o localidad de entrega.';
+      if (!/^\d{4,8}$/.test(buyerForm.postalCode.trim())) return 'Ingresa un código postal válido (ej: 1900).';
+      if (!buyerForm.province.trim()) return 'Seleccioná la provincia de destino para calcular el envío.';
+    }
     return null;
   };
 
   const buildCheckoutPayload = () => {
-    const shippingCost = getShippingCost(buyerForm.province, subtotal) ?? 0;
+    const shippingCost = deliveryMethod === 'retiro' ? 0 : (getShippingCost(buyerForm.province, subtotal) ?? 0);
     return {
     buyer: {
       name: buyerForm.name.trim(),
@@ -150,12 +153,14 @@ export default function CartDrawer({ isOpen, setIsOpen }: CartDrawerProps) {
       province: buyerForm.province.trim(),
       notes: buyerForm.notes?.trim() || undefined,
     },
-    shipping: {
-      province: buyerForm.province.trim(),
-      city: buyerForm.city.trim(),
-      postalCode: buyerForm.postalCode.trim(),
-      amount: shippingCost,
-    },
+    shipping: deliveryMethod === 'retiro'
+      ? { tipo: 'retiro', amount: 0 }
+      : {
+          province: buyerForm.province.trim(),
+          city: buyerForm.city.trim(),
+          postalCode: buyerForm.postalCode.trim(),
+          amount: shippingCost,
+        },
     items: cart.map((product) => ({
       id: product.id,
       title: product.name,
@@ -361,6 +366,37 @@ export default function CartDrawer({ isOpen, setIsOpen }: CartDrawerProps) {
                       {cart.length > 0 && (
                         <div className="px-6 pb-6">
 
+                          {/* Selector de método de entrega */}
+                          <div className="mb-4">
+                            <p className="mb-2 text-[9px] uppercase tracking-[0.28em] text-neutral-400">¿Cómo querés recibir tu pedido?</p>
+                            <div className="grid grid-cols-2 gap-2">
+                              <button
+                                type="button"
+                                onClick={() => setDeliveryMethod('envio')}
+                                className={`flex items-center justify-center gap-2 rounded-sm border px-3 py-3 text-[11px] uppercase tracking-[0.12em] transition ${
+                                  deliveryMethod === 'envio'
+                                    ? 'border-[#c9a96e] bg-[#c9a96e]/10 text-[#a68a5c] font-semibold'
+                                    : 'border-neutral-200 bg-white text-neutral-500 hover:bg-neutral-50'
+                                }`}
+                              >
+                                <MapPinIcon className="h-4 w-4 flex-shrink-0" />
+                                Envío a domicilio
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => setDeliveryMethod('retiro')}
+                                className={`flex items-center justify-center gap-2 rounded-sm border px-3 py-3 text-[11px] uppercase tracking-[0.12em] transition ${
+                                  deliveryMethod === 'retiro'
+                                    ? 'border-[#c9a96e] bg-[#c9a96e]/10 text-[#a68a5c] font-semibold'
+                                    : 'border-neutral-200 bg-white text-neutral-500 hover:bg-neutral-50'
+                                }`}
+                              >
+                                <BuildingStorefrontIcon className="h-4 w-4 flex-shrink-0" />
+                                Retiro en local
+                              </button>
+                            </div>
+                          </div>
+
                           {/* Acordeón "Tus datos para finalizar" */}
                           <button
                             type="button"
@@ -465,46 +501,50 @@ export default function CartDrawer({ isOpen, setIsOpen }: CartDrawerProps) {
                                   </label>
                                 </div>
 
-                                <label className={labelClass}>
-                                  Dirección <span className="text-red-400">*</span>
-                                  <input
-                                    type="text"
-                                    value={buyerForm.address}
-                                    onChange={(e) =>
-                                      handleBuyerFieldChange('address', e.target.value)
-                                    }
-                                    autoComplete="street-address"
-                                    className={inputClass}
-                                    placeholder="Dirección completa o referencia para coordinar"
-                                  />
-                                </label>
+                                {deliveryMethod === 'envio' && (
+                                  <>
+                                    <label className={labelClass}>
+                                      Dirección <span className="text-red-400">*</span>
+                                      <input
+                                        type="text"
+                                        value={buyerForm.address}
+                                        onChange={(e) =>
+                                          handleBuyerFieldChange('address', e.target.value)
+                                        }
+                                        autoComplete="street-address"
+                                        className={inputClass}
+                                        placeholder="Calle, número, piso/depto"
+                                      />
+                                    </label>
 
-                                {/* Ciudad / CP — 2 columnas */}
-                                <div className="grid grid-cols-[minmax(0,1fr)_120px] gap-3">
-                                  <label className={labelClass}>
-                                    Ciudad / Localidad <span className="text-red-400">*</span>
-                                    <input
-                                      type="text"
-                                      value={buyerForm.city}
-                                      onChange={(e) => handleBuyerFieldChange('city', e.target.value)}
-                                      autoComplete="address-level2"
-                                      className={inputClass}
-                                      placeholder="Ej: Mar del Plata"
-                                    />
-                                  </label>
-                                  <label className={labelClass}>
-                                    Cód. Postal <span className="text-red-400">*</span>
-                                    <input
-                                      type="text"
-                                      value={buyerForm.postalCode}
-                                      onChange={(e) => handleBuyerFieldChange('postalCode', e.target.value)}
-                                      autoComplete="postal-code"
-                                      maxLength={8}
-                                      className={inputClass}
-                                      placeholder="7600"
-                                    />
-                                  </label>
-                                </div>
+                                    {/* Ciudad / CP — 2 columnas */}
+                                    <div className="grid grid-cols-[minmax(0,1fr)_120px] gap-3">
+                                      <label className={labelClass}>
+                                        Ciudad / Localidad <span className="text-red-400">*</span>
+                                        <input
+                                          type="text"
+                                          value={buyerForm.city}
+                                          onChange={(e) => handleBuyerFieldChange('city', e.target.value)}
+                                          autoComplete="address-level2"
+                                          className={inputClass}
+                                          placeholder="Ej: Mar del Plata"
+                                        />
+                                      </label>
+                                      <label className={labelClass}>
+                                        Cód. Postal <span className="text-red-400">*</span>
+                                        <input
+                                          type="text"
+                                          value={buyerForm.postalCode}
+                                          onChange={(e) => handleBuyerFieldChange('postalCode', e.target.value)}
+                                          autoComplete="postal-code"
+                                          maxLength={8}
+                                          className={inputClass}
+                                          placeholder="7600"
+                                        />
+                                      </label>
+                                    </div>
+                                  </>
+                                )}
 
                                 <label className={labelClass}>
                                   Observaciones
@@ -523,12 +563,24 @@ export default function CartDrawer({ isOpen, setIsOpen }: CartDrawerProps) {
                             </div>
                           )}
 
-                          {/* Sección de envío */}
-                          <ShippingEstimate
-                            province={buyerForm.province}
-                            subtotal={subtotal}
-                            onProvinceChange={(p) => handleBuyerFieldChange('province', p)}
-                          />
+                          {/* Sección de envío / retiro */}
+                          {deliveryMethod === 'retiro' ? (
+                            <div className="mt-4 rounded-sm border border-neutral-200 bg-neutral-50 px-4 py-4">
+                              <div className="flex items-center gap-2 mb-2">
+                                <BuildingStorefrontIcon className="h-4 w-4 text-[#a68a5c] flex-shrink-0" />
+                                <p className="text-[10px] uppercase tracking-[0.25em] text-neutral-400">Retiro en local</p>
+                              </div>
+                              <p className="text-sm font-semibold text-neutral-800">Pilmaiquén 292, Bahía Blanca</p>
+                              <p className="text-xs text-neutral-500 mt-0.5">CP 8000 · Una vez confirmado el pedido, te contactamos para coordinar el horario de retiro.</p>
+                              <p className="mt-3 text-sm font-semibold text-green-600">Sin costo de envío</p>
+                            </div>
+                          ) : (
+                            <ShippingEstimate
+                              province={buyerForm.province}
+                              subtotal={subtotal}
+                              onProvinceChange={(p) => handleBuyerFieldChange('province', p)}
+                            />
+                          )}
 
                         </div>
                       )}
@@ -538,7 +590,7 @@ export default function CartDrawer({ isOpen, setIsOpen }: CartDrawerProps) {
                     {cart.length > 0 && (
                       <div className="flex-shrink-0 z-10 border-t border-neutral-200 bg-white px-6 py-5">
                         {(() => {
-                          const shippingCost = getShippingCost(buyerForm.province, subtotal);
+                          const shippingCost = deliveryMethod === 'retiro' ? 0 : getShippingCost(buyerForm.province, subtotal);
                           const total = subtotal + (shippingCost ?? 0);
                           return (
                             <>
@@ -561,7 +613,7 @@ export default function CartDrawer({ isOpen, setIsOpen }: CartDrawerProps) {
                                 <p className="text-xs font-serif uppercase tracking-[0.2em] text-neutral-500">Total</p>
                                 <p className="text-xl font-serif text-neutral-800">${total.toLocaleString('es-AR')}</p>
                               </div>
-                              {shippingCost === null && (
+                              {deliveryMethod === 'envio' && shippingCost === null && (
                                 <p className="text-[10px] text-neutral-400 uppercase tracking-widest italic mb-2">
                                   Seleccioná tu provincia para ver el costo de envío.
                                 </p>

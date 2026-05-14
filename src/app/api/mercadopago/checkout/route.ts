@@ -10,6 +10,7 @@ interface CheckoutRequestBody {
   items?: CheckoutItemInput[];
   buyer?: CheckoutBuyerInput;
   shipping?: {
+    tipo?: string;
     province?: string;
     city?: string;
     postalCode?: string;
@@ -264,26 +265,26 @@ export async function POST(request: Request) {
     const productsTotal = calculateTotalAmount(validatedItems);
 
     // Validar envío
+    const isRetiro = body.shipping?.tipo === 'retiro';
     const shippingProvince = sanitizeText(body.shipping?.province);
     const shippingCity = sanitizeText(body.shipping?.city);
     const shippingPostalCode = sanitizeText(body.shipping?.postalCode);
-    if (!shippingProvince) {
+    if (!isRetiro && !shippingProvince) {
       return NextResponse.json({ error: 'Seleccioná una provincia de destino para el envío.' }, { status: 400 });
     }
-    const expectedShipping = getShippingCost(shippingProvince, productsTotal) ?? 0;
-    const shippingAmount = expectedShipping;
+    const shippingAmount = isRetiro ? 0 : (getShippingCost(shippingProvince!, productsTotal) ?? 0);
 
     const totalAmount = productsTotal + shippingAmount;
     const externalReference = buildExternalReference();
 
-    const shippingItem: CheckoutItemInput = {
+    const shippingItem: CheckoutItemInput | null = (!isRetiro && shippingAmount > 0) ? {
       id: 'envio-domicilio',
       title: 'Envío a domicilio',
       description: `Andreani — ${shippingCity ? shippingCity + ', ' : ''}${shippingProvince} (${shippingPostalCode})`,
       quantity: 1,
       unit_price: shippingAmount,
       currency_id: 'ARS',
-    };
+    } : null;
 
     const orderPayload: WebOrderInsert = {
       status: 'checkout_generado',
@@ -296,9 +297,11 @@ export async function POST(request: Request) {
       buyer_address: buyer.address,
       subtotal_amount: productsTotal,
       shipping_amount: shippingAmount,
-      shipping_provider: 'andreani',
-      shipping_service: 'domicilio',
-      shipping_payload: { province: shippingProvince, city: shippingCity, postalCode: shippingPostalCode } as Json,
+      shipping_provider: isRetiro ? 'retiro' : 'andreani',
+      shipping_service: isRetiro ? 'retiro_en_local' : 'domicilio',
+      shipping_payload: isRetiro
+        ? { tipo: 'retiro', direccion: 'Pilmaiquén 292, Bahía Blanca', postalCode: '8000' } as Json
+        : { province: shippingProvince, city: shippingCity, postalCode: shippingPostalCode } as Json,
       total_amount: totalAmount,
       currency_id: validatedItems[0]?.currency_id ?? 'ARS',
       raw_checkout_payload: toJsonValue({ requested: body, buyer, validatedItems }),
@@ -324,7 +327,7 @@ export async function POST(request: Request) {
     }
 
     const preference = await createMercadoPagoCheckoutPreference({
-      items: [...validatedItems, shippingItem],
+      items: [...validatedItems, ...(shippingItem ? [shippingItem] : [])],
       origin: new URL(request.url).origin,
       externalReference,
     });

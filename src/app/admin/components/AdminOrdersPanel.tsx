@@ -25,7 +25,7 @@ interface AdminOrderView {
   buyerDocumentType: string | null;
   buyerDocumentNumber: string | null;
   buyerAddress: string | null;
-  shippingPayload: { province?: string; city?: string; postalCode?: string } | null;
+  shippingPayload: { province?: string; city?: string; postalCode?: string; tipo?: string; direccion?: string } | null;
   totalAmount: number;
   subtotalAmount: number | null;
   shippingAmount: number | null;
@@ -301,8 +301,12 @@ export default function AdminOrdersPanel({ orders }: AdminOrdersPanelProps) {
                     <p><span className="text-[#beb9b1]/40">Dirección:</span> {selectedOrder.buyerAddress || 'No informada'}</p>
                     {selectedOrder.shippingPayload && (
                       <p className="sm:col-span-2">
-                        <span className="text-[#beb9b1]/40">Destino de envío:</span>{' '}
-                        {[selectedOrder.shippingPayload.city, selectedOrder.shippingPayload.province, selectedOrder.shippingPayload.postalCode ? `CP ${selectedOrder.shippingPayload.postalCode}` : null].filter(Boolean).join(', ')}
+                        <span className="text-[#beb9b1]/40">
+                          {selectedOrder.shippingPayload.tipo === 'retiro' ? 'Método de entrega:' : 'Destino de envío:'}
+                        </span>{' '}
+                        {selectedOrder.shippingPayload.tipo === 'retiro'
+                          ? `Retiro en local — ${selectedOrder.shippingPayload.direccion ?? 'Pilmaiquén 292, Bahía Blanca'}`
+                          : [selectedOrder.shippingPayload.city, selectedOrder.shippingPayload.province, selectedOrder.shippingPayload.postalCode ? `CP ${selectedOrder.shippingPayload.postalCode}` : null].filter(Boolean).join(', ')}
                       </p>
                     )}
                   </div>

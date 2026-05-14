@@ -20,13 +20,13 @@ export interface OpenPayOrderItem {
   id: number | string;
   name: string;
   quantity: number;
-  /** Monto en pesos ARS enteros (sin centavos). Ej: $1500 ARS → 1500 */
+  /** Monto en pesos ARS enteros. Ej: $1500 ARS → 1500. Se multiplica por 100 internamente para enviar en centavos. */
   unitPrice: number;
 }
 
 export interface OpenPayShipping {
   name: string;
-  /** Monto en pesos ARS enteros */
+  /** Monto en pesos ARS enteros. Se multiplica por 100 internamente para enviar en centavos. */
   price: number;
 }
 
@@ -250,7 +250,7 @@ export async function createOpenPayOrder(params: OpenPayCreateOrderParams): Prom
           quantity: item.quantity,
           unitPrice: {
             currency: '032',
-            amount: Math.round(item.unitPrice), // pesos enteros
+            amount: Math.round(item.unitPrice * 100), // centavos (OpenPay espera unidad mínima)
           },
         })),
         ...(params.shipping && {
@@ -258,7 +258,7 @@ export async function createOpenPayOrder(params: OpenPayCreateOrderParams): Prom
             name: params.shipping.name,
             price: {
               currency: '032',
-              amount: Math.round(params.shipping.price),
+              amount: Math.round(params.shipping.price * 100), // centavos (OpenPay espera unidad mínima)
             },
           },
         }),
