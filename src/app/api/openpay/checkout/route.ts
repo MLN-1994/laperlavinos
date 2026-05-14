@@ -72,7 +72,7 @@ function isValidEmail(value: string) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
 }
 
-function parseBuyerInput(buyer: CheckoutRequestBody['buyer']) {
+function parseBuyerInput(buyer: CheckoutRequestBody['buyer'], requireAddress = true) {
   const parsedBuyer = {
     name: sanitizeText(buyer?.name),
     email: sanitizeText(buyer?.email).toLowerCase(),
@@ -103,7 +103,7 @@ function parseBuyerInput(buyer: CheckoutRequestBody['buyer']) {
     throw new CheckoutValidationError('Ingresa un numero de documento valido.');
   }
 
-  if (parsedBuyer.address.length < 8) {
+  if (requireAddress && parsedBuyer.address.length < 8) {
     throw new CheckoutValidationError('Ingresa una direccion valida para el pedido.');
   }
 
@@ -243,7 +243,7 @@ export async function POST(request: Request) {
 
     const body = (await request.json()) as CheckoutRequestBody;
     const items = Array.isArray(body.items) ? body.items : [];
-    const buyer = parseBuyerInput(body.buyer);
+    const buyer = parseBuyerInput(body.buyer, body.shipping?.tipo !== 'retiro');
 
     if (items.length === 0) {
       return NextResponse.json({ error: 'El carrito está vacío.' }, { status: 400 });
