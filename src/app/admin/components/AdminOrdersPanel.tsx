@@ -79,7 +79,7 @@ function getStatusStyles(status: string) {
 
 export default function AdminOrdersPanel({ orders }: AdminOrdersPanelProps) {
   const [search, setSearch] = useState('');
-  const [statusFilter, setStatusFilter] = useState('all');
+  const [statusFilter, setStatusFilter] = useState('pago_aprobado');
   const [page, setPage] = useState(1);
   const [selectedOrderId, setSelectedOrderId] = useState<string | null>(orders[0]?.id ?? null);
   const detailRef = useRef<HTMLDivElement>(null);
