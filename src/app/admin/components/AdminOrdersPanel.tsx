@@ -114,7 +114,10 @@ export default function AdminOrdersPanel({ orders }: AdminOrdersPanelProps) {
     const searchNeedle = search.trim().toLowerCase();
 
     return orders.filter((order) => {
-      const matchesStatus = statusFilter === 'all' || order.status === statusFilter;
+      const APPROVED_STATUSES = ['pago_aprobado', 'hermes_registrado'];
+      const matchesStatus =
+        statusFilter === 'all'
+        || (statusFilter === 'pago_aprobado' ? APPROVED_STATUSES.includes(order.status) : order.status === statusFilter);
 
       if (!matchesStatus) {
         return false;
@@ -143,7 +146,7 @@ export default function AdminOrdersPanel({ orders }: AdminOrdersPanelProps) {
   const paginatedOrders = filteredOrders.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
   const selectedOrder = filteredOrders.find((order) => order.id === selectedOrderId) ?? paginatedOrders[0] ?? null;
 
-  const approvedCount = orders.filter((order) => order.status === 'pago_aprobado').length;
+  const approvedCount = orders.filter((order) => order.status === 'pago_aprobado' || order.status === 'hermes_registrado').length;
   const pendingCount = orders.filter((order) => order.status === 'checkout_generado').length;
 
   return (
@@ -200,8 +203,8 @@ export default function AdminOrdersPanel({ orders }: AdminOrdersPanelProps) {
               className="rounded-sm border border-[#beb9b1]/15 bg-[#1a1a1a]/30 px-3 py-2.5 text-sm text-[#f5efe3] outline-none transition focus:border-[#a68a5c]"
             >
               <option value="all">Todos</option>
+              <option value="pago_aprobado">Aprobados (con/sin Hermes)</option>
               <option value="checkout_generado">Checkout generado</option>
-              <option value="pago_aprobado">Pago aprobado</option>
               <option value="pago_rechazado">Pago rechazado</option>
               <option value="pago_cancelado">Pago cancelado</option>
             </select>
