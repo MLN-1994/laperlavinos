@@ -272,7 +272,7 @@ export async function POST(request: Request) {
     if (!isRetiro && !shippingProvince) {
       return NextResponse.json({ error: 'Seleccioná una provincia de destino para el envío.' }, { status: 400 });
     }
-    const shippingAmount = isRetiro ? 0 : (getShippingCost(shippingProvince!, productsTotal) ?? 0);
+    const shippingAmount = isRetiro ? 0 : (getShippingCost(shippingProvince!, productsTotal, shippingCity, shippingPostalCode) ?? 0);
 
     const totalAmount = productsTotal + shippingAmount;
     const externalReference = buildExternalReference();

@@ -32,6 +32,8 @@ interface AdminOrderView {
   subtotalAmount: number | null;
   shippingAmount: number | null;
   currencyId: string;
+  discountAmount: number;
+  discountType: string | null;
   notes: string | null;
   notasInternas: string | null;
   createdAt: string | null;
@@ -68,9 +70,15 @@ function formatDate(value: string | null) {
 function getStatusStyles(status: string) {
   switch (status) {
     case 'pago_aprobado':
+    case 'hermes_registrado':
       return 'border-[#a68a5c]/30 bg-[#a68a5c]/10 text-[#c9a96e]';
+    case 'transferencia_aprobada':
+      return 'border-green-300 bg-green-50 text-green-700';
+    case 'pendiente_transferencia':
+      return 'border-amber-300 bg-amber-50 text-amber-700';
     case 'pago_rechazado':
     case 'pago_cancelado':
+    case 'transferencia_rechazada':
       return 'border-red-200 bg-red-50 text-red-600';
     default:
       return 'border-neutral-200 bg-neutral-100 text-neutral-500';
@@ -87,6 +95,8 @@ export default function AdminOrdersPanel({ orders }: AdminOrdersPanelProps) {
   const [notasDraft, setNotasDraft] = useState<Record<string, string>>({});
   const [notasSaving, setNotasSaving] = useState<Record<string, boolean>>({});
   const [notasSaved, setNotasSaved] = useState<Record<string, boolean>>({});
+  const [transferActionLoading, setTransferActionLoading] = useState<Record<string, boolean>>({});
+  const [localStatuses, setLocalStatuses] = useState<Record<string, string>>({});
 
   function getNotaValue(order: AdminOrderView) {
     return notasDraft[order.id] ?? order.notasInternas ?? '';
@@ -110,14 +120,32 @@ export default function AdminOrdersPanel({ orders }: AdminOrdersPanelProps) {
     }
   }
 
+  async function handleTransferAction(orderId: string, action: 'aprobar' | 'rechazar') {
+    setTransferActionLoading((prev) => ({ ...prev, [orderId]: true }));
+    try {
+      const res = await fetch(`/api/admin/orders/${orderId}/status`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action }),
+      });
+      const data = (await res.json()) as { ok?: boolean; newStatus?: string };
+      if (res.ok && data.newStatus) {
+        setLocalStatuses((prev) => ({ ...prev, [orderId]: data.newStatus! }));
+      }
+    } finally {
+      setTransferActionLoading((prev) => ({ ...prev, [orderId]: false }));
+    }
+  }
+
   const filteredOrders = useMemo(() => {
     const searchNeedle = search.trim().toLowerCase();
 
     return orders.filter((order) => {
+      const effectiveStatus = localStatuses[order.id] ?? order.status;
       const APPROVED_STATUSES = ['pago_aprobado', 'hermes_registrado'];
       const matchesStatus =
         statusFilter === 'all'
-        || (statusFilter === 'pago_aprobado' ? APPROVED_STATUSES.includes(order.status) : order.status === statusFilter);
+        || (statusFilter === 'pago_aprobado' ? APPROVED_STATUSES.includes(effectiveStatus) : effectiveStatus === statusFilter);
 
       if (!matchesStatus) {
         return false;
@@ -140,7 +168,7 @@ export default function AdminOrdersPanel({ orders }: AdminOrdersPanelProps) {
 
       return searchable.includes(searchNeedle);
     });
-  }, [orders, search, statusFilter]);
+  }, [orders, search, statusFilter, localStatuses]);
 
   const totalPages = Math.max(1, Math.ceil(filteredOrders.length / PAGE_SIZE));
   const paginatedOrders = filteredOrders.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
@@ -148,6 +176,9 @@ export default function AdminOrdersPanel({ orders }: AdminOrdersPanelProps) {
 
   const approvedCount = orders.filter((order) => order.status === 'pago_aprobado' || order.status === 'hermes_registrado').length;
   const pendingCount = orders.filter((order) => order.status === 'checkout_generado').length;
+  const pendienteTransferCount = orders.filter(
+    (o) => (localStatuses[o.id] ?? o.status) === 'pendiente_transferencia',
+  ).length;
 
   return (
     <section className="space-y-6">
@@ -171,8 +202,12 @@ export default function AdminOrdersPanel({ orders }: AdminOrdersPanelProps) {
             <div className="rounded-2xl border border-neutral-200 bg-neutral-50 px-4 py-4">
               <p className="text-[11px] uppercase tracking-[0.22em] text-neutral-500">En checkout</p>
               <p className="mt-2 text-3xl font-semibold text-neutral-800">{pendingCount}</p>
-            </div>
-          </div>
+            </div>              {pendienteTransferCount > 0 && (
+                <div className="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-4 sm:col-span-2">
+                  <p className="text-[11px] uppercase tracking-[0.22em] text-amber-600">⚡ Transferencias pendientes</p>
+                  <p className="mt-2 text-3xl font-semibold text-amber-700">{pendienteTransferCount}</p>
+                </div>
+              )}          </div>
         </div>
       </div>
 
@@ -204,6 +239,9 @@ export default function AdminOrdersPanel({ orders }: AdminOrdersPanelProps) {
             >
               <option value="all">Todos</option>
               <option value="pago_aprobado">Aprobados</option>
+              <option value="pendiente_transferencia">Transferencias pendientes</option>
+              <option value="transferencia_aprobada">Transferencias aprobadas</option>
+              <option value="transferencia_rechazada">Transferencias rechazadas</option>
               <option value="checkout_generado">Checkout generado</option>
               <option value="pago_rechazado">Pago rechazado</option>
               <option value="pago_cancelado">Pago cancelado</option>
@@ -238,13 +276,18 @@ export default function AdminOrdersPanel({ orders }: AdminOrdersPanelProps) {
                 <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
                   <div className="space-y-2">
                     <div className="flex flex-wrap items-center gap-2">
-                      <span className={`rounded-full border px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] ${getStatusStyles(order.status)}`}>
-                        {order.status.replaceAll('_', ' ')}
+                      <span className={`rounded-full border px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] ${getStatusStyles(localStatuses[order.id] ?? order.status)}`}>
+                        {(localStatuses[order.id] ?? order.status).replaceAll('_', ' ')}
                       </span>
-                      {order.paymentStatus && (
-                        <span className="rounded-sm border border-neutral-200 bg-neutral-100 px-3 py-1 text-[11px] uppercase tracking-[0.18em] text-neutral-500">
-                          {order.paymentProvider === 'openpay' ? 'OpenPay' : 'MP'}: {order.paymentStatus}
+                      {(localStatuses[order.id] ?? order.status) === 'pendiente_transferencia' && (
+                        <span className="rounded-full border border-amber-300 bg-amber-50 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-amber-700">
+                          ⚡ Confirmar transferencia
                         </span>
+                      )}
+                      {order.paymentStatus && order.paymentProvider !== 'transferencia' && (
+                          <span className="rounded-sm border border-neutral-200 bg-neutral-100 px-3 py-1 text-[11px] uppercase tracking-[0.18em] text-neutral-500">
+                            {order.paymentProvider === 'openpay' ? 'OpenPay' : 'MP'}: {order.paymentStatus}
+                          </span>
                       )}
                     </div>
                     <div>
@@ -277,10 +320,10 @@ export default function AdminOrdersPanel({ orders }: AdminOrdersPanelProps) {
             <div className="space-y-6">
               <div className="space-y-3 border-b border-neutral-200 pb-5">
                 <div className="flex flex-wrap items-center gap-2">
-                  <span className={`rounded-full border px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] ${getStatusStyles(selectedOrder.status)}`}>
-                    {selectedOrder.status.replaceAll('_', ' ')}
+                  <span className={`rounded-full border px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] ${getStatusStyles(localStatuses[selectedOrder.id] ?? selectedOrder.status)}`}>
+                    {(localStatuses[selectedOrder.id] ?? selectedOrder.status).replaceAll('_', ' ')}
                   </span>
-                  {selectedOrder.paymentStatus && (
+                  {selectedOrder.paymentStatus && selectedOrder.paymentProvider !== 'transferencia' && (
                     <span className="rounded-sm border border-neutral-200 bg-neutral-100 px-3 py-1 text-[11px] uppercase tracking-[0.18em] text-neutral-500">
                       {selectedOrder.paymentProvider === 'openpay' ? 'OpenPay / BBVA' : 'Mercado Pago'}: {selectedOrder.paymentStatus}
                     </span>
@@ -364,10 +407,42 @@ export default function AdminOrdersPanel({ orders }: AdminOrdersPanelProps) {
                 </div>
               </div>
 
+              {/* ── Aprobar / Rechazar transferencia ──────────── */}
+              {(localStatuses[selectedOrder.id] ?? selectedOrder.status) === 'pendiente_transferencia' && (
+                <div className="rounded-sm border border-amber-200 bg-amber-50 p-5">
+                  <p className="text-[10px] uppercase tracking-[0.22em] text-amber-700">⚡ Transferencia pendiente de confirmación</p>
+                  <p className="mt-2 text-sm text-amber-800">
+                    El cliente eligió pagar por transferencia bancaria con 10% de descuento.
+                    Una vez que acredites el pago, aprobá el pedido.
+                  </p>
+                  <div className="mt-4 flex gap-3">
+                    <button
+                      type="button"
+                      disabled={transferActionLoading[selectedOrder.id]}
+                      onClick={() => void handleTransferAction(selectedOrder.id, 'aprobar')}
+                      className="flex-1 rounded-sm border border-green-400 bg-green-50 px-4 py-2.5 text-xs font-bold uppercase tracking-[0.18em] text-green-700 transition hover:bg-green-100 disabled:opacity-50"
+                    >
+                      {transferActionLoading[selectedOrder.id] ? 'Procesando...' : '✓ Aprobar'}
+                    </button>
+                    <button
+                      type="button"
+                      disabled={transferActionLoading[selectedOrder.id]}
+                      onClick={() => void handleTransferAction(selectedOrder.id, 'rechazar')}
+                      className="flex-1 rounded-sm border border-red-300 bg-red-50 px-4 py-2.5 text-xs font-bold uppercase tracking-[0.18em] text-red-600 transition hover:bg-red-100 disabled:opacity-50"
+                    >
+                      {transferActionLoading[selectedOrder.id] ? 'Procesando...' : '✕ Rechazar'}
+                    </button>
+                  </div>
+                </div>
+              )}
+
               <div className="rounded-sm border border-neutral-200 bg-neutral-50 p-4 text-sm text-neutral-600">
                 <p className="text-[10px] uppercase tracking-[0.22em] text-neutral-400">Resumen operativo</p>
                 <div className="mt-3 space-y-2">
                   <p><span className="text-neutral-400">Subtotal:</span> {formatCurrency(selectedOrder.subtotalAmount ?? selectedOrder.totalAmount, selectedOrder.currencyId)}</p>
+                  {selectedOrder.discountAmount > 0 && (
+                    <p><span className="text-green-600">Descuento ({selectedOrder.discountType ?? '-'}):</span> <span className="text-green-600">−{formatCurrency(selectedOrder.discountAmount, selectedOrder.currencyId)}</span></p>
+                  )}
                   <p><span className="text-neutral-400">Envío:</span> {selectedOrder.shippingAmount !== null ? formatCurrency(selectedOrder.shippingAmount, selectedOrder.currencyId) : 'No calculado'}</p>
                   <p><span className="text-neutral-400">Total:</span> <span className="text-[#c9a96e] font-semibold">{formatCurrency(selectedOrder.totalAmount, selectedOrder.currencyId)}</span></p>
                   <p><span className="text-neutral-400">Preferencia:</span> {selectedOrder.mercadopagoPreferenceId || 'No informada'}</p>

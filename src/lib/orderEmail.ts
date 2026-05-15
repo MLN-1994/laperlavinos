@@ -133,3 +133,132 @@ export async function sendOrderConfirmationEmail(order: OrderConfirmationData) {
     console.log(`[email] Confirmación enviada a ${order.buyerEmail} pedido=${order.externalReference}`);
   }
 }
+
+// ─── Transferencia bancaria ────────────────────────────────────────────────────
+
+export interface TransferPendingData {
+  buyerName: string;
+  buyerEmail: string;
+  externalReference: string;
+  totalAmount: number;
+  discountAmount: number;
+  productsTotal: number;
+  shippingAmount: number;
+  currencyId: string;
+  items: {
+    title: string;
+    quantity: number;
+    unitPrice: number;
+    lineTotal: number;
+  }[];
+}
+
+/**
+ * Avisa al administrador que hay un pedido pendiente de transferencia.
+ * Si RESEND_API_KEY no está configurada, la función retorna silenciosamente.
+ */
+export async function sendTransferPendingEmail(order: TransferPendingData) {
+  if (!RESEND_API_KEY) {
+    console.warn('[email] RESEND_API_KEY no configurada — aviso de transferencia omitido.');
+    return;
+  }
+
+  const notifyEmail = process.env.RESEND_NOTIFY_EMAIL?.trim();
+  if (!notifyEmail) {
+    console.warn('[email] RESEND_NOTIFY_EMAIL no configurado — aviso de transferencia omitido.');
+    return;
+  }
+
+  const resend = new Resend(RESEND_API_KEY);
+
+  const itemsHtml = order.items
+    .map(
+      (item) =>
+        `<tr>
+          <td style="padding:8px 0;border-bottom:1px solid #e5e7eb;font-size:14px;color:#374151;">${item.title}</td>
+          <td style="padding:8px 0;border-bottom:1px solid #e5e7eb;font-size:14px;color:#6b7280;text-align:center;">${item.quantity}</td>
+          <td style="padding:8px 0;border-bottom:1px solid #e5e7eb;font-size:14px;color:#a68a5c;text-align:right;">${formatARS(item.lineTotal, order.currencyId)}</td>
+        </tr>`,
+    )
+    .join('');
+
+  const html = `
+    <!DOCTYPE html>
+    <html lang="es">
+    <head><meta charset="UTF-8"></head>
+    <body style="margin:0;padding:0;background:#f9fafb;font-family:Arial,sans-serif;">
+      <table width="100%" cellpadding="0" cellspacing="0" style="background:#f9fafb;padding:32px 16px;">
+        <tr><td align="center">
+          <table width="560" cellpadding="0" cellspacing="0" style="background:#fff;border:1px solid #e5e7eb;max-width:560px;width:100%;">
+            <tr><td style="height:4px;background:#f59e0b;"></td></tr>
+            <tr><td style="padding:28px 32px 16px;">
+              <p style="margin:0;font-size:11px;letter-spacing:0.2em;text-transform:uppercase;color:#a68a5c;">La Perla Vinos — Admin</p>
+              <h1 style="margin:8px 0 0;font-size:20px;color:#111827;">⚡ Nuevo pedido por transferencia</h1>
+            </td></tr>
+            <tr><td style="padding:12px 32px;background:#fffbeb;border-top:1px solid #fde68a;border-bottom:1px solid #fde68a;">
+              <p style="margin:0;font-size:14px;color:#92400e;">
+                <strong>${order.buyerName}</strong> (${order.buyerEmail}) realizó un pedido y espera confirmación de transferencia.
+              </p>
+            </td></tr>
+            <tr><td style="padding:20px 32px;">
+              <table width="100%" cellpadding="0" cellspacing="0">
+                <thead>
+                  <tr>
+                    <th style="text-align:left;font-size:11px;letter-spacing:0.1em;text-transform:uppercase;color:#9ca3af;padding-bottom:8px;">Producto</th>
+                    <th style="text-align:center;font-size:11px;letter-spacing:0.1em;text-transform:uppercase;color:#9ca3af;padding-bottom:8px;">Cant.</th>
+                    <th style="text-align:right;font-size:11px;letter-spacing:0.1em;text-transform:uppercase;color:#9ca3af;padding-bottom:8px;">Subtotal</th>
+                  </tr>
+                </thead>
+                <tbody>${itemsHtml}</tbody>
+              </table>
+            </td></tr>
+            <tr><td style="padding:0 32px 24px;">
+              <table width="100%" cellpadding="0" cellspacing="0" style="background:#f9fafb;border:1px solid #e5e7eb;padding:14px 16px;">
+                <tr>
+                  <td style="font-size:13px;color:#6b7280;">Productos</td>
+                  <td style="font-size:13px;color:#374151;text-align:right;">${formatARS(order.productsTotal, order.currencyId)}</td>
+                </tr>
+                <tr>
+                  <td style="font-size:13px;color:#16a34a;">Descuento 10% transferencia</td>
+                  <td style="font-size:13px;color:#16a34a;text-align:right;">−${formatARS(order.discountAmount, order.currencyId)}</td>
+                </tr>
+                <tr>
+                  <td style="font-size:13px;color:#6b7280;">Envío</td>
+                  <td style="font-size:13px;color:#374151;text-align:right;">${order.shippingAmount === 0 ? 'Gratis' : formatARS(order.shippingAmount, order.currencyId)}</td>
+                </tr>
+                <tr>
+                  <td style="font-size:15px;font-weight:700;color:#111827;padding-top:8px;border-top:1px solid #e5e7eb;">Total a transferir</td>
+                  <td style="font-size:15px;font-weight:700;color:#a68a5c;text-align:right;padding-top:8px;border-top:1px solid #e5e7eb;">${formatARS(order.totalAmount, order.currencyId)}</td>
+                </tr>
+              </table>
+            </td></tr>
+            <tr><td style="padding:0 32px 24px;">
+              <p style="margin:0 0 6px;font-size:11px;letter-spacing:0.15em;text-transform:uppercase;color:#9ca3af;">Referencia del pedido</p>
+              <p style="margin:0;font-size:13px;color:#374151;word-break:break-all;">${order.externalReference}</p>
+            </td></tr>
+            <tr><td style="padding:0 32px 28px;">
+              <a href="${BASE_URL}/admin/pedidos" style="display:inline-block;padding:11px 28px;background:#a68a5c;color:#fff;font-size:11px;font-weight:700;letter-spacing:0.15em;text-transform:uppercase;text-decoration:none;">
+                Ver en panel admin →
+              </a>
+            </td></tr>
+            <tr><td style="height:4px;background:#f59e0b;"></td></tr>
+          </table>
+        </td></tr>
+      </table>
+    </body>
+    </html>
+  `;
+
+  const result = await resend.emails.send({
+    from: FROM,
+    to: notifyEmail,
+    subject: `⚡ Transferencia pendiente — ${order.buyerName} · ${formatARS(order.totalAmount, order.currencyId)}`,
+    html,
+  });
+
+  if (result.error) {
+    console.error('[email] Error enviando aviso de transferencia pendiente:', result.error);
+  } else {
+    console.log(`[email] Aviso de transferencia enviado a ${notifyEmail} pedido=${order.externalReference}`);
+  }
+}

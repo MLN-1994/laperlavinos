@@ -59,8 +59,8 @@ const ARGENTINA_PROVINCES = [
 
 const PATAGONIA_PROVINCES = ['Neuquén', 'Río Negro', 'Chubut', 'Santa Cruz', 'Tierra del Fuego'];
 
-function ShippingEstimate({ province, subtotal, onProvinceChange }: { province: string; subtotal: number; onProvinceChange: (p: string) => void }) {
-  const cost = getShippingCost(province, subtotal);
+function ShippingEstimate({ province, city, postalCode, subtotal, onProvinceChange }: { province: string; city?: string; postalCode?: string; subtotal: number; onProvinceChange: (p: string) => void }) {
+  const cost = getShippingCost(province, subtotal, city, postalCode);
   const isFree = !!province && cost === 0;
   return (
     <div className="mt-4 rounded-sm border border-neutral-200 bg-neutral-50 px-4 py-4">
@@ -111,6 +111,7 @@ export default function CartDrawer({ isOpen, setIsOpen }: CartDrawerProps) {
   const { cart, removeFromCart, addToCart, decreaseQuantity } = useCartStore();
   const [checkoutLoading, setCheckoutLoading] = useState(false);
   const [openPayLoading, setOpenPayLoading] = useState(false);
+  const [transferLoading, setTransferLoading] = useState(false);
   const [checkoutError, setCheckoutError] = useState<string | null>(null);
   const [buyerForm, setBuyerForm] = useState<CheckoutBuyerInput>(initialBuyerForm);
   const [isFormOpen, setIsFormOpen] = useState(false);
@@ -141,7 +142,7 @@ export default function CartDrawer({ isOpen, setIsOpen }: CartDrawerProps) {
   };
 
   const buildCheckoutPayload = () => {
-    const shippingCost = deliveryMethod === 'retiro' ? 0 : (getShippingCost(buyerForm.province, subtotal) ?? 0);
+    const shippingCost = deliveryMethod === 'retiro' ? 0 : (getShippingCost(buyerForm.province, subtotal, buyerForm.city, buyerForm.postalCode) ?? 0);
     return {
     buyer: {
       name: buyerForm.name.trim(),
@@ -251,6 +252,43 @@ export default function CartDrawer({ isOpen, setIsOpen }: CartDrawerProps) {
     }
   };
 
+  const handleTransferenciaCheckout = async () => {
+    if (cart.length === 0 || transferLoading) return;
+
+    const formError = validateBuyerForm();
+    if (formError) {
+      setCheckoutError(formError);
+      setIsFormOpen(true);
+      return;
+    }
+
+    setTransferLoading(true);
+    setCheckoutError(null);
+
+    try {
+      const response = await fetch('/api/transferencia/checkout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(buildCheckoutPayload()),
+      });
+
+      const data = (await response.json()) as {
+        error?: string;
+        externalReference?: string;
+      };
+
+      if (!response.ok) throw new Error(data.error ?? 'No se pudo generar el pedido.');
+      if (!data.externalReference) throw new Error('No se recibió la referencia del pedido.');
+
+      window.location.href = `/transferencia/confirmacion?ref=${data.externalReference}`;
+    } catch (error) {
+      setCheckoutError(
+        error instanceof Error ? error.message : 'No se pudo generar el pedido.',
+      );
+      setTransferLoading(false);
+    }
+  };
+
   return (
     <Transition.Root show={isOpen} as={Fragment}>
       <Dialog as="div" className="relative z-[70]" onClose={setIsOpen}>
@@ -299,6 +337,31 @@ export default function CartDrawer({ isOpen, setIsOpen }: CartDrawerProps) {
                         <XMarkIcon className="h-6 w-6" strokeWidth={1.5} />
                       </button>
                     </div>
+
+                    {/* ── BANNER ENVÍO GRATIS ──────────────────── */}
+                    {cart.length > 0 && (() => {
+                      const remaining = FREE_SHIPPING_THRESHOLD - subtotal;
+                      const progress = Math.min(subtotal / FREE_SHIPPING_THRESHOLD, 1);
+                      if (remaining <= 0) {
+                        return (
+                          <div className="flex-shrink-0 flex items-center justify-center gap-2 bg-green-50 border-b border-green-200 px-6 py-2.5">
+                            <svg className="h-4 w-4 text-green-600 flex-shrink-0" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
+                            <p className="text-xs font-semibold text-green-700 uppercase tracking-[0.15em]">¡Envío gratis en tu pedido!</p>
+                          </div>
+                        );
+                      }
+                      return (
+                        <div className="flex-shrink-0 border-b border-neutral-200 bg-neutral-50 px-6 py-3">
+                          <div className="flex justify-between items-baseline mb-1.5">
+                            <p className="text-[10px] uppercase tracking-[0.2em] text-neutral-500">Envío gratis a partir de ${FREE_SHIPPING_THRESHOLD.toLocaleString('es-AR')}</p>
+                            <p className="text-[10px] font-semibold text-[#a68a5c]">te faltan ${remaining.toLocaleString('es-AR')}</p>
+                          </div>
+                          <div className="h-1 w-full rounded-full bg-neutral-200 overflow-hidden">
+                            <div className="h-full rounded-full bg-[#a68a5c] transition-all duration-500" style={{ width: `${progress * 100}%` }} />
+                          </div>
+                        </div>
+                      );
+                    })()}
 
                     {/* ── MAIN (scroll independiente) ──────────── */}
                     <div className="flex-1 overflow-y-auto overflow-x-hidden custom-scrollbar">
@@ -577,6 +640,8 @@ export default function CartDrawer({ isOpen, setIsOpen }: CartDrawerProps) {
                           ) : (
                             <ShippingEstimate
                               province={buyerForm.province}
+                              city={buyerForm.city}
+                              postalCode={buyerForm.postalCode}
                               subtotal={subtotal}
                               onProvinceChange={(p) => handleBuyerFieldChange('province', p)}
                             />
@@ -590,7 +655,7 @@ export default function CartDrawer({ isOpen, setIsOpen }: CartDrawerProps) {
                     {cart.length > 0 && (
                       <div className="flex-shrink-0 z-10 border-t border-neutral-200 bg-white px-6 py-5">
                         {(() => {
-                          const shippingCost = deliveryMethod === 'retiro' ? 0 : getShippingCost(buyerForm.province, subtotal);
+                          const shippingCost = deliveryMethod === 'retiro' ? 0 : getShippingCost(buyerForm.province, subtotal, buyerForm.city, buyerForm.postalCode);
                           const total = subtotal + (shippingCost ?? 0);
                           return (
                             <>
@@ -633,12 +698,25 @@ export default function CartDrawer({ isOpen, setIsOpen }: CartDrawerProps) {
                           Elegí cómo pagar
                         </p>
 
+                        {/* Transferencia bancaria */}
+                        <button
+                          type="button"
+                          onClick={() => void handleTransferenciaCheckout()}
+                          disabled={checkoutLoading || openPayLoading || transferLoading}
+                          className="group relative w-full flex items-center justify-center overflow-hidden border border-[#a68a5c] bg-transparent px-4 py-2.5 text-xs font-bold uppercase tracking-[0.25em] text-[#a68a5c] transition-all hover:text-white disabled:opacity-50 disabled:cursor-not-allowed mb-2"
+                        >
+                          <span className="absolute inset-0 z-0 bg-[#a68a5c] transition-transform duration-500 translate-y-full group-hover:translate-y-0" />
+                          <span className="relative z-10">
+                            {transferLoading ? 'Procesando...' : 'Transferencia — 10% OFF'}
+                          </span>
+                        </button>
+
                         {/* Mercado Pago */}
                         <button
                           type="button"
                           onClick={() => void handleCheckout()}
-                          disabled={checkoutLoading || openPayLoading}
-                          className="group relative w-full flex items-center justify-center gap-2 overflow-hidden border border-[#009ee3] bg-transparent px-6 py-3.5 text-xs font-bold uppercase tracking-[0.25em] text-[#009ee3] transition-all hover:text-white disabled:opacity-50 disabled:cursor-not-allowed mb-2"
+                          disabled={checkoutLoading || openPayLoading || transferLoading}
+                          className="group relative w-full flex items-center justify-center gap-2 overflow-hidden border border-[#009ee3] bg-transparent px-4 py-2.5 text-xs font-bold uppercase tracking-[0.25em] text-[#009ee3] transition-all hover:text-white disabled:opacity-50 disabled:cursor-not-allowed mb-2"
                         >
                           <span className="absolute inset-0 z-0 bg-[#009ee3] transition-transform duration-500 translate-y-full group-hover:translate-y-0" />
                           <SiMercadopago className="relative z-10 h-4 w-4 flex-shrink-0" />
@@ -651,8 +729,8 @@ export default function CartDrawer({ isOpen, setIsOpen }: CartDrawerProps) {
                         <button
                           type="button"
                           onClick={() => void handleOpenPayCheckout()}
-                          disabled={checkoutLoading || openPayLoading}
-                          className="group relative w-full flex items-center justify-center overflow-hidden border border-neutral-800 bg-transparent px-6 py-3.5 text-xs font-bold uppercase tracking-[0.25em] text-neutral-800 transition-all hover:text-white disabled:opacity-50 disabled:cursor-not-allowed"
+                          disabled={checkoutLoading || openPayLoading || transferLoading}
+                          className="group relative w-full flex items-center justify-center overflow-hidden border border-neutral-800 bg-transparent px-4 py-2.5 text-xs font-bold uppercase tracking-[0.25em] text-neutral-800 transition-all hover:text-white disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                           <span className="absolute inset-0 z-0 bg-neutral-800 transition-transform duration-500 translate-y-full group-hover:translate-y-0" />
                           <span className="relative z-10">
@@ -661,15 +739,14 @@ export default function CartDrawer({ isOpen, setIsOpen }: CartDrawerProps) {
                         </button>
 
                         {/* Logos tarjetas OpenPay */}
-                        <div className="mt-2 flex flex-wrap items-center justify-center gap-2">
-                          <SiVisa className="h-5 w-auto text-[#1a1f71]" title="Visa" />
-                          <SiMastercard className="h-5 w-auto text-[#eb001b]" title="Mastercard" />
-                          <SiAmericanexpress className="h-5 w-auto text-[#2e77bc]" title="American Express" />
+                        <div className="mt-1.5 flex flex-wrap items-center justify-center gap-1.5">
+                          <SiVisa className="h-4 w-auto text-[#1a1f71]" title="Visa" />
+                          <SiMastercard className="h-4 w-auto text-[#eb001b]" title="Mastercard" />
+                          <SiAmericanexpress className="h-4 w-auto text-[#2e77bc]" title="American Express" />
                           {['Cabal', 'Naranja', 'Maestro'].map((brand) => (
-                            <span key={brand} className="rounded border border-neutral-300 px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wide text-neutral-500">{brand}</span>
+                            <span key={brand} className="rounded border border-neutral-200 px-1 py-0.5 text-[8px] font-semibold uppercase tracking-wide text-neutral-400">{brand}</span>
                           ))}
                         </div>
-                        <p className="mt-1 text-center text-[9px] uppercase tracking-[0.2em] text-neutral-400">crédito y débito</p>
                       </div>
                     )}
 

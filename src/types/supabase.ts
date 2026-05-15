@@ -316,6 +316,8 @@ export interface Database {
           shipping_payload: Json;
           total_amount: number;
           currency_id: string;
+          discount_amount: number;
+          discount_type: string | null;
           raw_checkout_payload: Json;
           raw_webhook_payload: Json;
           notes: string | null;
@@ -345,6 +347,8 @@ export interface Database {
           shipping_payload?: Json;
           total_amount: number;
           currency_id?: string;
+          discount_amount?: number;
+          discount_type?: string | null;
           raw_checkout_payload?: Json;
           raw_webhook_payload?: Json;
           notes?: string | null;
@@ -374,6 +378,8 @@ export interface Database {
           shipping_payload?: Json;
           total_amount?: number;
           currency_id?: string;
+          discount_amount?: number;
+          discount_type?: string | null;
           raw_checkout_payload?: Json;
           raw_webhook_payload?: Json;
           notes?: string | null;
