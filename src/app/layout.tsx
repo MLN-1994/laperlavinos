@@ -1,7 +1,19 @@
 import type { Metadata } from "next";
+import { Playfair_Display, Inter } from "next/font/google";
 import "./globals.css";
-import GeodesicBackground from "./components/GeodesicBackground";
 import WhatsAppButton from "./components/WhatsAppButton";
+
+const playfair = Playfair_Display({
+  subsets: ["latin"],
+  variable: "--font-playfair",
+  display: "swap",
+});
+
+const inter = Inter({
+  subsets: ["latin"],
+  variable: "--font-sans",
+  display: "swap",
+});
 
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? 'https://laperlavinos.com';
 
@@ -39,10 +51,9 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="es">
+    <html lang="es" className={`${playfair.variable} ${inter.variable}`}>
       <body className="antialiased">
-        <GeodesicBackground />
-        <div className="relative z-10">
+        <div className="relative">
           {children}
         </div>
         <WhatsAppButton />

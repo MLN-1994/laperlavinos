@@ -118,82 +118,57 @@ export async function POST(request: Request) {
 
 export async function PATCH(request: Request) {
   const authError = await requireAdminApiUser();
-
-  if (authError) {
-    return authError;
-  }
+  if (authError) return authError;
 
   try {
-    const formData = await request.formData();
-    const hermesIdValue = formData.get('hermes_id');
-    const descripcionValue = formData.get('descripcion');
-    const enOfertaValue = formData.get('en_oferta');
-    const descuentoPorcentajeValue = formData.get('descuento_porcentaje');
-    const imageValue = formData.get('imagen');
+    const body = (await request.json()) as {
+      hermes_id?: number;
+      descripcion?: string;
+      en_oferta?: boolean;
+      descuento_porcentaje?: number | null;
+      destacado?: boolean;
+    };
 
-    const hermesId = Number(hermesIdValue);
-
+    const hermesId = Number(body.hermes_id);
     if (!isValidHermesId(hermesId)) {
       return NextResponse.json({ error: 'El hermes_id es obligatorio.' }, { status: 400 });
     }
 
-    const { data: existingProduct, error: fetchError } = await getSupabaseAdmin()
-      .from('productos_publicados')
-      .select('id, imagen_url')
-      .eq('hermes_id', hermesId)
-      .maybeSingle();
+    const updates: Partial<{
+      descripcion: string;
+      en_oferta: boolean;
+      descuento_porcentaje: number | null;
+      destacado: boolean;
+      updated_at: string;
+    }> = {};
+    if (body.descripcion !== undefined) updates.descripcion = body.descripcion.trim();
+    if (body.en_oferta !== undefined) {
+      updates.en_oferta = body.en_oferta;
+      const rawDescuento = Number(body.descuento_porcentaje);
+      updates.descuento_porcentaje =
+        body.en_oferta && Number.isFinite(rawDescuento) && rawDescuento > 0 && rawDescuento < 100
+          ? rawDescuento
+          : null;
+    }
+    if (body.destacado !== undefined) updates.destacado = body.destacado;
 
-    if (fetchError) {
-      throw new Error(fetchError.message);
+    if (Object.keys(updates).length === 0) {
+      return NextResponse.json({ error: 'No hay campos para actualizar.' }, { status: 400 });
     }
 
-    if (!existingProduct) {
-      return NextResponse.json({ error: 'Producto no encontrado.' }, { status: 404 });
-    }
-
-    const enOferta = enOfertaValue === 'true';
-    const rawDescuento = Number(descuentoPorcentajeValue);
-    const descuentoPorcentaje = enOferta && Number.isFinite(rawDescuento) && rawDescuento > 0 && rawDescuento < 100
-      ? rawDescuento
-      : null;
-
-    let imagenUrl: string = existingProduct.imagen_url ?? '';
-
-    if (imageValue instanceof File && imageValue.size > 0) {
-      const buffer = Buffer.from(await imageValue.arrayBuffer());
-      const filePath = `${Date.now()}_${sanitizeFileName(imageValue.name)}`;
-      const { error: uploadError } = await getSupabaseAdmin().storage.from('productos').upload(filePath, buffer, {
-        contentType: imageValue.type || 'application/octet-stream',
-      });
-
-      if (uploadError) {
-        throw new Error(`Error al subir imagen: ${uploadError.message}`);
-      }
-
-      imagenUrl = getSupabaseAdmin().storage.from('productos').getPublicUrl(filePath).data.publicUrl;
-    }
-
-    const descripcion = typeof descripcionValue === 'string' ? descripcionValue.trim() : undefined;
+    updates.updated_at = new Date().toISOString();
 
     const { data, error } = await getSupabaseAdmin()
       .from('productos_publicados')
-      .update({
-        ...(descripcion !== undefined ? { descripcion } : {}),
-        en_oferta: enOferta,
-        descuento_porcentaje: descuentoPorcentaje,
-        imagen_url: imagenUrl,
-      })
+      .update(updates)
       .eq('hermes_id', hermesId)
       .select('*')
       .single();
 
-    if (error) {
-      throw new Error(error.message);
-    }
-
+    if (error) throw new Error(error.message);
     return NextResponse.json(data);
   } catch (error) {
-    const message = error instanceof Error ? error.message : 'No se pudo editar el producto.';
+    const message = error instanceof Error ? error.message : 'No se pudo actualizar el producto.';
     return NextResponse.json({ error: message }, { status: 400 });
   }
 }

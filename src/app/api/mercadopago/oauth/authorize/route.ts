@@ -1,6 +1,16 @@
 import { NextResponse } from 'next/server';
-import { randomBytes } from 'crypto';
+import { randomBytes, createHmac } from 'crypto';
 import { getBaseUrl } from '@/lib/mercadoPago';
+
+/**
+ * Genera un state firmado con HMAC-SHA256 que no requiere almacenamiento en cookies.
+ * Formato: "<timestamp>-<nonce>.<hmac>"
+ */
+function buildSignedState(secret: string): string {
+  const payload = `${Date.now()}-${randomBytes(8).toString('hex')}`;
+  const sig = createHmac('sha256', secret).update(payload).digest('hex');
+  return `${payload}.${sig}`;
+}
 
 export async function GET(request: Request) {
   const clientId = process.env.MERCADOPAGO_CLIENT_ID?.trim();
@@ -12,7 +22,7 @@ export async function GET(request: Request) {
     return NextResponse.redirect(adminUrl);
   }
 
-  const state = randomBytes(20).toString('hex');
+  const state = buildSignedState(clientSecret);
   const redirectUri = `${getBaseUrl(new URL(request.url).origin)}/api/mercadopago/oauth/callback`;
 
   const params = new URLSearchParams({
@@ -25,15 +35,5 @@ export async function GET(request: Request) {
   });
 
   const authUrl = `https://auth.mercadopago.com/authorization?${params.toString()}`;
-
-  const response = NextResponse.redirect(authUrl);
-  response.cookies.set('mp_oauth_state', state, {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: 'lax',
-    maxAge: 600, // 10 minutos
-    path: '/',
-  });
-
-  return response;
+  return NextResponse.redirect(authUrl);
 }

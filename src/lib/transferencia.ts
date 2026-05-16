@@ -24,10 +24,10 @@ export interface TransferBankInfo {
 }
 
 export function getBankInfo(): TransferBankInfo {
-  const cbu     = process.env.TRANSFER_CBU?.trim()     ?? '';
-  const alias   = process.env.TRANSFER_ALIAS?.trim()   ?? '';
-  const titular = process.env.TRANSFER_TITULAR?.trim() ?? '';
-  const banco   = process.env.TRANSFER_BANCO?.trim()   ?? '';
+  const cbu     = process.env.TRANSFER_CBU?.trim()     ?? '0150539902000107599755';
+  const alias   = process.env.TRANSFER_ALIAS?.trim()   ?? 'gas.aloe.arco';
+  const titular = process.env.TRANSFER_TITULAR?.trim() ?? 'Ultra Premium Drink SRL';
+  const banco   = process.env.TRANSFER_BANCO?.trim()   ?? 'ICBC';
   return { cbu, alias, titular, banco, configured: !!(cbu && alias && titular) };
 }
 

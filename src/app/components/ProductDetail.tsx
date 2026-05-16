@@ -57,7 +57,7 @@ export default function ProductDetail({ product, images = [] }: ProductDetailPro
   const increase = () => setQuantity((q) => q + 1);
 
   return (
-    <section className="min-h-screen bg-neutral-50 px-4 py-10 sm:px-8 lg:px-16">
+    <section className="min-h-screen bg-[#F5EFE6] px-4 py-10 sm:px-8 lg:px-16">
       {/* Volver */}
       <button
         onClick={handleBack}

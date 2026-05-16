@@ -1,6 +1,7 @@
 "use client";
 
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { useCartStore } from '../../store/useCartStore';
 import { usePublishedProducts } from '../../hooks/usePublishedProducts';
 import type { ProductoPublicado } from '../../types';
@@ -11,11 +12,19 @@ import CategoryFilter from './CategoryFilter';
 export default function ProductList() {
     const addToCart = useCartStore((state) => state.addToCart);
     const { productos, loading, error } = usePublishedProducts();
+    const searchParams = useSearchParams();
     const [filters, setFilters] = useState<SearchFilters>({
         query: '',
         sortOrder: 'price-asc',
     });
-    const [selectedGroup, setSelectedGroup] = useState<string | null>(null);
+    const [selectedGroup, setSelectedGroup] = useState<string | null>(
+        () => searchParams.get('categoria'),
+    );
+
+    // Sincroniza el filtro cuando cambia el param de URL (navegación header)
+    useEffect(() => {
+        setSelectedGroup(searchParams.get('categoria'));
+    }, [searchParams]);
 
     const handleSearch = useCallback((nextFilters: SearchFilters) => {
         setFilters(nextFilters);
@@ -118,7 +127,7 @@ export default function ProductList() {
                 </div>
 
                 {filteredProducts.length === 0 && (
-                    <div className="rounded-[28px] border border-[#beb9b1]/10 bg-black/20 px-6 py-12 text-center text-sm text-[#beb9b1]/70 backdrop-blur-sm">
+                    <div className="rounded-sm border border-[#E8DFD0] bg-[#F5EFE6] px-6 py-12 text-center text-sm text-[#9E8B7A]">
                         No encontramos productos con esos filtros. Probá ampliar la búsqueda o cambiar el orden aplicado.
                     </div>
                 )}

@@ -55,16 +55,16 @@ export default function CategoryFilter({
   if (visible.length === 0) return null;
 
   const basePill =
-    'whitespace-nowrap rounded-sm border px-4 py-1.5 text-[12px] uppercase tracking-[0.12em] font-medium transition-all duration-150 cursor-pointer select-none focus:outline-none focus-visible:ring-1 focus-visible:ring-[#a68a5c]/50';
+    'whitespace-nowrap rounded-sm border px-4 py-1.5 text-[12px] uppercase tracking-[0.12em] font-medium transition-all duration-150 cursor-pointer select-none focus:outline-none focus-visible:ring-1 focus-visible:ring-[#C9A96E]/50';
   const inactive =
-    'border-neutral-700 bg-transparent text-neutral-400 hover:border-[#a68a5c] hover:text-[#a68a5c]';
+    'border-[#E8DFD0] bg-transparent text-[#9E8B7A] hover:border-[#C9A96E] hover:text-[#C9A96E]';
   const active =
-    'border-[#a68a5c] bg-neutral-800 text-[#a68a5c] font-semibold';
+    'border-[#C9A96E] bg-[#1A120B] text-[#C9A96E] font-semibold';
 
   return (
     <div className="relative w-full">
       {/* Fade derecho para indicar scroll */}
-      <div className="pointer-events-none absolute right-0 top-0 z-10 h-full w-16 bg-gradient-to-l from-[#3c3c3b] to-transparent" />
+      <div className="pointer-events-none absolute right-0 top-0 z-10 h-full w-16 bg-gradient-to-l from-[#F5EFE6] to-transparent" />
       <div className="overflow-x-auto scrollbar-hide pb-1 pt-0.5">
         <div className="flex min-w-max items-center gap-2 px-0.5">
           <button
@@ -75,7 +75,7 @@ export default function CategoryFilter({
           </button>
 
           {/* Separador vertical */}
-          <span className="h-3.5 w-px shrink-0 bg-neutral-600" />
+          <span className="h-3.5 w-px shrink-0 bg-[#E8DFD0]" />
 
           {visible.map(({ grupo, label }) => (
             <button

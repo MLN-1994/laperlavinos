@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { Suspense } from 'react';
 import Header from '../components/Header';
 import ProductList from '../components/ProductList';
 import PromoStrip from '../components/PromoStrip';
@@ -13,13 +14,15 @@ export const metadata: Metadata = {
 
 export default function ProductosPage() {
   return (
-    <div className="relative z-10 min-h-screen text-[#beb9b1]">
+    <div className="min-h-screen bg-[#F5EFE6]">
       <PromoStrip />
       <Header />
-      <main className="relative z-10 pb-20">
-        <section className="relative z-10 mt-10 px-4 sm:px-6 lg:px-10">
+      <main className="pb-20">
+        <section className="mt-10 px-4 sm:px-6 lg:px-10">
           <div className="mx-auto max-w-[1440px]">
-            <ProductList />
+            <Suspense fallback={<div className="py-20 text-center text-sm text-[#9E8B7A]">Cargando productos...</div>}>
+              <ProductList />
+            </Suspense>
           </div>
         </section>
       </main>

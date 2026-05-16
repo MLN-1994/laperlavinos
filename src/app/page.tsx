@@ -1,32 +1,49 @@
 import Header from './components/Header';
-import ProductList from './components/ProductList';
 import BannerList from './components/BannerList';
-import PublicityHighlights from './components/PublicityHighlights';
+import TrustBar from './components/TrustBar';
+import CategoryTiles from './components/CategoryTiles';
+import MasVendidos from './components/MasVendidos';
+import ElElegido from './components/ElElegido';
+import PorQueLaPerla from './components/PorQueLaPerla';
+import VinoDelMes from './components/VinoDelMes';
+import Resenas from './components/Resenas';
 import Footer from './components/Footer';
 import PromoStrip from './components/PromoStrip';
 import Newsletter from './components/Newsletter';
 
 export default function Home() {
   return (
-    <div className="relative z-10 min-h-screen text-[#beb9b1]">
+    <div className="min-h-screen bg-[#F5EFE6]">
       <PromoStrip />
       <Header />
-      <main className="relative z-10 pb-20">
-        <section className="px-3 pt-4 sm:px-5 md:px-8 lg:px-10 lg:pt-6">
-          <div className="mx-auto max-w-[1440px]">
-            <BannerList />
-          </div>
-        </section>
+      <main>
+        {/* Hero banner — gestionado desde Admin › Banners */}
+        <BannerList />
 
-        <PublicityHighlights />
+        {/* Barra de confianza */}
+        <TrustBar />
 
-        <section className="relative z-10 mt-10 px-4 sm:px-6 lg:px-10">
-          <div className="mx-auto max-w-[1440px]">
-            <ProductList />
-          </div>
-        </section>
+        {/* Tiles de categorías */}
+        <CategoryTiles />
+
+        {/* Los más vendidos */}
+        <MasVendidos />
+
+        {/* El elegido del mes */}
+        <ElElegido />
+
+        {/* Por qué La Perla */}
+        <PorQueLaPerla />
+
+        {/* Vino del mes por bodega */}
+        <VinoDelMes />
+
+        {/* Reseñas */}
+        <Resenas />
+
+        {/* Newsletter */}
+        <Newsletter />
       </main>
-      <Newsletter />
       <Footer />
     </div>
   );

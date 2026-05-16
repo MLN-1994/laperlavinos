@@ -1,5 +1,25 @@
 import { NextResponse } from 'next/server';
+import { createHmac, timingSafeEqual } from 'crypto';
 import { getBaseUrl, exchangeMercadoPagoOAuthCode } from '@/lib/mercadoPago';
+
+/**
+ * Verifica que el state sea un payload firmado con HMAC-SHA256 válido y no mayor a 15 minutos.
+ */
+function verifySignedState(state: string, secret: string): boolean {
+  const dotIdx = state.lastIndexOf('.');
+  if (dotIdx === -1) return false;
+  const payload = state.slice(0, dotIdx);
+  const sig = state.slice(dotIdx + 1);
+  const expected = createHmac('sha256', secret).update(payload).digest('hex');
+  try {
+    if (!timingSafeEqual(Buffer.from(sig, 'hex'), Buffer.from(expected, 'hex'))) return false;
+  } catch {
+    return false;
+  }
+  // Verificar que no tenga más de 15 minutos
+  const ts = parseInt(payload.split('-')[0], 10);
+  return !isNaN(ts) && Date.now() - ts < 15 * 60 * 1000;
+}
 
 export async function GET(request: Request) {
   const url = new URL(request.url);
@@ -17,11 +37,9 @@ export async function GET(request: Request) {
     );
   }
 
-  // Verificar CSRF state
-  const cookieHeader = request.headers.get('cookie') ?? '';
-  const storedState = cookieHeader.match(/(?:^|;\s*)mp_oauth_state=([^;]+)/)?.[1];
-
-  if (!state || !storedState || state !== storedState) {
+  // Verificar state firmado con HMAC (no requiere cookie)
+  const clientSecret = process.env.MERCADOPAGO_CLIENT_SECRET?.trim();
+  if (!state || !clientSecret || !verifySignedState(state, clientSecret)) {
     return NextResponse.redirect(
       `${adminUrl}?oauth=error&reason=${encodeURIComponent('Estado de seguridad invalido. Intenta de nuevo.')}`,
     );
@@ -37,9 +55,7 @@ export async function GET(request: Request) {
     const redirectUri = `${getBaseUrl(origin)}/api/mercadopago/oauth/callback`;
     await exchangeMercadoPagoOAuthCode(code, redirectUri);
 
-    const response = NextResponse.redirect(`${adminUrl}?oauth=success`);
-    response.cookies.delete('mp_oauth_state');
-    return response;
+    return NextResponse.redirect(`${adminUrl}?oauth=success`);
   } catch (err) {
     const reason = err instanceof Error ? err.message : 'Error desconocido.';
     return NextResponse.redirect(

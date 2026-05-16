@@ -1,8 +1,21 @@
 @import "tailwindcss";
 
 :root {
-  --background: #3c3c3b; /* Tu Gris Carbón de La Perla */
-  --foreground: #beb9b1; /* Tu Gris Arena */
+  /* Paleta La Perla — tema claro */
+  --background: #F5EFE6;
+  --foreground: #1A120B;
+
+  /* Variables de diseño */
+  --lp-bg: #F5EFE6;
+  --lp-white: #FFFFFF;
+  --lp-text: #1A120B;
+  --lp-text-muted: #6B5744;
+  --lp-text-light: #9E8B7A;
+  --lp-gold: #C9A96E;
+  --lp-gold-dark: #A68A5C;
+  --lp-border: #E8DFD0;
+  --lp-dark: #1A120B;
+  --lp-strip: #EDE5D8;
 }
 
 @theme inline {
@@ -11,10 +24,11 @@
 }
 
 body {
-  background-color: var(--background);
-  color: var(--foreground);
+  background-color: var(--lp-bg);
+  color: var(--lp-text);
+  font-family: var(--font-sans);
   margin: 0;
-  overflow-x: hidden; /* Evita scroll horizontal por las esferas */
+  overflow-x: hidden;
 }
 
 /* Animación de rotación lenta para las esferas */
@@ -34,4 +48,9 @@ body {
 }
 .scrollbar-hide::-webkit-scrollbar {
   display: none;
+}
+
+/* Tipografía serif (Playfair Display) — usar .font-display en headings */
+.font-display {
+  font-family: var(--font-playfair), Georgia, serif;
 }

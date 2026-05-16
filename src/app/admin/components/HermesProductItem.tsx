@@ -7,13 +7,14 @@ import AdminProductImages from "./AdminProductImages";
 
 interface HermesProductItemProps {
   product: HermesProduct;
-  publishedProductId?: string; // UUID de Supabase si ya está publicado
-  publishedProduct?: ProductoPublicado; // datos completos para pre-llenar edición
+  publishedProductId?: string;
+  publishedProduct?: ProductoPublicado;
   isPublished: (hermes_id: number) => boolean;
   loading: boolean;
   onPublish: (product: HermesProduct, description: string, enOferta: boolean, descuentoPorcentaje: number | null, images: File[]) => void;
   onUnpublish: (hermes_id: number) => void;
   onEdit?: (hermes_id: number, description: string, enOferta: boolean, descuentoPorcentaje: number | null) => void;
+  onToggleDestacado?: (hermes_id: number, destacado: boolean) => void;
 }
 
 const HermesProductItem: React.FC<HermesProductItemProps> = ({
@@ -25,6 +26,7 @@ const HermesProductItem: React.FC<HermesProductItemProps> = ({
   onPublish,
   onUnpublish,
   onEdit,
+  onToggleDestacado,
 }) => {
   const [customDescription, setCustomDescription] = useState("");
   const [enOferta, setEnOferta] = useState(false);
@@ -251,6 +253,21 @@ const HermesProductItem: React.FC<HermesProductItemProps> = ({
               {/* Fila de acciones: Editar + Quitar lado a lado */}
               {!editMode && (
                 <div className="flex gap-2">
+                  {onToggleDestacado && (
+                    <button
+                      type="button"
+                      title={publishedProduct?.destacado ? 'Quitar de destacados (Los más vendidos)' : 'Marcar como destacado (Los más vendidos)'}
+                      onClick={() => onToggleDestacado(product.hermes_id, !publishedProduct?.destacado)}
+                      disabled={loading}
+                      className={`flex items-center justify-center rounded-sm border px-3 py-2.5 text-sm transition disabled:opacity-40 ${
+                        publishedProduct?.destacado
+                          ? 'border-[#c9a96e] bg-[#a68a5c]/10 text-[#c9a96e]'
+                          : 'border-neutral-200 text-neutral-300 hover:border-[#a68a5c]/50 hover:text-[#a68a5c]'
+                      }`}
+                    >
+                      ★
+                    </button>
+                  )}
                   {onEdit && (
                     <button
                       className="flex flex-1 items-center justify-center gap-2 rounded-sm border border-[#a68a5c]/30 px-3 py-2.5 text-xs font-semibold uppercase tracking-[0.15em] text-[#a68a5c]/70 transition hover:border-[#a68a5c]/60 hover:text-[#a68a5c] disabled:opacity-40"

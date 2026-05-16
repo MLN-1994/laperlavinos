@@ -6,6 +6,7 @@ const navItems = [
   { href: "/admin/productos", label: "Productos" },
   { href: "/admin/pedidos", label: "Pedidos" },
   { href: "/admin/banners", label: "Banners" },
+  { href: "/admin/secciones", label: "Secciones home" },
   { href: "/admin/publicidad", label: "Publicidad" },
   { href: "/admin/mercadopago", label: "Mercado Pago" },
   { href: "/admin/openpay", label: "OpenPay / BBVA" },

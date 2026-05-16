@@ -50,7 +50,7 @@ export default async function ProductoPage({ params }: Props) {
   };
 
   return (
-    <div className="min-h-screen bg-neutral-50 text-neutral-800">
+    <div className="min-h-screen bg-[#F5EFE6] text-[#1A120B]">
       <Header />
 
       <main>

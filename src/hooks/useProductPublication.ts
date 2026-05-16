@@ -147,17 +147,15 @@ export function useProductPublication() {
     }
 
     try {
-      const formData = new FormData();
-      formData.append('hermes_id', String(options.hermes_id));
-      formData.append('descripcion', options.descripcion ?? '');
-      formData.append('en_oferta', String(options.en_oferta ?? false));
-      if (options.descuento_porcentaje != null) {
-        formData.append('descuento_porcentaje', String(options.descuento_porcentaje));
-      }
-
       const response = await fetch('/api/admin/published-products', {
         method: 'PATCH',
-        body: formData,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          hermes_id: options.hermes_id,
+          descripcion: options.descripcion ?? '',
+          en_oferta: options.en_oferta ?? false,
+          descuento_porcentaje: options.descuento_porcentaje ?? null,
+        }),
       });
       const data = (await response.json()) as { error?: string };
 
@@ -176,6 +174,23 @@ export function useProductPublication() {
     }
   };
 
+  // Marcar/desmarcar destacado
+  const toggleDestacado = async (hermes_id: number, destacado: boolean): Promise<PublicationResult> => {
+    try {
+      const response = await fetch('/api/admin/published-products', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ hermes_id, destacado }),
+      });
+      const data = (await response.json()) as { error?: string };
+      if (!response.ok) throw new Error(data.error ?? 'Error al actualizar');
+      return { ok: true, message: destacado ? '¡Marcado como destacado!' : 'Quitado de destacados.' };
+    } catch (e) {
+      const message = e instanceof Error ? e.message : 'Error al actualizar';
+      return { ok: false, message };
+    }
+  };
+
   return {
     loading,
     error,
@@ -183,5 +198,6 @@ export function useProductPublication() {
     publishProduct,
     unpublishProduct,
     editProduct,
+    toggleDestacado,
   };
 }

@@ -96,6 +96,48 @@ export interface Database {
         };
         Relationships: [];
       };
+      home_sections: {
+        Row: {
+          tipo: string;
+          producto_id: string | null;
+          producto_nombre: string | null;
+          imagen_url: string | null;
+          titulo: string | null;
+          subtitulo: string | null;
+          cita: string | null;
+          cta_label: string | null;
+          cta_href: string | null;
+          activo: boolean;
+          updated_at: string | null;
+        };
+        Insert: {
+          tipo: string;
+          producto_id?: string | null;
+          producto_nombre?: string | null;
+          imagen_url?: string | null;
+          titulo?: string | null;
+          subtitulo?: string | null;
+          cita?: string | null;
+          cta_label?: string | null;
+          cta_href?: string | null;
+          activo?: boolean;
+          updated_at?: string | null;
+        };
+        Update: {
+          tipo?: string;
+          producto_id?: string | null;
+          producto_nombre?: string | null;
+          imagen_url?: string | null;
+          titulo?: string | null;
+          subtitulo?: string | null;
+          cita?: string | null;
+          cta_label?: string | null;
+          cta_href?: string | null;
+          activo?: boolean;
+          updated_at?: string | null;
+        };
+        Relationships: [];
+      };
       mercado_pago_accounts: {
         Row: {
           id: string;

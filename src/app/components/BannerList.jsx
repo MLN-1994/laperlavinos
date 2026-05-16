@@ -7,16 +7,14 @@ export default function BannerList() {
 
   if (loading) {
     return (
-      <div className="rounded-[28px] border border-[#beb9b1]/10 bg-black/20 px-6 py-16 text-center text-sm text-[#beb9b1]/70 backdrop-blur-sm">
-        Cargando banners...
-      </div>
+      <div className="h-[320px] animate-pulse bg-[#E8DFD0] md:h-[420px]" />
     );
   }
 
   if (error) {
     return (
-      <div className="rounded-[28px] border border-[#d97b70]/20 bg-[#4a2522]/35 px-6 py-16 text-center text-sm text-[#f0b7ae] backdrop-blur-sm">
-        Error: {error}
+      <div className="px-6 py-16 text-center text-sm text-[#9E8B7A]">
+        Error al cargar banners.
       </div>
     );
   }
