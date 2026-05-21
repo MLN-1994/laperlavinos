@@ -43,7 +43,7 @@ export async function middleware(request: NextRequest) {
     }
   }
 
-  if (pathname.startsWith('/admin')) {
+  if (pathname.startsWith('/admin') && !pathname.startsWith('/admin-login')) {
     try {
       const { response, user } = await updateSession(request);
       if (!user) {
