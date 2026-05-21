@@ -17,7 +17,7 @@ export async function middleware(request: NextRequest) {
 
   const maintenanceMode = process.env.MAINTENANCE_MODE === 'true';
 
-  if (maintenanceMode && !isStatic) {
+  if (maintenanceMode && !isStatic && !pathname.startsWith('/admin')) {
     const previewSecret = process.env.PREVIEW_SECRET;
 
     const previewParam = request.nextUrl.searchParams.get('preview');
