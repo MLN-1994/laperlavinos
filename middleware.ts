@@ -6,8 +6,9 @@ const PREVIEW_COOKIE = 'lp_preview';
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  // Admin siempre pasa — auth manejada por el layout
-  if (pathname.startsWith('/admin')) {
+  // Safety net: si por cualquier razón el middleware se ejecuta sobre admin,
+  // no hacer nada. El matcher (positivo, abajo) ya debería excluirlo.
+  if (pathname.startsWith('/admin') || pathname.startsWith('/admin-login')) {
     return NextResponse.next();
   }
 
@@ -37,6 +38,17 @@ export function middleware(request: NextRequest) {
   return NextResponse.next();
 }
 
+// MATCHER POSITIVO: el middleware SOLO se carga en estas rutas públicas.
+// Cualquier ruta no listada (/, /admin, /admin-login, /api/*, /maintenance,
+// assets, etc.) NUNCA pasa por el middleware — no hay forma de interceptar
+// admin por error, ni siquiera por cache de edge en Vercel.
 export const config = {
-  matcher: ['/((?!maintenance|_next|api|favicon\\.ico|robots\\.txt|assets|img).*)'],
+  matcher: [
+    '/',
+    '/legal/:path*',
+    '/pago/:path*',
+    '/producto/:path*',
+    '/productos/:path*',
+    '/transferencia/:path*',
+  ],
 };
