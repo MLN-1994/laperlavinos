@@ -6,6 +6,11 @@ const PREVIEW_COOKIE = 'lp_preview';
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
+  // Admin siempre pasa — auth manejada por el layout
+  if (pathname.startsWith('/admin')) {
+    return NextResponse.next();
+  }
+
   const maintenanceMode = process.env.MAINTENANCE_MODE === 'true';
   if (!maintenanceMode) return NextResponse.next();
 
@@ -33,5 +38,5 @@ export function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/((?!admin|maintenance|_next|api|favicon\\.ico|robots\\.txt|assets|img).*)'],
+  matcher: ['/((?!maintenance|_next|api|favicon\\.ico|robots\\.txt|assets|img).*)'],
 };
