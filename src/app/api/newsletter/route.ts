@@ -3,7 +3,7 @@ import { Resend } from 'resend';
 
 const RESEND_API_KEY = process.env.RESEND_API_KEY?.trim();
 const NEWSLETTER_FROM = process.env.RESEND_FROM_EMAIL?.trim() ?? 'La Perla Vinos <noreply@laperlavinos.com>';
-const NEWSLETTER_TO = process.env.RESEND_NOTIFY_EMAIL?.trim() ?? 'laperlavinos@gmail.com';
+const NEWSLETTER_TO = process.env.RESEND_NOTIFY_EMAIL?.trim() ?? 'ventas@laperlawines.com.ar';
 
 function isValidEmail(value: string) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
@@ -75,7 +75,7 @@ export async function POST(request: Request) {
               <tr><td style="height:3px;background:linear-gradient(90deg,transparent,#a68a5c,transparent);"></td></tr>
               <tr><td style="padding:20px 40px;text-align:center;">
                 <p style="margin:0;font-size:11px;color:#4a4642;">
-                  Pilmaiquén 292, Bahía Blanca · <a href="mailto:laperlavinos@gmail.com" style="color:#6a6460;">laperlavinos@gmail.com</a>
+                  Pilmaiquén 292, Bahía Blanca · <a href="mailto:ventas@laperlawines.com.ar" style="color:#6a6460;">ventas@laperlawines.com.ar</a>
                 </p>
                 <p style="margin:8px 0 0;font-size:10px;color:#3a3632;">
                   Bebé con moderación · Prohibida la venta a menores de 18 años

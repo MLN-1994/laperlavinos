@@ -2,6 +2,8 @@
 
 import { useState } from "react";
 import { HiOutlineShoppingCart, HiOutlineCheckCircle, HiMinus, HiPlus, HiArrowLeft } from "react-icons/hi2";
+import { SiMercadopago, SiVisa, SiMastercard, SiAmericanexpress } from "react-icons/si";
+import { MapPinIcon, BuildingStorefrontIcon } from "@heroicons/react/24/outline";
 import { useCartStore } from "../../store/useCartStore";
 import { useRouter } from "next/navigation";
 import { ProductoPublicado, ProductImage } from "../../types";
@@ -34,7 +36,7 @@ export default function ProductDetail({ product, images = [] }: ProductDetailPro
     if (window.history.length > 1) {
       router.back();
     } else {
-      router.push('/');
+      router.push('/productos');
     }
   };
 
@@ -94,7 +96,7 @@ export default function ProductDetail({ product, images = [] }: ProductDetailPro
           )}
 
           {/* Imagen principal */}
-          <div className="relative flex-1 aspect-square overflow-hidden rounded-sm border border-neutral-200 bg-neutral-100">
+          <div className="relative flex-1 aspect-[4/5] overflow-hidden rounded-sm border border-neutral-200 bg-neutral-100">
             <img
               key={activeImage}
               src={activeImage}
@@ -121,7 +123,7 @@ export default function ProductDetail({ product, images = [] }: ProductDetailPro
               {product.nombre}
             </h1>
             <div className="mt-5 border-t border-neutral-200 pt-5">
-              <p className="text-sm leading-relaxed text-neutral-500 italic">
+              <p className="text-sm leading-relaxed text-neutral-500 italic whitespace-pre-line">
                 {product.descripcion}
               </p>
             </div>
@@ -199,6 +201,53 @@ export default function ProductDetail({ product, images = [] }: ProductDetailPro
                 ¡Solo quedan {product.stock} unidades!
               </p>
             )}
+
+            {/* Formas de pago y envíos */}
+            <div className="mt-2 border-t border-neutral-200 pt-5 space-y-4">
+              {/* Formas de pago */}
+              <div>
+                <p className="text-[10px] uppercase tracking-[0.25em] text-neutral-400 mb-2">Formas de pago</p>
+                <div className="space-y-2">
+                  {/* Transferencia */}
+                  <div className="flex items-center gap-2 rounded-sm border border-[#a68a5c]/40 bg-[#a68a5c]/5 px-3 py-2">
+                    <span className="text-xs font-semibold text-[#a68a5c] tracking-wide">Transferencia bancaria</span>
+                    <span className="ml-auto rounded bg-[#a68a5c] px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider text-white">10% OFF</span>
+                  </div>
+                  {/* Mercado Pago */}
+                  <div className="flex items-center gap-2 rounded-sm border border-[#009ee3]/30 bg-[#009ee3]/5 px-3 py-2">
+                    <SiMercadopago className="h-4 w-4 text-[#009ee3] flex-shrink-0" />
+                    <span className="text-xs font-semibold text-[#009ee3] tracking-wide">Mercado Pago</span>
+                  </div>
+                  {/* Tarjetas */}
+                  <div className="flex items-center gap-2 rounded-sm border border-neutral-200 bg-neutral-50 px-3 py-2">
+                    <span className="text-xs text-neutral-600 font-medium">Tarjetas / Débito</span>
+                    <div className="ml-auto flex items-center gap-1.5">
+                      <SiVisa className="h-4 w-auto text-[#1a1f71]" title="Visa" />
+                      <SiMastercard className="h-4 w-auto text-[#eb001b]" title="Mastercard" />
+                      <SiAmericanexpress className="h-4 w-auto text-[#2e77bc]" title="American Express" />
+                      {["Cabal", "Naranja"].map((b) => (
+                        <span key={b} className="rounded border border-neutral-200 px-1 py-0.5 text-[8px] font-semibold uppercase tracking-wide text-neutral-400">{b}</span>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Envío */}
+              <div>
+                <p className="text-[10px] uppercase tracking-[0.25em] text-neutral-400 mb-2">Envío y retiro</p>
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2 rounded-sm border border-neutral-200 bg-neutral-50 px-3 py-2">
+                    <MapPinIcon className="h-4 w-4 text-neutral-400 flex-shrink-0" />
+                    <span className="text-xs text-neutral-600">Envío a domicilio — <span className="font-medium">Andreani</span></span>
+                  </div>
+                  <div className="flex items-center gap-2 rounded-sm border border-neutral-200 bg-neutral-50 px-3 py-2">
+                    <BuildingStorefrontIcon className="h-4 w-4 text-neutral-400 flex-shrink-0" />
+                    <span className="text-xs text-neutral-600">Retiro en local — <span className="font-medium">Pilmaiquén 292, Bahía Blanca</span></span>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>

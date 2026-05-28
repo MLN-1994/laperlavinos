@@ -168,10 +168,10 @@ export default async function TransferenciaConfirmacionPage({ searchParams }: Pa
               WhatsApp →
             </a>
             <a
-              href="mailto:laperlavinos@gmail.com"
+              href="mailto:ventas@laperlawines.com.ar"
               className="text-[#a68a5c] underline-offset-2 hover:underline"
             >
-              laperlavinos@gmail.com →
+              ventas@laperlawines.com.ar →
             </a>
           </div>
         </div>

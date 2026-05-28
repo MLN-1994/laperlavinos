@@ -36,7 +36,7 @@ export default function ProductCard({ product, addToCart }: ProductCardProps) {
     <div className="group relative flex flex-col overflow-hidden rounded-sm border border-neutral-200 bg-white p-2 transition-all duration-500 hover:border-neutral-400 hover:shadow-[0_8px_32px_rgba(0,0,0,0.10)]">
 
       {/* Imagen con overlay hover */}
-      <Link href={`/producto/${product.id}`} target="_blank" rel="noopener noreferrer" className="relative block aspect-[3/4] overflow-hidden rounded-sm bg-neutral-100">
+      <Link href={`/producto/${product.id}`} target="_blank" rel="noopener noreferrer" className="relative block aspect-[4/5] overflow-hidden rounded-sm bg-neutral-100">
         <img
           src={product.imagen_url || "/placeholder.png"}
           alt={product.nombre}
@@ -53,17 +53,14 @@ export default function ProductCard({ product, addToCart }: ProductCardProps) {
           </span>
         </div>
 
-        {/* Badge categoría */}
-        <div className="absolute top-2 left-2 flex flex-col gap-1">
-          <span className="inline-flex items-center bg-neutral-800 px-2 py-0.5 text-[8px] font-bold uppercase tracking-[0.2em] text-white shadow-xl">
-            {product.categoria_id || "Exclusivo"}
-          </span>
-          {enOferta && (
+        {/* Badge oferta */}
+        {enOferta && (
+          <div className="absolute top-2 left-2">
             <span className="inline-flex items-center bg-[#c0392b] px-2 py-0.5 text-[8px] font-bold uppercase tracking-[0.2em] text-white shadow-xl">
               -{product.descuento_porcentaje}%
             </span>
-          )}
-        </div>
+          </div>
+        )}
       </Link>
 
       {/* Info */}
@@ -77,11 +74,6 @@ export default function ProductCard({ product, addToCart }: ProductCardProps) {
               {product.nombre}
             </h3>
           </Link>
-          {product.descripcion && (
-            <p className="mt-1.5 text-[11px] leading-snug text-neutral-500 line-clamp-2">
-              {product.descripcion}
-            </p>
-          )}
         </div>
 
         {/* Footer: Precio y Botón */}

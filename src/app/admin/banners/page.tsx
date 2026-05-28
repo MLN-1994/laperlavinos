@@ -117,9 +117,7 @@ export default function BannersPage() {
         },
         body: JSON.stringify({
           id: banner.id,
-          titulo: banner.titulo,
           imagen_url: banner.imagen_url,
-          link: banner.link,
           activo: banner.activo,
         }),
       });
@@ -162,6 +160,10 @@ export default function BannersPage() {
             <p className="mt-4 max-w-xl text-sm leading-6 text-neutral-500 sm:text-[15px]">
               Administrá piezas visuales activas e inactivas, ordená el contenido promocional y prepará el material visible en la tienda.
             </p>
+            <p className="mt-3 max-w-2xl text-sm leading-6 text-neutral-400 sm:text-[15px]">
+              Para mantener una altura consistente en el home, subí siempre banners horizontales con la misma proporción.
+              Base recomendada: mínimo 1920x800 px, en WebP o JPG.
+            </p>
           </div>
 
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-3 lg:min-w-[420px]">
@@ -203,6 +205,11 @@ export default function BannersPage() {
         </div>
 
         <div className="mt-6 space-y-4">
+          {!showForm && !loading && !error && (
+            <div className="rounded-sm border border-[#a68a5c]/20 bg-[#a68a5c]/8 px-4 py-3 text-sm leading-6 text-neutral-600">
+              Recomendación: usá siempre el mismo formato de banner, con un mínimo de 1920x800 px en horizontal, preferentemente en WebP o JPG. Peso máximo 800 KB, ideal menos de 500 KB.
+            </div>
+          )}
           {loading && <div className="rounded-sm border border-neutral-200 bg-neutral-50 px-4 py-3 text-sm text-neutral-400">Cargando banners...</div>}
           {error && <div className="rounded-sm border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-600">Error: {error}</div>}
           {actionLoading && <div className="rounded-sm border border-neutral-200 bg-neutral-50 px-4 py-3 text-sm text-neutral-400">Procesando cambios...</div>}

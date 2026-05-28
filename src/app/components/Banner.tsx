@@ -32,25 +32,12 @@ const BannerComponent: React.FC<BannerProps> = ({ banner, isCarousel = false }) 
   if (!banner.activo) return null;
 
   const Content = (
-    <div className="relative group w-full overflow-hidden rounded-sm border border-[#beb9b1]/10 bg-[#1a1a1a]">
-      {/* Overlay de gradiente */}
-      <div className="absolute inset-0 z-10 bg-gradient-to-t from-black/80 via-transparent to-black/20 pointer-events-none" />
-      
+    <div className="relative group w-full overflow-hidden rounded-sm bg-transparent">
       <img
         src={banner.imagen_url}
-        alt={banner.titulo}
-        className="w-full h-[350px] sm:h-[450px] md:h-[550px] lg:h-[600px] object-cover transition-transform duration-[3000ms] group-hover:scale-110"
+        alt={banner.titulo ?? ''}
+        className="block w-full h-auto transition-transform duration-[3000ms] group-hover:scale-[1.02]"
       />
-      
-      {/* Título elegante */}
-      {banner.titulo && (
-        <div className="absolute bottom-10 left-10 z-20">
-          <h2 className="text-[#beb9b1] text-2xl md:text-3xl font-serif tracking-[0.2em] uppercase drop-shadow-lg">
-            {banner.titulo}
-          </h2>
-          <div className="w-12 h-[2px] bg-[#a68a5c] mt-4 transition-all duration-1000 group-hover:w-32" />
-        </div>
-      )}
     </div>
   );
 
@@ -63,11 +50,7 @@ const BannerComponent: React.FC<BannerProps> = ({ banner, isCarousel = false }) 
           isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
         }`}
       >
-        {banner.link ? (
-          <a href={banner.link} target="_blank" rel="noopener noreferrer" className="block outline-none">
-            {Content}
-          </a>
-        ) : Content}
+        {Content}
       </div>
     );
   }
@@ -80,11 +63,7 @@ const BannerComponent: React.FC<BannerProps> = ({ banner, isCarousel = false }) 
         isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
       }`}
     >
-      {banner.link ? (
-        <a href={banner.link} target="_blank" rel="noopener noreferrer" className="block outline-none">
-          {Content}
-        </a>
-      ) : Content}
+      {Content}
     </div>
   );
 };

@@ -163,7 +163,7 @@ export default function TerminosPage() {
         Para consultas o reclamos, el consumidor puede contactarse con:
       </p>
       <ul>
-        <li>Email: <a href="mailto:laperlavinos@gmail.com">laperlavinos@gmail.com</a></li>
+        <li>Email: <a href="mailto:ventas@laperlawines.com.ar">ventas@laperlawines.com.ar</a></li>
         <li>WhatsApp: <a href="https://wa.me/5492915342403">0291 534-2403</a></li>
         <li>
           Dirección: Pilmaiquén 292, Barrio Patagonia, Bahía Blanca, Buenos Aires, CP 8000.

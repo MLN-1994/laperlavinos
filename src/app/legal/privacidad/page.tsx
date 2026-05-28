@@ -89,7 +89,7 @@ export default function PrivacidadPage() {
       </p>
       <p>
         La suscripción al newsletter es voluntaria y puede cancelarse en cualquier momento
-        mediante solicitud a <a href="mailto:laperlavinos@gmail.com">laperlavinos@gmail.com</a>.
+        mediante solicitud a <a href="mailto:ventas@laperlawines.com.ar">ventas@laperlawines.com.ar</a>.
       </p>
 
       <h2>6. Seguridad</h2>
@@ -126,7 +126,7 @@ export default function PrivacidadPage() {
         escrito a:
       </p>
       <ul>
-        <li>Email: <a href="mailto:laperlavinos@gmail.com">laperlavinos@gmail.com</a></li>
+        <li>Email: <a href="mailto:ventas@laperlawines.com.ar">ventas@laperlawines.com.ar</a></li>
         <li>
           Domicilio: Pilmaiquén 292, Barrio Patagonia, Bahía Blanca, Buenos Aires, CP 8000.
         </li>

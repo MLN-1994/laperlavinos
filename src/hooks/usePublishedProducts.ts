@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { ProductoPublicado } from "../types";
 
-export function usePublishedProducts() {
+export function usePublishedProducts(endpoint = '/api/published-products') {
   const [productos, setProductos] = useState<ProductoPublicado[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -10,7 +10,7 @@ export function usePublishedProducts() {
     setLoading(true);
     setError(null);
     try {
-      const response = await fetch('/api/published-products', {
+      const response = await fetch(endpoint, {
         cache: 'no-store',
       });
       const data = (await response.json()) as { error?: string } | ProductoPublicado[];
@@ -29,7 +29,8 @@ export function usePublishedProducts() {
 
   useEffect(() => {
     fetchProductos();
-  }, []);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [endpoint]);
 
   return { productos, loading, error, refetch: fetchProductos };
 }

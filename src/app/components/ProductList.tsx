@@ -13,17 +13,20 @@ export default function ProductList() {
     const addToCart = useCartStore((state) => state.addToCart);
     const { productos, loading, error } = usePublishedProducts();
     const searchParams = useSearchParams();
-    const [filters, setFilters] = useState<SearchFilters>({
-        query: '',
+    const qParam = searchParams.get('q') ?? '';
+    const [filters, setFilters] = useState<SearchFilters>(() => ({
+        query: qParam,
         sortOrder: 'price-asc',
-    });
+    }));
     const [selectedGroup, setSelectedGroup] = useState<string | null>(
         () => searchParams.get('categoria'),
     );
+    const initialSearchFilters = useMemo(() => ({ query: qParam }), [qParam]);
 
-    // Sincroniza el filtro cuando cambia el param de URL (navegación header)
+    // Sincroniza filtros cuando cambian params de URL (navegación desde header)
     useEffect(() => {
         setSelectedGroup(searchParams.get('categoria'));
+        setFilters((prev) => ({ ...prev, query: searchParams.get('q') ?? '' }));
     }, [searchParams]);
 
     const handleSearch = useCallback((nextFilters: SearchFilters) => {
@@ -90,19 +93,12 @@ export default function ProductList() {
             <div className="rounded-[32px] border border-neutral-200 bg-white p-4 shadow-[0_8px_32px_rgba(0,0,0,0.06)] sm:p-6 lg:p-8">
                 <div className="mb-8 space-y-6 border-b border-neutral-100 pb-8">
                     <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-                        <div>
-                        <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-neutral-400">Tienda</p>
-                        <h3 className="mt-2 text-xl font-semibold tracking-tight text-neutral-800">Productos</h3>
-                        <p className="mt-2 max-w-2xl text-sm leading-6 text-neutral-400">
-                            Encontrá etiquetas, varietales y regalos filtrando por texto y ordenando por precio.
-                        </p>
-                        </div>
-                        <p className="text-sm text-neutral-400">{filteredProducts.length} visibles de {productos.length}</p>
+                        <h3 className="text-xl font-semibold tracking-tight text-neutral-800">Tienda</h3>
                     </div>
 
                     <SearchBar
                         onSearch={handleSearch}
-                        className="pt-4"
+                        initialFilters={initialSearchFilters}
                         placeholder="Buscar..."
                     />
                 </div>

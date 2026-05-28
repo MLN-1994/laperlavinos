@@ -4,7 +4,7 @@ const TILES = [
   {
     label: 'VINOS',
     sub: 'Tintos · Blancos · Rosados · Naranjos',
-    href: '/productos?categoria=VINOS+TINTOS',
+    href: '/productos',
   },
   {
     label: 'WHISKY',
@@ -14,7 +14,7 @@ const TILES = [
   {
     label: 'PARA REGALAR',
     sub: 'Cajas · Sets · Accesorios',
-    href: '/productos?categoria=REGALERIA+%2F+ACCESORIOS',
+    href: '/productos?categoria=PARA+REGALAR',
   },
 ];
 

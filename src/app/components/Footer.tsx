@@ -30,11 +30,11 @@ export default function Footer() {
             <ul className="flex flex-col gap-3 text-sm text-neutral-500">
               <li>
                 <a
-                  href="mailto:laperlavinos@gmail.com"
+                  href="mailto:ventas@laperlawines.com.ar"
                   className="inline-flex items-center gap-2 transition-colors hover:text-neutral-900"
                 >
                   <HiOutlineMail className="h-4 w-4 shrink-0 text-neutral-400" />
-                  laperlavinos@gmail.com
+                  ventas@laperlawines.com.ar
                 </a>
               </li>
               <li>

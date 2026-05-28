@@ -25,16 +25,9 @@ const AdminBannerList: React.FC<AdminBannerListProps> = ({ banners, onEdit, onDe
 					<div className="space-y-3 md:hidden">
 						{banners.map((banner) => (
 							<article key={banner.id} className="rounded-sm border border-neutral-200 bg-neutral-50 p-4">
-								<img src={banner.imagen_url} alt={banner.titulo} className="h-40 w-full rounded-sm object-cover opacity-90" />
+								<img src={banner.imagen_url} alt="Preview del banner" className="h-40 w-full rounded-sm object-cover opacity-90" />
 								<div className="mt-4 space-y-3">
-									<div>
-										<p className="text-base font-semibold tracking-tight text-neutral-800">{banner.titulo}</p>
-										{banner.link ? (
-											<p className="mt-1 break-all text-xs leading-5 text-neutral-400">{banner.link}</p>
-										) : (
-											<p className="mt-1 text-xs text-neutral-300">Sin link</p>
-										)}
-									</div>
+									<p className="text-xs leading-5 text-neutral-400">Solo imagen. El texto superpuesto ya no se usa en la tienda.</p>
 									<div className="flex items-center justify-between gap-3 rounded-sm border border-neutral-200 bg-white px-4 py-3">
 										<div>
 											<p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-neutral-400">Estado</p>
@@ -63,7 +56,7 @@ const AdminBannerList: React.FC<AdminBannerListProps> = ({ banners, onEdit, onDe
 						<thead>
 							<tr className="border-b border-neutral-200 text-left text-[10px] font-semibold uppercase tracking-[0.2em] text-neutral-400">
 								<th className="px-4 py-4">Imagen</th>
-								<th className="px-4 py-4">Título</th>
+								<th className="px-4 py-4">Uso</th>
 								<th className="px-4 py-4">Estado</th>
 								<th className="px-4 py-4">Acciones</th>
 							</tr>
@@ -72,11 +65,11 @@ const AdminBannerList: React.FC<AdminBannerListProps> = ({ banners, onEdit, onDe
 							{banners.map((banner) => (
 								<tr key={banner.id} className="border-t border-neutral-200 align-middle">
 									<td className="px-4 py-4">
-										<img src={banner.imagen_url} alt={banner.titulo} className="h-20 w-36 rounded-sm object-cover opacity-90" />
+										<img src={banner.imagen_url} alt="Preview del banner" className="h-20 w-36 rounded-sm object-cover opacity-90" />
 									</td>
 									<td className="px-4 py-4">
-										<p className="font-medium text-neutral-800">{banner.titulo}</p>
-										{banner.link ? <p className="mt-1 truncate text-xs text-neutral-400">{banner.link}</p> : <p className="mt-1 text-xs text-neutral-300">Sin link</p>}
+										<p className="font-medium text-neutral-800">Imagen promocional</p>
+										<p className="mt-1 text-xs text-neutral-400">Sin texto superpuesto en la tienda.</p>
 									</td>
 									<td className="px-4 py-4">
 										<label className="inline-flex cursor-pointer items-center gap-3">

@@ -230,10 +230,10 @@ export default function ResultadoPago() {
       <p className="mt-6 text-center text-xs text-neutral-600">
         ¿Tenés dudas?{' '}
         <a
-          href="mailto:laperlavinos@gmail.com"
+          href="mailto:ventas@laperlawines.com.ar"
           className="text-neutral-400 underline underline-offset-2 hover:text-neutral-300"
         >
-          laperlavinos@gmail.com
+          ventas@laperlawines.com.ar
         </a>
         {' '}·{' '}
         <a

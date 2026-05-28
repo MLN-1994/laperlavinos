@@ -191,6 +191,23 @@ export function useProductPublication() {
     }
   };
 
+  // Activar/ocultar producto (activo true/false)
+  const toggleActivo = async (hermes_id: number, activo: boolean): Promise<PublicationResult> => {
+    try {
+      const response = await fetch('/api/admin/published-products', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ hermes_id, activo }),
+      });
+      const data = (await response.json()) as { error?: string };
+      if (!response.ok) throw new Error(data.error ?? 'Error al actualizar');
+      return { ok: true, message: activo ? 'Producto activado.' : 'Producto ocultado.' };
+    } catch (e) {
+      const message = e instanceof Error ? e.message : 'Error al actualizar';
+      return { ok: false, message };
+    }
+  };
+
   return {
     loading,
     error,
@@ -199,5 +216,6 @@ export function useProductPublication() {
     unpublishProduct,
     editProduct,
     toggleDestacado,
+    toggleActivo,
   };
 }

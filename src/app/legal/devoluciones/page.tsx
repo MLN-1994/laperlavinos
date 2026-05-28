@@ -80,7 +80,7 @@ export default function DevolucionesPage() {
       <ul>
         <li>
           <strong>Email:</strong>{' '}
-          <a href="mailto:laperlavinos@gmail.com">laperlavinos@gmail.com</a>
+          <a href="mailto:ventas@laperlawines.com.ar">ventas@laperlawines.com.ar</a>
         </li>
         <li>
           <strong>WhatsApp:</strong>{' '}

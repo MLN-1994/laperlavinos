@@ -12,8 +12,8 @@ export function useHermesProductList() {
   const [page, setPage] = useState(1);
   const [pageSize] = useState(10);
   const { productos: hermesProducts, loading: loadingHermes, error: errorHermes } = useHermesProducts();
-  const { productos: publishedProducts, refetch: refetchPublished } = usePublishedProducts();
-  const { publishProduct, unpublishProduct, editProduct, toggleDestacado, loading, error, success } = useProductPublication();
+  const { productos: publishedProducts, refetch: refetchPublished } = usePublishedProducts('/api/admin/published-products');
+  const { publishProduct, unpublishProduct, editProduct, toggleDestacado, toggleActivo, loading, error, success } = useProductPublication();
   const [search, setSearch] = useState("");
   const [group, setGroup] = useState("");
   const [tab, setTab] = useState<'todos' | 'publicados'>("todos");
@@ -63,6 +63,12 @@ export function useHermesProductList() {
     refetchPublished();
     return result;
   }, [toggleDestacado, refetchPublished]);
+
+  const handleToggleActivo = useCallback(async (hermes_id: number, activo: boolean) => {
+    const result = await toggleActivo(hermes_id, activo);
+    refetchPublished();
+    return result;
+  }, [toggleActivo, refetchPublished]);
 
   const filterFn = useCallback((product: HermesProduct) => {
     const q = search.toLowerCase();
@@ -149,5 +155,6 @@ export function useHermesProductList() {
     handleEdit,
     handleUnpublish,
     handleToggleDestacado,
+    handleToggleActivo,
   };
 }

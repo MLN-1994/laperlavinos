@@ -10,6 +10,22 @@ function isValidHermesId(value: number) {
   return Number.isFinite(value) && Number.isInteger(value);
 }
 
+export async function GET() {
+  const authError = await requireAdminApiUser();
+  if (authError) return authError;
+
+  const { data, error } = await getSupabaseAdmin()
+    .from('productos_publicados')
+    .select('*')
+    .order('nombre', { ascending: true });
+
+  if (error) {
+    return NextResponse.json({ error: error.message }, { status: 500 });
+  }
+
+  return NextResponse.json(data ?? []);
+}
+
 export async function POST(request: Request) {
   const authError = await requireAdminApiUser();
 
@@ -127,6 +143,7 @@ export async function PATCH(request: Request) {
       en_oferta?: boolean;
       descuento_porcentaje?: number | null;
       destacado?: boolean;
+      activo?: boolean;
     };
 
     const hermesId = Number(body.hermes_id);
@@ -139,6 +156,7 @@ export async function PATCH(request: Request) {
       en_oferta: boolean;
       descuento_porcentaje: number | null;
       destacado: boolean;
+      activo: boolean;
       updated_at: string;
     }> = {};
     if (body.descripcion !== undefined) updates.descripcion = body.descripcion.trim();
@@ -151,6 +169,7 @@ export async function PATCH(request: Request) {
           : null;
     }
     if (body.destacado !== undefined) updates.destacado = body.destacado;
+    if (body.activo !== undefined) updates.activo = body.activo;
 
     if (Object.keys(updates).length === 0) {
       return NextResponse.json({ error: 'No hay campos para actualizar.' }, { status: 400 });

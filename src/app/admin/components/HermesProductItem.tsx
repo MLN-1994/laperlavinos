@@ -12,7 +12,8 @@ interface HermesProductItemProps {
   isPublished: (hermes_id: number) => boolean;
   loading: boolean;
   onPublish: (product: HermesProduct, description: string, enOferta: boolean, descuentoPorcentaje: number | null, images: File[]) => void;
-  onUnpublish: (hermes_id: number) => void;
+  onDelete: (hermes_id: number) => void;
+  onToggleActivo?: (hermes_id: number, activo: boolean) => void;
   onEdit?: (hermes_id: number, description: string, enOferta: boolean, descuentoPorcentaje: number | null) => void;
   onToggleDestacado?: (hermes_id: number, destacado: boolean) => void;
 }
@@ -24,7 +25,8 @@ const HermesProductItem: React.FC<HermesProductItemProps> = ({
   isPublished,
   loading,
   onPublish,
-  onUnpublish,
+  onDelete,
+  onToggleActivo,
   onEdit,
   onToggleDestacado,
 }) => {
@@ -42,9 +44,11 @@ const HermesProductItem: React.FC<HermesProductItemProps> = ({
   const [editDescription, setEditDescription] = useState("");
   const [editEnOferta, setEditEnOferta] = useState(false);
   const [editDescuento, setEditDescuento] = useState<string>("");
+  const [confirmDelete, setConfirmDelete] = useState(false);
 
   const hasValidHermesId = Number.isFinite(product.hermes_id) && Number.isInteger(product.hermes_id);
   const published = isPublished(product.hermes_id);
+  const isActivo = publishedProduct?.activo !== false;
   const stock = Number(product.stock);
   const hasStock = Number.isFinite(stock) && stock > 0;
 
@@ -95,6 +99,9 @@ const HermesProductItem: React.FC<HermesProductItemProps> = ({
             </div>
             {published && (
               <span className="rounded-sm bg-[#a68a5c]/20 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-[#c9a96e]">Publicado</span>
+            )}
+            {published && !isActivo && (
+              <span className="rounded-sm bg-neutral-200 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-neutral-500">Oculto</span>
             )}
             <span className={`rounded-sm px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.14em] ${hasStock ? 'bg-[#a68a5c]/15 text-neutral-600' : 'bg-neutral-100 text-neutral-400'}`}>
               {hasStock ? `Stock ${stock}` : 'Sin stock'}
@@ -252,39 +259,75 @@ const HermesProductItem: React.FC<HermesProductItemProps> = ({
             <div className="space-y-3">
               {/* Fila de acciones: Editar + Quitar lado a lado */}
               {!editMode && (
-                <div className="flex gap-2">
-                  {onToggleDestacado && (
+                <div className="flex flex-col gap-2">
+                  <div className="flex gap-2">
+                    {onToggleDestacado && (
+                      <button
+                        type="button"
+                        title={publishedProduct?.destacado ? 'Quitar de destacados (Los más vendidos)' : 'Marcar como destacado (Los más vendidos)'}
+                        onClick={() => onToggleDestacado(product.hermes_id, !publishedProduct?.destacado)}
+                        disabled={loading}
+                        className={`flex items-center justify-center rounded-sm border px-3 py-2.5 text-sm transition disabled:opacity-40 ${
+                          publishedProduct?.destacado
+                            ? 'border-[#c9a96e] bg-[#a68a5c]/10 text-[#c9a96e]'
+                            : 'border-neutral-200 text-neutral-300 hover:border-[#a68a5c]/50 hover:text-[#a68a5c]'
+                        }`}
+                      >
+                        ★
+                      </button>
+                    )}
+                    {onEdit && (
+                      <button
+                        className="flex flex-1 items-center justify-center gap-2 rounded-sm border border-[#a68a5c]/30 px-3 py-2.5 text-xs font-semibold uppercase tracking-[0.15em] text-[#a68a5c]/70 transition hover:border-[#a68a5c]/60 hover:text-[#a68a5c] disabled:opacity-40"
+                        onClick={openEditMode}
+                        disabled={loading}
+                      >
+                        <FiEdit2 size={13} /> Editar
+                      </button>
+                    )}
+                    {onToggleActivo && (
+                      <button
+                        className={`flex flex-1 items-center justify-center gap-2 rounded-sm border px-3 py-2.5 text-xs font-semibold uppercase tracking-[0.15em] transition disabled:opacity-40 ${
+                          isActivo
+                            ? 'border-amber-200 text-amber-600/70 hover:border-amber-400 hover:text-amber-700'
+                            : 'border-green-200 text-green-600/70 hover:border-green-400 hover:text-green-700'
+                        }`}
+                        onClick={() => onToggleActivo(product.hermes_id, !isActivo)}
+                        disabled={loading}
+                      >
+                        {loading ? <Spinner size={13} colorClass="border-current" /> : null}
+                        {isActivo ? 'Ocultar' : 'Activar'}
+                      </button>
+                    )}
+                  </div>
+                  {/* Eliminar con confirmación */}
+                  {!confirmDelete ? (
                     <button
-                      type="button"
-                      title={publishedProduct?.destacado ? 'Quitar de destacados (Los más vendidos)' : 'Marcar como destacado (Los más vendidos)'}
-                      onClick={() => onToggleDestacado(product.hermes_id, !publishedProduct?.destacado)}
-                      disabled={loading}
-                      className={`flex items-center justify-center rounded-sm border px-3 py-2.5 text-sm transition disabled:opacity-40 ${
-                        publishedProduct?.destacado
-                          ? 'border-[#c9a96e] bg-[#a68a5c]/10 text-[#c9a96e]'
-                          : 'border-neutral-200 text-neutral-300 hover:border-[#a68a5c]/50 hover:text-[#a68a5c]'
-                      }`}
-                    >
-                      ★
-                    </button>
-                  )}
-                  {onEdit && (
-                    <button
-                      className="flex flex-1 items-center justify-center gap-2 rounded-sm border border-[#a68a5c]/30 px-3 py-2.5 text-xs font-semibold uppercase tracking-[0.15em] text-[#a68a5c]/70 transition hover:border-[#a68a5c]/60 hover:text-[#a68a5c] disabled:opacity-40"
-                      onClick={openEditMode}
+                      className="flex w-full items-center justify-center gap-2 rounded-sm border border-red-100 px-3 py-2 text-xs font-semibold uppercase tracking-[0.15em] text-red-400/60 transition hover:border-red-300 hover:text-red-500 disabled:opacity-40"
+                      onClick={() => setConfirmDelete(true)}
                       disabled={loading}
                     >
-                      <FiEdit2 size={13} /> Editar
+                      <FiTrash2 size={12} /> Eliminar definitivamente
                     </button>
+                  ) : (
+                    <div className="flex items-center gap-2 rounded-sm border border-red-200 bg-red-50 px-3 py-2">
+                      <span className="flex-1 text-xs text-red-600">¿Eliminar y perder foto y descripción?</span>
+                      <button
+                        className="rounded-sm bg-red-500 px-3 py-1.5 text-[11px] font-bold uppercase tracking-[0.12em] text-white transition hover:bg-red-600 disabled:opacity-40"
+                        onClick={() => { onDelete(product.hermes_id); setConfirmDelete(false); }}
+                        disabled={loading}
+                      >
+                        Sí, eliminar
+                      </button>
+                      <button
+                        className="rounded-sm border border-neutral-200 px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.12em] text-neutral-500 transition hover:text-neutral-800"
+                        onClick={() => setConfirmDelete(false)}
+                        disabled={loading}
+                      >
+                        No
+                      </button>
+                    </div>
                   )}
-                  <button
-                    className="flex flex-1 items-center justify-center gap-2 rounded-sm border border-red-200 px-3 py-2.5 text-xs font-semibold uppercase tracking-[0.15em] text-red-600/55 transition hover:border-red-400 hover:text-red-600 disabled:opacity-40"
-                    onClick={() => onUnpublish(product.hermes_id)}
-                    disabled={loading}
-                  >
-                    {loading ? <Spinner size={13} colorClass="border-current" /> : <FiTrash2 size={13} />}
-                    Quitar
-                  </button>
                 </div>
               )}
 

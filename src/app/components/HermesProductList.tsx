@@ -36,6 +36,7 @@ export default function HermesProductList() {
     handleEdit,
     handleUnpublish,
     handleToggleDestacado,
+    handleToggleActivo,
   } = useHermesProductList();
 
   // Estado para controlar el toast
@@ -73,18 +74,25 @@ export default function HermesProductList() {
     showToast(result.message, 'error');
   };
 
-  // Handler para quitar con loading individual
+  // Handler para quitar (eliminar definitivamente) con loading individual
   const handleUnpublishWithLoading = async (hermes_id: number) => {
     setLoadingProduct(prev => ({ ...prev, [hermes_id]: true }));
     const result = await handleUnpublish(hermes_id);
     setLoadingProduct(prev => ({ ...prev, [hermes_id]: false }));
 
     if (result.ok) {
-      showToast('El producto fue quitado de la tienda.', 'success', 'Producto quitado');
+      showToast('El producto fue eliminado de la tienda.', 'success', 'Producto eliminado');
       return;
     }
 
     showToast(result.message, 'error');
+  };
+
+  const handleToggleActivoWithLoading = async (hermes_id: number, activo: boolean) => {
+    setLoadingProduct(prev => ({ ...prev, [hermes_id]: true }));
+    const result = await handleToggleActivo(hermes_id, activo);
+    setLoadingProduct(prev => ({ ...prev, [hermes_id]: false }));
+    showToast(result.message, result.ok ? 'success' : 'error');
   };
 
   const handleToggleDestacadoWithLoading = async (hermes_id: number, destacado: boolean) => {
@@ -201,7 +209,8 @@ export default function HermesProductList() {
                 isPublished={isPublished}
                 loading={!!loadingProduct[product.hermes_id]}
                 onPublish={handlePublishWithLoading}
-                onUnpublish={handleUnpublishWithLoading}
+                onDelete={handleUnpublishWithLoading}
+                onToggleActivo={handleToggleActivoWithLoading}
                 onEdit={handleEditWithLoading}
                 onToggleDestacado={handleToggleDestacadoWithLoading}
               />

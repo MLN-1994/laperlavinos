@@ -7,27 +7,20 @@ interface BannerPayload {
   id?: string;
   titulo?: string;
   imagen_url?: string;
-  link?: string;
   activo?: boolean;
 }
 
 function normalizeBannerPayload(payload: BannerPayload) {
-  const titulo = payload.titulo?.trim();
+  const titulo = payload.titulo?.trim() || null;
   const imagenUrl = payload.imagen_url?.trim();
-  const link = payload.link?.trim() || null;
-
-  if (!titulo) {
-    throw new Error('El titulo es obligatorio.');
-  }
 
   if (!imagenUrl) {
     throw new Error('La URL de imagen es obligatoria.');
   }
 
   return {
-    titulo,
+    ...(titulo !== null && { titulo }),
     imagen_url: imagenUrl,
-    link,
     activo: payload.activo ?? true,
   };
 }
@@ -36,13 +29,7 @@ function buildBannerUpdatePayload(payload: BannerPayload): Partial<Banner> {
   const updatePayload: Partial<Banner> = {};
 
   if (payload.titulo !== undefined) {
-    const titulo = payload.titulo.trim();
-
-    if (!titulo) {
-      throw new Error('El titulo es obligatorio.');
-    }
-
-    updatePayload.titulo = titulo;
+    updatePayload.titulo = payload.titulo.trim() || undefined;
   }
 
   if (payload.imagen_url !== undefined) {
@@ -53,10 +40,6 @@ function buildBannerUpdatePayload(payload: BannerPayload): Partial<Banner> {
     }
 
     updatePayload.imagen_url = imagenUrl;
-  }
-
-  if (payload.link !== undefined) {
-    updatePayload.link = payload.link.trim() || undefined;
   }
 
   if (payload.activo !== undefined) {

@@ -108,7 +108,7 @@ export async function sendOrderConfirmationEmail(order: OrderConfirmationData) {
             <tr><td style="height:3px;background:linear-gradient(90deg,transparent,#a68a5c,transparent);"></td></tr>
             <tr><td style="padding:20px 40px;text-align:center;">
               <p style="margin:0;font-size:12px;color:#4a4642;">
-                ¿Consultas? Escribinos a <a href="mailto:laperlavinos@gmail.com" style="color:#6a6460;">laperlavinos@gmail.com</a>
+                ¿Consultas? Escribinos a <a href="mailto:ventas@laperlawines.com.ar" style="color:#6a6460;">ventas@laperlawines.com.ar</a>
                 o por <a href="https://wa.me/5492915342403" style="color:#6a6460;">WhatsApp</a>
               </p>
               <p style="margin:8px 0 0;font-size:10px;color:#3a3632;">Pilmaiquén 292, Bahía Blanca · Bebé con moderación · Prohibida la venta a menores de 18 años</p>
