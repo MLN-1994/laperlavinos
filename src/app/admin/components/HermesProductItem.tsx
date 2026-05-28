@@ -12,7 +12,8 @@ interface HermesProductItemProps {
   isPublished: (hermes_id: number) => boolean;
   loading: boolean;
   onPublish: (product: HermesProduct, description: string, enOferta: boolean, descuentoPorcentaje: number | null, images: File[]) => void;
-  onDelete: (hermes_id: number) => void;
+  onDelete?: (hermes_id: number) => void;
+  onUnpublish?: (hermes_id: number) => void;
   onToggleActivo?: (hermes_id: number, activo: boolean) => void;
   onEdit?: (hermes_id: number, description: string, enOferta: boolean, descuentoPorcentaje: number | null) => void;
   onToggleDestacado?: (hermes_id: number, destacado: boolean) => void;
@@ -26,6 +27,7 @@ const HermesProductItem: React.FC<HermesProductItemProps> = ({
   loading,
   onPublish,
   onDelete,
+  onUnpublish,
   onToggleActivo,
   onEdit,
   onToggleDestacado,
@@ -48,6 +50,7 @@ const HermesProductItem: React.FC<HermesProductItemProps> = ({
 
   const hasValidHermesId = Number.isFinite(product.hermes_id) && Number.isInteger(product.hermes_id);
   const published = isPublished(product.hermes_id);
+  const handleUnpublish = onUnpublish ?? onDelete;
   const isActivo = publishedProduct?.activo !== false;
   const stock = Number(product.stock);
   const hasStock = Number.isFinite(stock) && stock > 0;
@@ -314,8 +317,12 @@ const HermesProductItem: React.FC<HermesProductItemProps> = ({
                       <span className="flex-1 text-xs text-red-600">¿Eliminar y perder foto y descripción?</span>
                       <button
                         className="rounded-sm bg-red-500 px-3 py-1.5 text-[11px] font-bold uppercase tracking-[0.12em] text-white transition hover:bg-red-600 disabled:opacity-40"
-                        onClick={() => { onDelete(product.hermes_id); setConfirmDelete(false); }}
-                        disabled={loading}
+                        onClick={() => {
+                          if (!handleUnpublish) return;
+                          handleUnpublish(product.hermes_id);
+                          setConfirmDelete(false);
+                        }}
+                        disabled={loading || !handleUnpublish}
                       >
                         Sí, eliminar
                       </button>

@@ -11,15 +11,19 @@ interface BannerPayload {
 }
 
 function normalizeBannerPayload(payload: BannerPayload) {
-  const titulo = payload.titulo?.trim() || null;
+  const titulo = payload.titulo?.trim();
   const imagenUrl = payload.imagen_url?.trim();
+
+  if (!titulo) {
+    throw new Error('El título es obligatorio.');
+  }
 
   if (!imagenUrl) {
     throw new Error('La URL de imagen es obligatoria.');
   }
 
   return {
-    ...(titulo !== null && { titulo }),
+    titulo,
     imagen_url: imagenUrl,
     activo: payload.activo ?? true,
   };
