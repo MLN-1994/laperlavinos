@@ -17,11 +17,32 @@ export default function ProductList() {
     const [filters, setFilters] = useState<SearchFilters>(() => ({
         query: qParam,
         sortOrder: 'price-asc',
+        minPrice: '',
+        maxPrice: '',
     }));
     const [selectedGroup, setSelectedGroup] = useState<string | null>(
         () => searchParams.get('categoria'),
     );
     const initialSearchFilters = useMemo(() => ({ query: qParam }), [qParam]);
+    const priceRangeLimits = useMemo(() => {
+        const PRICE_MAX_CAP = 2_000_000;
+
+        if (!productos.length) return undefined;
+
+        const values = productos
+            .map((product) => product.precio)
+            .filter((price) => Number.isFinite(price));
+
+        if (!values.length) return undefined;
+
+        const computedMin = Math.min(...values);
+        const computedMax = Math.max(...values);
+
+        return {
+            min: Math.min(computedMin, PRICE_MAX_CAP),
+            max: Math.min(computedMax, PRICE_MAX_CAP),
+        };
+    }, [productos]);
 
     // Sincroniza filtros cuando cambian params de URL (navegación desde header)
     useEffect(() => {
@@ -40,6 +61,11 @@ export default function ProductList() {
 
     const filteredProducts = useMemo(() => {
         const searchNeedle = filters.query.trim().toLowerCase();
+        const minPriceValue = Number(filters.minPrice);
+        const maxPriceValue = Number(filters.maxPrice);
+        const hasMinPrice = filters.minPrice.trim() !== '' && Number.isFinite(minPriceValue);
+        const hasMaxPrice = filters.maxPrice.trim() !== '' && Number.isFinite(maxPriceValue);
+
         const visibleProducts = productos.filter((product: ProductoPublicado) => {
             const matchesQuery =
                 searchNeedle.length === 0 ||
@@ -55,6 +81,14 @@ export default function ProductList() {
                 return false;
             }
 
+            if (hasMinPrice && product.precio < minPriceValue) {
+                return false;
+            }
+
+            if (hasMaxPrice && product.precio > maxPriceValue) {
+                return false;
+            }
+
             return true;
         });
 
@@ -65,7 +99,7 @@ export default function ProductList() {
 
             return left.precio - right.precio;
         });
-    }, [filters.query, filters.sortOrder, productos, selectedGroup]);
+    }, [filters.query, filters.sortOrder, filters.minPrice, filters.maxPrice, productos, selectedGroup]);
 
     if (loading) {
         return (
@@ -99,6 +133,7 @@ export default function ProductList() {
                     <SearchBar
                         onSearch={handleSearch}
                         initialFilters={initialSearchFilters}
+                        priceRangeLimits={priceRangeLimits}
                         placeholder="Buscar..."
                     />
                 </div>

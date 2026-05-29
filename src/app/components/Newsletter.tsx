@@ -1,98 +1,102 @@
 'use client';
 
-import { useState } from 'react';
-
-type Status = 'idle' | 'loading' | 'success' | 'error';
+const MAILCHIMP_ACTION =
+  'https://gmail.us18.list-manage.com/subscribe/post?u=d6bb58c7ea5715dda59bc311c&id=63dca8231f&f_id=0013aee6f0';
 
 export default function Newsletter() {
-  const [email, setEmail] = useState('');
-  const [status, setStatus] = useState<Status>('idle');
-  const [errorMsg, setErrorMsg] = useState('');
-
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    setStatus('loading');
-    setErrorMsg('');
-    try {
-      const res = await fetch('/api/newsletter', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email }),
-      });
-      const data = (await res.json()) as { ok?: boolean; error?: string };
-      if (!res.ok || !data.ok) {
-        setErrorMsg(data.error ?? 'No se pudo suscribir. Intentá nuevamente.');
-        setStatus('error');
-      } else {
-        setStatus('success');
-        setEmail('');
-      }
-    } catch {
-      setErrorMsg('Error de conexión. Intentá nuevamente.');
-      setStatus('error');
-    }
-  }
-
   return (
     <section className="relative w-full border-y border-neutral-800 bg-neutral-900/90 backdrop-blur-sm">
-      {/* Línea dorada superior */}
       <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[#a68a5c]/60 to-transparent" />
 
-      <div className="mx-auto max-w-[1440px] px-6 py-12 sm:py-14 sm:px-10 lg:px-16">
-        <div className="flex flex-col items-center justify-between gap-8 md:flex-row md:gap-12">
-
-          {/* Texto */}
-          <div className="flex flex-col gap-2 text-center md:text-left">
+      <div className="mx-auto max-w-[1440px] px-6 py-12 sm:px-10 sm:py-14 lg:px-16">
+        <div className="grid gap-8 lg:grid-cols-[1fr_minmax(420px,560px)] lg:items-center lg:gap-12">
+          <div className="text-center lg:text-left">
             <p className="text-[10px] font-semibold uppercase tracking-[0.35em] text-[#a68a5c]">
               Newsletter
             </p>
-            <h2 className="font-serif text-2xl font-light tracking-tight text-neutral-200 sm:text-3xl">
+            <h2 className="mt-2 font-serif text-2xl font-light tracking-tight text-neutral-200 sm:text-3xl">
               Novedades y recomendaciones
             </h2>
-            <p className="mt-1 max-w-sm text-sm leading-relaxed text-neutral-400">
-              Suscribite y enterate primero de nuevos vinos, llegadas exclusivas y eventos.
+            <p className="mt-2 max-w-md text-sm leading-relaxed text-neutral-400 lg:max-w-lg">
+              Sumate para recibir novedades, etiquetas destacadas y lanzamientos antes que nadie.
             </p>
           </div>
 
-          {/* Formulario */}
-          {status === 'success' ? (
-            <div className="flex w-full max-w-md items-center justify-center rounded-[4px] border border-[#a68a5c]/40 bg-[#a68a5c]/10 px-6 py-4">
-              <p className="text-sm text-[#c9a96e]">
-                ¡Listo! Ya estás suscripto/a. Pronto vas a recibir novedades.
-              </p>
-            </div>
-          ) : (
-            <form
-              onSubmit={handleSubmit}
-              className="flex w-full max-w-md flex-col gap-3 sm:flex-row sm:gap-0"
-            >
+          <form
+            action={MAILCHIMP_ACTION}
+            method="post"
+            target="_blank"
+            rel="noreferrer"
+            className="space-y-3 rounded-[4px] border border-neutral-700 bg-neutral-900/60 p-4 sm:p-5"
+          >
+            <div className="space-y-1">
+              <label htmlFor="mce-EMAIL" className="text-[10px] font-semibold uppercase tracking-[0.2em] text-neutral-400">
+                Email
+              </label>
               <input
+                id="mce-EMAIL"
+                name="EMAIL"
                 type="email"
                 required
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                disabled={status === 'loading'}
                 placeholder="tu mail..."
-                className="flex-1 rounded-l-[4px] rounded-r-none border border-neutral-700 bg-neutral-800/60 px-4 py-3 text-sm text-neutral-200 placeholder-neutral-500 outline-none transition focus:border-[#a68a5c]/70 focus:ring-1 focus:ring-[#a68a5c]/30 sm:rounded-r-none disabled:opacity-60"
+                className="w-full rounded-[4px] border border-neutral-700 bg-neutral-800/70 px-4 py-3 text-sm text-neutral-200 placeholder-neutral-500 outline-none transition focus:border-[#a68a5c]/70 focus:ring-1 focus:ring-[#a68a5c]/30"
               />
-              <button
-                type="submit"
-                disabled={status === 'loading'}
-                className="rounded-r-[4px] rounded-l-none border border-l-0 border-neutral-700 bg-neutral-800 px-6 py-3 text-xs font-semibold uppercase tracking-[0.2em] text-neutral-200 transition-colors duration-200 hover:bg-[#a68a5c] hover:border-[#a68a5c] hover:text-neutral-900 sm:rounded-l-none disabled:opacity-60"
-              >
-                {status === 'loading' ? '...' : 'Enviar'}
-              </button>
-              {status === 'error' && (
-                <p className="w-full text-xs text-red-400 sm:absolute sm:bottom-3">
-                  {errorMsg}
-                </p>
-              )}
-            </form>
-          )}
+            </div>
+
+            <div className="grid gap-3 sm:grid-cols-2">
+              <div className="space-y-1">
+                <label htmlFor="mce-FNAME" className="text-[10px] font-semibold uppercase tracking-[0.2em] text-neutral-400">
+                  Nombre
+                </label>
+                <input
+                  id="mce-FNAME"
+                  name="FNAME"
+                  type="text"
+                  placeholder="opcional"
+                  className="w-full rounded-[4px] border border-neutral-700 bg-neutral-800/70 px-4 py-3 text-sm text-neutral-200 placeholder-neutral-500 outline-none transition focus:border-[#a68a5c]/70 focus:ring-1 focus:ring-[#a68a5c]/30"
+                />
+              </div>
+
+              <div className="space-y-1">
+                <label htmlFor="mce-PHONE" className="text-[10px] font-semibold uppercase tracking-[0.2em] text-neutral-400">
+                  Teléfono
+                </label>
+                <input
+                  id="mce-PHONE"
+                  name="PHONE"
+                  type="text"
+                  placeholder="opcional"
+                  className="w-full rounded-[4px] border border-neutral-700 bg-neutral-800/70 px-4 py-3 text-sm text-neutral-200 placeholder-neutral-500 outline-none transition focus:border-[#a68a5c]/70 focus:ring-1 focus:ring-[#a68a5c]/30"
+                />
+              </div>
+            </div>
+
+            <input type="hidden" name="tags" value="3076534" />
+            <div aria-hidden="true" className="absolute -left-[5000px]">
+              <input
+                type="text"
+                name="b_d6bb58c7ea5715dda59bc311c_63dca8231f"
+                tabIndex={-1}
+                defaultValue=""
+              />
+            </div>
+
+            <button
+              type="submit"
+              name="subscribe"
+              id="mc-embedded-subscribe"
+              className="w-full rounded-[4px] border border-neutral-700 bg-neutral-800 px-6 py-3 text-xs font-semibold uppercase tracking-[0.2em] text-neutral-200 transition-colors duration-200 hover:border-[#a68a5c] hover:bg-[#a68a5c] hover:text-neutral-900"
+            >
+              Suscribirme
+            </button>
+
+            <p className="text-[11px] text-neutral-500">
+              Al enviar, se abrirá Mailchimp en una nueva pestaña para completar la suscripción.
+            </p>
+          </form>
         </div>
       </div>
 
-      {/* Línea dorada inferior */}
       <div className="absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-[#a68a5c]/60 to-transparent" />
     </section>
   );

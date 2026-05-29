@@ -69,7 +69,6 @@ const AdminBannerList: React.FC<AdminBannerListProps> = ({ banners, onEdit, onDe
 									</td>
 									<td className="px-4 py-4">
 										<p className="font-medium text-neutral-800">Imagen promocional</p>
-										<p className="mt-1 text-xs text-neutral-400">Sin texto superpuesto en la tienda.</p>
 									</td>
 									<td className="px-4 py-4">
 										<label className="inline-flex cursor-pointer items-center gap-3">
