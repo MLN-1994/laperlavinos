@@ -7,6 +7,7 @@ type ProductoPublicado = {
   nombre: string;
   descripcion: string;
   precio: number;
+  stock?: number | null;
   imagen_url?: string;
   categoria_id?: string;
   en_oferta?: boolean | null;
@@ -20,6 +21,7 @@ interface ProductCardProps {
 
 export default function ProductCard({ product, addToCart }: ProductCardProps) {
   const [isAdded, setIsAdded] = useState(false);
+  const hasStock = Number(product.stock) > 0;
 
   const enOferta = product.en_oferta === true && (product.descuento_porcentaje ?? 0) > 0;
   const precioFinal = enOferta
@@ -27,6 +29,7 @@ export default function ProductCard({ product, addToCart }: ProductCardProps) {
     : product.precio;
 
   const handleAdd = () => {
+    if (!hasStock) return;
     addToCart({ ...product, precio: precioFinal });
     setIsAdded(true);
     setTimeout(() => setIsAdded(false), 1500);
@@ -61,6 +64,14 @@ export default function ProductCard({ product, addToCart }: ProductCardProps) {
             </span>
           </div>
         )}
+
+        {!hasStock && (
+          <div className="absolute bottom-2 left-2">
+            <span className="inline-flex items-center bg-neutral-900/80 px-2 py-0.5 text-[8px] font-bold uppercase tracking-[0.2em] text-white">
+              Sin stock
+            </span>
+          </div>
+        )}
       </Link>
 
       {/* Info */}
@@ -91,10 +102,12 @@ export default function ProductCard({ product, addToCart }: ProductCardProps) {
 
           <button
             onClick={handleAdd}
-            disabled={isAdded}
+            disabled={isAdded || !hasStock}
             aria-label="Agregar al carrito"
             className={`relative flex h-9 w-9 items-center justify-center rounded-full border transition-all duration-500 ease-out shadow-sm
-              ${isAdded
+              ${!hasStock
+                ? "cursor-not-allowed border-neutral-200 bg-neutral-100 text-neutral-300"
+                : isAdded
                 ? "bg-neutral-800 border-neutral-800 scale-110"
                 : "bg-transparent border-neutral-300 text-neutral-600 hover:bg-neutral-800 hover:text-white hover:border-neutral-800"
               }`}

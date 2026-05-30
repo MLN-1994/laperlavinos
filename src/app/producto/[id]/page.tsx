@@ -1,5 +1,6 @@
 import { notFound } from 'next/navigation';
 import { getSupabaseAdmin } from '@/lib/supabaseAdmin';
+import { getHermesProducts } from '@/lib/hermesClient';
 import Header from '@/app/components/Header';
 import ProductDetail from '@/app/components/ProductDetail';
 import Footer from '@/app/components/Footer';
@@ -8,6 +9,16 @@ import { ProductoPublicado, ProductImage } from '@/types';
 
 interface Props {
   params: Promise<{ id: string }>;
+}
+
+function parseHermesId(value: unknown) {
+  const parsed = Number.parseInt(String(value), 10);
+  return Number.isFinite(parsed) ? parsed : null;
+}
+
+function parseStock(value: unknown) {
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? parsed : null;
 }
 
 export default async function ProductoPage({ params }: Props) {
@@ -48,6 +59,22 @@ export default async function ProductoPage({ params }: Props) {
     en_oferta: data.en_oferta ?? undefined,
     descuento_porcentaje: data.descuento_porcentaje ?? undefined,
   };
+
+  if (data.hermes_id !== null && data.hermes_id !== undefined) {
+    try {
+      const hermesProducts = await getHermesProducts();
+      const liveProduct = Array.isArray(hermesProducts)
+        ? hermesProducts.find((entry) => parseHermesId((entry as Record<string, unknown>).Codigo) === data.hermes_id)
+        : undefined;
+
+      const liveStock = parseStock((liveProduct as Record<string, unknown> | undefined)?.Stock);
+      if (liveStock !== null) {
+        product.stock = liveStock;
+      }
+    } catch {
+      // Si Hermes no responde, se mantiene la vista sin stock en vivo.
+    }
+  }
 
   return (
     <div className="min-h-screen bg-[#F5EFE6] text-[#1A120B]">

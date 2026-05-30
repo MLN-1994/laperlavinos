@@ -151,6 +151,7 @@ export default function ProductList() {
                                 description: product.descripcion,
                                 image: product.imagen_url || "",
                                 category: product.categoria_id || "",
+                                stock: product.stock ?? null,
                             })
                         }
                     />

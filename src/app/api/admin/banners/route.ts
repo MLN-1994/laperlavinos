@@ -19,7 +19,8 @@ function normalizeBannerPayload(payload: BannerPayload) {
   }
 
   return {
-    ...(titulo && { titulo }),
+    // The DB type requires titulo; keep image-only UX by persisting an empty string when omitted.
+    titulo: titulo ?? '',
     imagen_url: imagenUrl,
     activo: payload.activo ?? true,
   };

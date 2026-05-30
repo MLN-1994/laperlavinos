@@ -11,6 +11,7 @@ interface CartItem {
   description: string;
   image: string;
   category: string;
+  stock?: number | null;
   quantity: number;
 }
 
@@ -29,14 +30,33 @@ export const useCartStore = create<CartState>()(
   cart: [],
 
   addToCart: (product) => set((state) => {
+    const stockValue = Number(product.stock);
+    const hasFiniteStock = Number.isFinite(stockValue);
+    const maxAllowed = hasFiniteStock ? Math.max(0, Math.floor(stockValue)) : null;
+
     const existingItem = state.cart.find((item) => item.id === product.id);
     if (existingItem) {
+      if (maxAllowed !== null && existingItem.quantity >= maxAllowed) {
+        return state;
+      }
+
       return {
         cart: state.cart.map((item) =>
-          item.id === product.id ? { ...item, quantity: item.quantity + 1 } : item
+          item.id === product.id
+            ? {
+                ...item,
+                quantity: item.quantity + 1,
+                stock: product.stock ?? item.stock,
+              }
+            : item
         ),
       };
     }
+
+    if (maxAllowed !== null && maxAllowed <= 0) {
+      return state;
+    }
+
     return { cart: [...state.cart, { ...product, quantity: 1 }] };
   }),
 

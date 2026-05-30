@@ -169,7 +169,31 @@ async function revalidateCheckoutItems(items: CheckoutItemInput[]) {
 
     const liveName = typeof liveProduct?.Descripcion === 'string' ? liveProduct.Descripcion.trim() : '';
     const livePrice = parseNumber(liveProduct?.Precio);
+    const liveStock = parseNumber(liveProduct?.Stock);
     const basePrice = livePrice ?? Number(publishedProduct.precio);
+
+    if (publishedProduct.hermes_id !== null && publishedProduct.hermes_id !== undefined) {
+      if (!liveProduct || liveStock === null) {
+        throw new CheckoutValidationError(
+          `No pudimos validar el stock de "${liveName || publishedProduct.nombre}". Intenta nuevamente en unos minutos.`,
+          409,
+        );
+      }
+
+      if (liveStock <= 0) {
+        throw new CheckoutValidationError(
+          `"${liveName || publishedProduct.nombre}" no tiene stock disponible.`,
+          409,
+        );
+      }
+
+      if (item.quantity > liveStock) {
+        throw new CheckoutValidationError(
+          `Solo hay ${Math.floor(liveStock)} unidades disponibles de "${liveName || publishedProduct.nombre}".`,
+          409,
+        );
+      }
+    }
 
     const enOferta = publishedProduct.en_oferta === true;
     const pct = publishedProduct.descuento_porcentaje;

@@ -375,7 +375,14 @@ export default function CartDrawer({ isOpen, setIsOpen }: CartDrawerProps) {
                           </div>
                         ) : (
                           <ul role="list" className="divide-y divide-neutral-100">
-                            {cart.map((product) => (
+                            {cart.map((product) => {
+                              const stockValue = Number(product.stock);
+                              const maxAllowed = Number.isFinite(stockValue)
+                                ? Math.max(0, Math.floor(stockValue))
+                                : null;
+                              const reachedLimit = maxAllowed !== null && product.quantity >= maxAllowed;
+
+                              return (
                               <li key={product.id} className="flex py-5">
                                 <div className="h-24 w-20 flex-shrink-0 overflow-hidden rounded-sm bg-neutral-100 border border-neutral-200">
                                   <img
@@ -404,7 +411,9 @@ export default function CartDrawer({ isOpen, setIsOpen }: CartDrawerProps) {
                                       </span>
                                       <button
                                         onClick={() => addToCart(product)}
-                                        className="px-3 py-1 text-neutral-600 hover:bg-neutral-100 transition"
+                                        className="px-3 py-1 text-neutral-600 hover:bg-neutral-100 transition disabled:cursor-not-allowed disabled:text-neutral-300 disabled:hover:bg-transparent"
+                                        disabled={reachedLimit}
+                                        title={reachedLimit ? 'Stock maximo alcanzado' : 'Sumar una unidad'}
                                       >
                                         +
                                       </button>
@@ -418,9 +427,15 @@ export default function CartDrawer({ isOpen, setIsOpen }: CartDrawerProps) {
                                       <span className="uppercase text-[10px] tracking-tighter">Quitar</span>
                                     </button>
                                   </div>
+                                  {reachedLimit && (
+                                    <p className="mt-1 text-[10px] text-neutral-400">
+                                      Stock maximo alcanzado ({maxAllowed}).
+                                    </p>
+                                  )}
                                 </div>
                               </li>
-                            ))}
+                              );
+                            })}
                           </ul>
                         )}
                       </div>

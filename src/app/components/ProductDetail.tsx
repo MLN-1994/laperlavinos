@@ -18,6 +18,10 @@ export default function ProductDetail({ product, images = [] }: ProductDetailPro
   const [added, setAdded] = useState(false);
   const addToCart = useCartStore((s) => s.addToCart);
   const router = useRouter();
+  const numericStock = Number(product.stock);
+  const hasFiniteStock = Number.isFinite(numericStock);
+  const hasStock = !hasFiniteStock || numericStock > 0;
+  const maxSelectable = hasFiniteStock ? Math.max(0, Math.floor(numericStock)) : null;
 
   const enOferta = product.en_oferta === true && (product.descuento_porcentaje ?? 0) > 0;
   const precioFinal = enOferta
@@ -41,7 +45,15 @@ export default function ProductDetail({ product, images = [] }: ProductDetailPro
   };
 
   const handleAdd = () => {
-    for (let i = 0; i < quantity; i++) {
+    if (!hasStock) return;
+
+    const safeQuantity = maxSelectable !== null
+      ? Math.min(quantity, maxSelectable)
+      : quantity;
+
+    if (safeQuantity <= 0) return;
+
+    for (let i = 0; i < safeQuantity; i++) {
       addToCart({
         id: product.id,
         name: product.nombre,
@@ -49,6 +61,7 @@ export default function ProductDetail({ product, images = [] }: ProductDetailPro
         description: product.descripcion ?? "",
         image: product.imagen_url ?? "/placeholder.png",
         category: product.categoria_id ?? "",
+        stock: product.stock ?? null,
       });
     }
     setAdded(true);
@@ -56,7 +69,12 @@ export default function ProductDetail({ product, images = [] }: ProductDetailPro
   };
 
   const decrease = () => setQuantity((q) => Math.max(1, q - 1));
-  const increase = () => setQuantity((q) => q + 1);
+  const increase = () => setQuantity((q) => {
+    if (maxSelectable !== null) {
+      return Math.min(maxSelectable, q + 1);
+    }
+    return q + 1;
+  });
 
   return (
     <section className="min-h-screen bg-[#F5EFE6] px-4 py-10 sm:px-8 lg:px-16">
@@ -165,7 +183,8 @@ export default function ProductDetail({ product, images = [] }: ProductDetailPro
                 </span>
                 <button
                   onClick={increase}
-                  className="text-neutral-400 hover:text-[#a68a5c] transition-colors"
+                  className="text-neutral-400 hover:text-[#a68a5c] transition-colors disabled:opacity-30"
+                  disabled={maxSelectable !== null && quantity >= maxSelectable}
                 >
                   <HiPlus className="h-4 w-4" />
                 </button>
@@ -175,9 +194,11 @@ export default function ProductDetail({ product, images = [] }: ProductDetailPro
             {/* Botón añadir */}
             <button
               onClick={handleAdd}
-              disabled={added}
+              disabled={added || !hasStock}
               className={`relative flex w-full items-center justify-center gap-3 rounded-sm border py-4 text-sm font-semibold uppercase tracking-[0.15em] transition-all duration-500 shadow-sm
-                ${added
+                ${!hasStock
+                  ? "cursor-not-allowed border-neutral-200 bg-neutral-100 text-neutral-400"
+                  : added
                   ? "border-[#a68a5c] bg-[#a68a5c]/10 text-[#a68a5c] scale-[0.99]"
                   : "border-neutral-800 bg-neutral-900 text-neutral-100 hover:bg-[#a68a5c] hover:border-[#a68a5c] hover:text-neutral-900"
                 }`}
@@ -192,9 +213,13 @@ export default function ProductDetail({ product, images = [] }: ProductDetailPro
                 className={`flex items-center gap-2 transition-all duration-300 ${added ? "opacity-0 scale-75" : "opacity-100 scale-100"}`}
               >
                 <HiOutlineShoppingCart className="h-5 w-5" />
-                Añadir al carrito
+                {hasStock ? 'Añadir al carrito' : 'Sin stock'}
               </span>
             </button>
+
+            {hasFiniteStock && numericStock <= 0 && (
+              <p className="text-xs text-neutral-500 tracking-wide">Este producto no tiene stock disponible por el momento.</p>
+            )}
 
             {product.stock != null && product.stock <= 5 && product.stock > 0 && (
               <p className="text-xs text-amber-600 tracking-wide">
