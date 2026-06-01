@@ -39,11 +39,11 @@ export default function ProductCard({ product, addToCart }: ProductCardProps) {
     <div className="group relative flex flex-col overflow-hidden rounded-sm border border-neutral-200 bg-white p-2 transition-all duration-500 hover:border-neutral-400 hover:shadow-[0_8px_32px_rgba(0,0,0,0.10)]">
 
       {/* Imagen con overlay hover */}
-      <Link href={`/producto/${product.id}`} target="_blank" rel="noopener noreferrer" className="relative block aspect-[4/5] overflow-hidden rounded-sm bg-neutral-100">
+      <Link href={`/producto/${product.id}`} target="_blank" rel="noopener noreferrer" className="relative block aspect-[4/5] overflow-hidden rounded-sm bg-white">
         <img
           src={product.imagen_url || "/placeholder.png"}
           alt={product.nombre}
-          className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
+          className="h-full w-full object-contain p-2 transition-transform duration-700 group-hover:scale-[1.02] sm:p-3"
         />
 
         {/* Degradado inferior en hover */}

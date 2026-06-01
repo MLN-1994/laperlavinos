@@ -36,6 +36,6 @@ export interface Banner {
   id: string;
   titulo: string;
   imagen_url: string;
-  link?: string;
+  link?: string | null;
   activo?: boolean;
 }

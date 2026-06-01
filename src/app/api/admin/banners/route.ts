@@ -7,12 +7,14 @@ interface BannerPayload {
   id?: string;
   titulo?: string;
   imagen_url?: string;
+  link?: string | null;
   activo?: boolean;
 }
 
 function normalizeBannerPayload(payload: BannerPayload) {
   const titulo = payload.titulo?.trim();
   const imagenUrl = payload.imagen_url?.trim();
+  const link = payload.link?.trim();
 
   if (!imagenUrl) {
     throw new Error('La URL de imagen es obligatoria.');
@@ -22,6 +24,7 @@ function normalizeBannerPayload(payload: BannerPayload) {
     // The DB type requires titulo; keep image-only UX by persisting an empty string when omitted.
     titulo: titulo ?? '',
     imagen_url: imagenUrl,
+    link: link || null,
     activo: payload.activo ?? true,
   };
 }
@@ -30,7 +33,7 @@ function buildBannerUpdatePayload(payload: BannerPayload): Partial<Banner> {
   const updatePayload: Partial<Banner> = {};
 
   if (payload.titulo !== undefined) {
-    updatePayload.titulo = payload.titulo.trim() || undefined;
+    updatePayload.titulo = payload.titulo.trim();
   }
 
   if (payload.imagen_url !== undefined) {
@@ -45,6 +48,11 @@ function buildBannerUpdatePayload(payload: BannerPayload): Partial<Banner> {
 
   if (payload.activo !== undefined) {
     updatePayload.activo = payload.activo;
+  }
+
+  if (payload.link !== undefined) {
+    const link = payload.link?.trim();
+    updatePayload.link = link || null;
   }
 
   return updatePayload;

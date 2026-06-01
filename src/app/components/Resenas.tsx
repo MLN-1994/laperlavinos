@@ -1,3 +1,5 @@
+import { FcGoogle } from 'react-icons/fc';
+
 type ReviewItem = {
   id: string;
   name: string;
@@ -17,14 +19,14 @@ const REVIEWS: ReviewItem[] = [
   {
     id: 'martin-cardena',
     name: 'Martin Cardena',
-    publishedAgo: 'hace 3 anos',
+    publishedAgo: 'hace 3 años',
     rating: 4,
     text: 'Excelente atencion, algunas cosas en precio razonable, otras un poco alto.',
   },
   {
     id: 'daniel-tarayre',
     name: 'Daniel Tarayre',
-    publishedAgo: 'hace un ano',
+    publishedAgo: 'hace un año',
     rating: 5,
     text: 'Buena atencion y buena variedad',
   },
@@ -57,20 +59,14 @@ export default function Resenas() {
           {REVIEWS.map((r) => (
             <div
               key={r.id}
-              className="flex min-h-[170px] flex-col gap-4 rounded-md border border-[#E8DFD0] bg-white p-5 shadow-[0_2px_10px_rgba(26,18,11,0.06)]"
+              className="flex min-h-[170px] flex-col gap-4 rounded-md border border-[#E8DFD0] bg-white p-5 shadow-[0_2px_10px_rgba(26,18,11,0.06)] transition-shadow duration-300 hover:shadow-[0_6px_18px_rgba(26,18,11,0.08)]"
             >
               <div className="flex items-start justify-between gap-3">
                 <div className="min-w-0">
                   <p className="truncate text-sm font-semibold text-[#1A120B]">{r.name}</p>
                   <div className="mt-0.5 text-[11px] text-[#7D7D7D]">{r.publishedAgo}</div>
                 </div>
-                <span
-                  className="inline-flex h-6 w-6 items-center justify-center rounded-full border border-[#E6E6E6] text-[11px] font-semibold text-[#4285F4]"
-                  aria-hidden="true"
-                  title="Google"
-                >
-                  G
-                </span>
+                <FcGoogle className="h-6 w-6 shrink-0" aria-hidden="true" title="Google" />
               </div>
               <StarRating rating={r.rating} />
               <p className="text-sm leading-relaxed text-[#4A4037]">{r.text}</p>
@@ -84,7 +80,7 @@ export default function Resenas() {
             rel="noopener noreferrer"
             className="inline-flex items-center gap-2 rounded-sm border border-[#D8CCB9] bg-white/70 px-4 py-2 text-[11px] font-medium tracking-[0.06em] text-[#5F4D3D] transition-colors hover:bg-white hover:text-[#1A120B]"
           >
-            Ver mas resenas en Google
+            Ver más reseñas de Google
             <span aria-hidden="true">↗</span>
           </a>
         </div>

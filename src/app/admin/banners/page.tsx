@@ -117,7 +117,9 @@ export default function BannersPage() {
         },
         body: JSON.stringify({
           id: banner.id,
+          titulo: banner.titulo,
           imagen_url: banner.imagen_url,
+          link: banner.link,
           activo: banner.activo,
         }),
       });

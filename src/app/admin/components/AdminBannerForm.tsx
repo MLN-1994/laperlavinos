@@ -9,6 +9,8 @@ interface AdminBannerFormProps {
 
 const AdminBannerForm: React.FC<AdminBannerFormProps> = ({ initialBanner = {}, onSubmit, onCancel }) => {
 	const [imagenUrl, setImagenUrl] = useState(initialBanner.imagen_url || '');
+	const [titulo, setTitulo] = useState(initialBanner.titulo || '');
+	const [link, setLink] = useState(initialBanner.link || '');
 	const [activo, setActivo] = useState(initialBanner.activo ?? true);
 	const [uploading, setUploading] = useState(false);
 	const [uploadError, setUploadError] = useState<string | null>(null);
@@ -36,7 +38,7 @@ const AdminBannerForm: React.FC<AdminBannerFormProps> = ({ initialBanner = {}, o
 	const handleSubmit = (e: React.FormEvent) => {
 		e.preventDefault();
 		if (!imagenUrl) return;
-		onSubmit({ id: initialBanner.id, imagen_url: imagenUrl, activo });
+		onSubmit({ id: initialBanner.id, imagen_url: imagenUrl, titulo, link, activo });
 	};
 
 	return (
@@ -87,6 +89,30 @@ const AdminBannerForm: React.FC<AdminBannerFormProps> = ({ initialBanner = {}, o
 					<p className="text-[11px] leading-5 text-neutral-400">
 						Si subis una imagen con otra proporcion, el carrusel puede verse desparejo frente a los otros banners.
 					</p>
+				</div>
+
+				<div className="grid gap-4 sm:grid-cols-2">
+					<label className="flex flex-col gap-1.5">
+						<span className="text-[10px] font-semibold uppercase tracking-[0.2em] text-neutral-500">Texto del botón (opcional)</span>
+						<input
+							type="text"
+							value={titulo}
+							onChange={(e) => setTitulo(e.target.value)}
+							className="w-full rounded-sm border border-neutral-200 bg-white px-3 py-2.5 text-sm normal-case tracking-normal text-neutral-800 outline-none transition focus:border-[#a68a5c]"
+							placeholder="Ej: Ver producto"
+						/>
+					</label>
+
+					<label className="flex flex-col gap-1.5">
+						<span className="text-[10px] font-semibold uppercase tracking-[0.2em] text-neutral-500">Link destino (opcional)</span>
+						<input
+							type="text"
+							value={link}
+							onChange={(e) => setLink(e.target.value)}
+							className="w-full rounded-sm border border-neutral-200 bg-white px-3 py-2.5 text-sm normal-case tracking-normal text-neutral-800 outline-none transition focus:border-[#a68a5c]"
+							placeholder="/producto/slug o https://..."
+						/>
+					</label>
 				</div>
 			</div>
 			<label className="inline-flex items-center gap-3 rounded-sm border border-neutral-200 bg-neutral-50 px-4 py-3 text-sm text-neutral-600 cursor-pointer">

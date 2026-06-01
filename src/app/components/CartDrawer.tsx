@@ -57,11 +57,11 @@ const ARGENTINA_PROVINCES = [
   'Tucumán',
 ];
 
-const PATAGONIA_PROVINCES = ['Neuquén', 'Río Negro', 'Chubut', 'Santa Cruz', 'Tierra del Fuego'];
-
 function ShippingEstimate({ province, city, postalCode, subtotal, onProvinceChange }: { province: string; city?: string; postalCode?: string; subtotal: number; onProvinceChange: (p: string) => void }) {
   const cost = getShippingCost(province, subtotal, city, postalCode);
-  const isFree = !!province && cost === 0;
+  const qualifiesBySubtotal = subtotal >= FREE_SHIPPING_THRESHOLD;
+  const isLocalFree = !!province && cost === 0 && !qualifiesBySubtotal;
+  const isThresholdFree = !!province && cost === 0 && qualifiesBySubtotal;
   return (
     <div className="mt-4 rounded-sm border border-neutral-200 bg-neutral-50 px-4 py-4">
       <div className="flex items-center gap-2 mb-3">
@@ -81,12 +81,16 @@ function ShippingEstimate({ province, city, postalCode, subtotal, onProvinceChan
           ))}
         </select>
       </label>
-      {isFree ? (
+      {isThresholdFree ? (
         <p className="mt-3 text-sm font-semibold text-green-600">¡Envío gratis! Tu pedido supera ${FREE_SHIPPING_THRESHOLD.toLocaleString('es-AR')}.</p>
       ) : cost !== null ? (
         <p className="mt-3 text-sm text-neutral-700">
           Envío estimado:{' '}
-          <span className="font-semibold">${cost.toLocaleString('es-AR')}</span>
+          {isLocalFree ? (
+            <span className="font-semibold text-green-600">Sin cargo (Bahía Blanca)</span>
+          ) : (
+            <span className="font-semibold">${cost.toLocaleString('es-AR')}</span>
+          )}
         </p>
       ) : (
         <>

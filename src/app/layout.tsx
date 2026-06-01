@@ -42,6 +42,14 @@ export const metadata: Metadata = {
     description: 'Tienda online de vinos de alta gama y regalos corporativos.',
     images: ['/img/logo_Gris.png'],
   },
+  icons: {
+    icon: [
+      { url: '/favicon/favicon-32x32.png', sizes: '32x32', type: 'image/png' },
+      { url: '/favicon/favicon-16x16.png', sizes: '16x16', type: 'image/png' },
+    ],
+    shortcut: '/favicon/favicon-32x32.png',
+    apple: '/favicon/favicon-32x32.png',
+  },
   robots: { index: true, follow: true },
 };
 

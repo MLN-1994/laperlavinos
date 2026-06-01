@@ -35,9 +35,12 @@ const BannerCarrousel: React.FC<BannerCarrouselProps> = ({ banners }) => {
                 </Swiper>
             </div>
             <style jsx global>{`
-                .swiper-pagination { bottom: 20px !important; }
+                .swiper-pagination { bottom: 10px !important; }
                 .swiper-pagination-bullet { background: #fff !important; opacity: 0.5; }
                 .swiper-pagination-bullet-active { background: #a68a5c !important; opacity: 1; width: 25px; border-radius: 4px; }
+                @media (min-width: 640px) {
+                    .swiper-pagination { bottom: 18px !important; }
+                }
             `}</style>
         </div>
     );
