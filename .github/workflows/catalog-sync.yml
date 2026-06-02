@@ -2,7 +2,7 @@ name: Catalog Sync
 
 on:
   schedule:
-    - cron: '*/15 * * * *'  # Cada 15 minutos
+    - cron: '*/15 * * * *'  # Cada 15 minutos (UTC)
   workflow_dispatch:          # También permite correrlo manualmente desde GitHub
 
 jobs:
