@@ -1,4 +1,4 @@
-import { NextResponse, after } from 'next/server';
+import { NextResponse } from 'next/server';
 import { timingSafeEqual } from 'crypto';
 import { getSupabaseAdmin, hasSupabaseAdminConfig } from '@/lib/supabaseAdmin';
 import type { Database, Json } from '@/types/supabase';
@@ -39,9 +39,7 @@ const WEBHOOK_DEBUG_ENABLED = process.env.OPENPAY_WEBHOOK_DEBUG === 'true';
 
 function verifyWebhookSecret(url: URL): void {
   if (!WEBHOOK_SECRET) {
-    // Si no está configurado, se permite sin autenticación
-    // (adecuado para sandbox; en producción siempre configurar OPENPAY_WEBHOOK_SECRET)
-    return;
+    throw new Error('OPENPAY_WEBHOOK_SECRET no está configurado. El webhook está deshabilitado hasta que se configure la variable de entorno.');
   }
 
   const providedSecret = url.searchParams.get('secret') ?? '';
@@ -175,32 +173,26 @@ export async function POST(request: Request) {
       paymentStatus,
     });
 
-    // Disparar registro en Hermes cuando el pago es aprobado
+    // Pago aprobado: encolar registro en Hermes (outbox pattern)
     if (normalizedPaymentStatus === 'approved' && order.id) {
-      const hermesUrl = new URL('/api/hermes/venta', request.url).toString();
       const orderId = order.id;
-      console.log(`[OpenPay webhook] Pago aprobado — disparando registro en Hermes para order=${orderId}`);
+      console.log(`[OpenPay webhook] Pago aprobado — encolando registro Hermes para order=${orderId}`);
 
-      after(async () => {
-        try {
-          const res = await fetch(hermesUrl, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ web_order_id: orderId }),
-          });
-          const data = await res.json().catch(() => null);
-          if (!res.ok) {
-            console.error(
-              `[OpenPay webhook] Error al registrar venta en Hermes order=${orderId} status=${res.status}`,
-              data,
-            );
-          } else {
-            console.log(`[OpenPay webhook] Venta registrada en Hermes order=${orderId}`, data);
-          }
-        } catch (err) {
-          console.error(`[OpenPay webhook] Excepcion al registrar en Hermes order=${orderId}`, err);
-        }
-      });
+      const { error: eventError } = await supabaseAdmin
+        .from('integration_events')
+        .upsert(
+          {
+            event_type: 'hermes_venta',
+            web_order_id: orderId,
+            idempotency_key: `hermes_venta:${orderId}`,
+            status: 'pending',
+            next_retry_at: new Date().toISOString(),
+          },
+          { onConflict: 'idempotency_key', ignoreDuplicates: true },
+        );
+      if (eventError) {
+        console.error(`[OpenPay webhook] Error al encolar evento Hermes order=${orderId}`, eventError.message);
+      }
     }
 
     return NextResponse.json({ received: true, orderId: order.id, status: mappedStatus });

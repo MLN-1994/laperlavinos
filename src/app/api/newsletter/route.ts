@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { Resend } from 'resend';
 
 const RESEND_API_KEY = process.env.RESEND_API_KEY?.trim();
-const NEWSLETTER_FROM = process.env.RESEND_FROM_EMAIL?.trim() ?? 'La Perla Vinos <noreply@laperlavinos.com>';
+const NEWSLETTER_FROM = process.env.RESEND_FROM_EMAIL?.trim() ?? 'La Perla Vinos <noreply@laperlawines.com.ar>';
 const NEWSLETTER_TO = process.env.RESEND_NOTIFY_EMAIL?.trim() ?? 'ventas@laperlawines.com.ar';
 
 function isValidEmail(value: string) {
@@ -64,7 +64,7 @@ export async function POST(request: Request) {
                 <!-- CTA -->
                 <table cellpadding="0" cellspacing="0" style="margin:0 auto;">
                   <tr><td style="background:#a68a5c;padding:0;">
-                    <a href="${process.env.NEXT_PUBLIC_APP_URL ?? 'https://laperlavinos.com'}/productos"
+                    <a href="${process.env.NEXT_PUBLIC_APP_URL ?? 'https://www.laperlawines.com.ar'}/productos"
                        style="display:block;padding:14px 32px;color:#1a1108;font-size:11px;font-weight:700;letter-spacing:0.2em;text-transform:uppercase;text-decoration:none;">
                       Ver catálogo
                     </a>

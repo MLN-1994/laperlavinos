@@ -15,7 +15,7 @@ const inter = Inter({
   display: "swap",
 });
 
-const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? 'https://laperlavinos.com';
+const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? 'https://www.laperlawines.com.ar';
 
 export const metadata: Metadata = {
   metadataBase: new URL(APP_URL),

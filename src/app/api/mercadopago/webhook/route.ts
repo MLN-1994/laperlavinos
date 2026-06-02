@@ -330,16 +330,30 @@ export async function POST(request: Request) {
       topic,
     });
 
-    // Disparar registro en Hermes cuando el pago es aprobado
+    // Pago aprobado: enviar email de confirmación y encolar registro en Hermes
     if (paymentStatus === 'approved' && order.id) {
-      const hermesUrl = new URL('/api/hermes/venta', request.url).toString();
       const orderId = order.id;
-      console.log(`[MercadoPago webhook] Pago aprobado — disparando registro en Hermes para order=${orderId}`);
+      console.log(`[MercadoPago webhook] Pago aprobado — encolando registro Hermes para order=${orderId}`);
 
-      // Usamos after() para garantizar que el fetch se complete aunque la respuesta ya fue enviada.
-      // En Vercel serverless, el fire-and-log sin after() puede ser cancelado antes de ejecutarse.
+      // Encolar el registro en Hermes (outbox pattern — procesado por /api/admin/process-events)
+      const { error: eventError } = await supabaseAdmin
+        .from('integration_events')
+        .upsert(
+          {
+            event_type: 'hermes_venta',
+            web_order_id: orderId,
+            idempotency_key: `hermes_venta:${orderId}`,
+            status: 'pending',
+            next_retry_at: new Date().toISOString(),
+          },
+          { onConflict: 'idempotency_key', ignoreDuplicates: true },
+        );
+      if (eventError) {
+        console.error(`[MercadoPago webhook] Error al encolar evento Hermes order=${orderId}`, eventError.message);
+      }
+
+      // Email de confirmación al comprador (after() para no bloquear la respuesta)
       after(async () => {
-        // Email de confirmación al comprador
         try {
           const supabase = getSupabaseAdmin();
           const { data: fullOrder } = await supabase
@@ -371,31 +385,6 @@ export async function POST(request: Request) {
           }
         } catch (err) {
           console.error(`[MercadoPago webhook] Error enviando email de confirmación order=${orderId}`, err);
-        }
-
-        // Registro en Hermes
-        try {
-          const res = await fetch(hermesUrl, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ web_order_id: orderId }),
-          });
-          const data = await res.json().catch(() => null);
-          if (!res.ok) {
-            console.error(
-              `[MercadoPago webhook] Error al registrar venta en Hermes order=${orderId} status=${res.status}`,
-              data,
-            );
-          } else {
-            console.log(
-              `[MercadoPago webhook] Venta registrada en Hermes order=${orderId} comprobante=${(data as Record<string, unknown>)?.hermes_comprobante ?? 'desconocido'}`,
-            );
-          }
-        } catch (err: unknown) {
-          console.error(
-            `[MercadoPago webhook] Fallo de red al llamar a Hermes order=${orderId}`,
-            err instanceof Error ? err.message : err,
-          );
         }
       });
     }

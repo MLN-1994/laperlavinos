@@ -1,4 +1,4 @@
-name: Catalog Sync
+name: Catalog Sync & Process Events
 
 on:
   schedule:
@@ -15,8 +15,20 @@ jobs:
             -X POST \
             -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" \
             https://laperlavinos.vercel.app/api/admin/catalog-sync)
-          echo "HTTP status: $response"
+          echo "Catalog sync HTTP status: $response"
           if [ "$response" != "200" ]; then
-            echo "Sync failed with status $response"
+            echo "Catalog sync failed with status $response"
+            exit 1
+          fi
+
+      - name: Process integration events (outbox retry)
+        run: |
+          response=$(curl -s -o /dev/null -w "%{http_code}" \
+            -X POST \
+            -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" \
+            https://laperlavinos.vercel.app/api/admin/process-events)
+          echo "Process events HTTP status: $response"
+          if [ "$response" != "200" ]; then
+            echo "Process events failed with status $response"
             exit 1
           fi

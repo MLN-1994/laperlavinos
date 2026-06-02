@@ -474,6 +474,45 @@ export interface Database {
         };
         Relationships: [];
       };
+      integration_events: {
+        Row: {
+          id: string;
+          event_type: string;
+          web_order_id: string;
+          idempotency_key: string;
+          status: string;
+          retry_count: number;
+          next_retry_at: string;
+          last_error: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          event_type: string;
+          web_order_id: string;
+          idempotency_key: string;
+          status?: string;
+          retry_count?: number;
+          next_retry_at?: string;
+          last_error?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          event_type?: string;
+          web_order_id?: string;
+          idempotency_key?: string;
+          status?: string;
+          retry_count?: number;
+          next_retry_at?: string;
+          last_error?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
       profiles: {
         Row: {
           id: string;
