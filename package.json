@@ -6,7 +6,9 @@
     "dev": "next dev --webpack",
     "build": "next build --webpack",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "sync:dry": "tsx --env-file .env.local scripts/test-catalog-sync.ts --dry-run",
+    "sync:test": "tsx --env-file .env.local scripts/test-catalog-sync.ts"
   },
   "dependencies": {
     "@headlessui/react": "^2.2.9",
@@ -31,6 +33,7 @@
     "eslint": "^9",
     "eslint-config-next": "16.1.6",
     "tailwindcss": "^4",
+    "tsx": "^4.22.4",
     "typescript": "^5"
   }
 }

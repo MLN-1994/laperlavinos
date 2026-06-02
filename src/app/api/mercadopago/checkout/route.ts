@@ -1,6 +1,5 @@
 import { NextResponse } from 'next/server';
 import { createMercadoPagoCheckoutPreference } from '@/lib/mercadoPago';
-import { getHermesProducts } from '@/lib/hermesClient';
 import { getSupabaseAdmin, hasSupabaseAdminConfig } from '@/lib/supabaseAdmin';
 import type { CheckoutBuyerInput, CheckoutItemInput } from '@/types/mercadopago';
 import type { Database, Json } from '@/types/supabase';
@@ -49,11 +48,6 @@ function buildExternalReference() {
 
 function calculateTotalAmount(items: CheckoutItemInput[]) {
   return items.reduce((total, item) => total + Number(item.unit_price) * Number(item.quantity), 0);
-}
-
-function parseHermesId(value: unknown) {
-  const parsed = Number.parseInt(String(value), 10);
-  return Number.isFinite(parsed) ? parsed : null;
 }
 
 function parseNumber(value: unknown) {
@@ -111,31 +105,27 @@ function parseBuyerInput(buyer: CheckoutRequestBody['buyer'], requireAddress = t
   return parsedBuyer;
 }
 
-async function loadLiveHermesProductsMap(products: PublishedProductForCheckout[]) {
-  const hasHermesProducts = products.some((product) => product.hermes_id !== null && product.hermes_id !== undefined);
+type SnapshotRow = Database['public']['Tables']['hermes_erp_snapshot']['Row'];
 
-  if (!hasHermesProducts) {
-    return new Map<number, Record<string, unknown>>();
-  }
+/** Lee stock y precio desde hermes_erp_snapshot (Supabase) solo para los IDs del carrito. */
+async function loadSnapshotMap(products: PublishedProductForCheckout[]): Promise<Map<number, SnapshotRow>> {
+  const ids = products
+    .map((p) => p.hermes_id)
+    .filter((id): id is number => id !== null && id !== undefined);
 
-  try {
-    const hermesProducts = await getHermesProducts();
-    const hermesMap = new Map<number, Record<string, unknown>>();
+  if (ids.length === 0) return new Map();
 
-    for (const product of Array.isArray(hermesProducts) ? hermesProducts : []) {
-      const hermesId = parseHermesId((product as Record<string, unknown>).Codigo);
+  const supabase = getSupabaseAdmin();
+  const { data, error } = await supabase
+    .from('hermes_erp_snapshot')
+    .select('hermes_id, nombre, descripcion, precio_base, stock_disponible, grupo, marca, activo_en_erp, last_sync_at, created_at, updated_at')
+    .in('hermes_id', ids);
 
-      if (hermesId === null) {
-        continue;
-      }
+  if (error) throw new Error(`Error leyendo hermes_erp_snapshot: ${error.message}`);
 
-      hermesMap.set(hermesId, product as Record<string, unknown>);
-    }
-
-    return hermesMap;
-  } catch {
-    return new Map<number, Record<string, unknown>>();
-  }
+  const map = new Map<number, SnapshotRow>();
+  for (const row of data ?? []) map.set(row.hermes_id, row);
+  return map;
 }
 
 async function revalidateCheckoutItems(items: CheckoutItemInput[]) {
@@ -158,7 +148,7 @@ async function revalidateCheckoutItems(items: CheckoutItemInput[]) {
   }
 
   const publishedProductsMap = new Map(products.map((product) => [product.id, product]));
-  const hermesMap = await loadLiveHermesProductsMap(products);
+  const snapshotMap = await loadSnapshotMap(products);
 
   return items.map((item) => {
     const publishedProduct = publishedProductsMap.get(item.id);
@@ -167,17 +157,17 @@ async function revalidateCheckoutItems(items: CheckoutItemInput[]) {
       throw new CheckoutValidationError('Hay productos que ya no estan disponibles para la venta.', 409);
     }
 
-    const liveProduct = publishedProduct.hermes_id !== null && publishedProduct.hermes_id !== undefined
-      ? hermesMap.get(publishedProduct.hermes_id)
+    const snap = publishedProduct.hermes_id !== null && publishedProduct.hermes_id !== undefined
+      ? snapshotMap.get(publishedProduct.hermes_id)
       : undefined;
 
-    const liveName = typeof liveProduct?.Descripcion === 'string' ? liveProduct.Descripcion.trim() : '';
-    const livePrice = parseNumber(liveProduct?.Precio);
-    const liveStock = parseNumber(liveProduct?.Stock);
+    const liveName = snap?.nombre?.trim() ?? '';
+    const livePrice = snap ? parseNumber(snap.precio_base) : null;
+    const liveStock = snap ? parseNumber(snap.stock_disponible) : null;
     const basePrice = livePrice ?? Number(publishedProduct.precio);
 
     if (publishedProduct.hermes_id !== null && publishedProduct.hermes_id !== undefined) {
-      if (!liveProduct || liveStock === null) {
+      if (!snap || liveStock === null) {
         throw new CheckoutValidationError(
           `No pudimos validar el stock de "${liveName || publishedProduct.nombre}". Intenta nuevamente en unos minutos.`,
           409,

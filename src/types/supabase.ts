@@ -249,6 +249,48 @@ export interface Database {
         };
         Relationships: [];
       };
+      hermes_erp_snapshot: {
+        Row: {
+          hermes_id: number; // BIGINT en Postgres; JS number es seguro hasta 2^53
+          nombre: string;
+          descripcion: string;
+          precio_base: number;
+          stock_disponible: number;
+          grupo: string | null;
+          marca: string | null;
+          activo_en_erp: boolean;
+          last_sync_at: string;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          hermes_id: number;
+          nombre: string;
+          descripcion: string;
+          precio_base: number;
+          stock_disponible: number;
+          grupo?: string | null;
+          marca?: string | null;
+          activo_en_erp?: boolean;
+          last_sync_at?: string;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          hermes_id?: number;
+          nombre?: string;
+          descripcion?: string;
+          precio_base?: number;
+          stock_disponible?: number;
+          grupo?: string | null;
+          marca?: string | null;
+          activo_en_erp?: boolean;
+          last_sync_at?: string;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
       productos_publicados: {
         Row: {
           id: string;

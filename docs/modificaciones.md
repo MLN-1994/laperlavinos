@@ -54,7 +54,7 @@ Archivos modificados/nuevos sin commit a la fecha:
 **Nuevos archivos:**
 - `src/lib/transferencia.ts` — TRANSFER_DISCOUNT_PCT=10, getBankInfo(), applyTransferDiscount()
 - `src/lib/orderEmail.ts` — sendOrderConfirmationEmail(), sendTransferPendingEmail() (requiere RESEND_API_KEY)
-- `src/lib/shipping.ts` — getShippingCost(), zonas Patagonia ($20.990) y general ($24.426), umbral envío gratis $190.000
+- `src/lib/shipping.ts` — getShippingCost(), envío fijo $20.000 para todo el país, excepción local Bahía Blanca (CP 8000) sin cargo y envío gratis superando $190.000
 - `src/app/api/admin/orders/[id]/status/route.ts` — PATCH: aprobar→'transferencia_aprobada' / rechazar→'transferencia_rechazada'
 - `src/app/api/transferencia/checkout/route.ts` — checkout transferencia, aplica 10% descuento
 - `src/app/transferencia/confirmacion/page.tsx` — página post-transferencia con datos bancarios
