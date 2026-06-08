@@ -195,12 +195,35 @@
   Invoke-RestMethod -Uri "https://laperlavinos.vercel.app/api/admin/catalog-sync" -Method POST -Headers @{ Authorization = "Bearer <CRON_SECRET>" }
   ```
 
+### ✅ Fase 1b completada (2026-06-02)
+
+**Outbox / reintentos para registro en Hermes — IMPLEMENTADO Y PROBADO EN PRODUCCION**
+
+- `docs/integration-events.sql` — DDL ejecutado en Supabase: tabla integration_events con RLS (service_role only), índice (status, next_retry_at), trigger updated_at.
+- `src/types/supabase.ts` — tipos Row/Insert/Update para integration_events agregados.
+- `src/app/api/mercadopago/webhook/route.ts` — reemplazado after(fetch hermes) por upsert en integration_events con onConflict idempotency_key. Email de confirmación se mantiene en after().
+- `src/app/api/openpay/webhook/route.ts` — mismo cambio. Sin email (OpenPay no lo tenía).
+- `src/app/api/admin/process-events/route.ts` — worker nuevo: lee pending/failed, llama /api/hermes/venta, backoff exponencial (2^n * 5 min, máx 24h), dead-letter al llegar a MAX_RETRIES=5, alerta email al ADMIN_ALERT_EMAIL via Resend.
+- `.github/workflows/catalog-sync.yml` — renombrado "Catalog Sync & Process Events", segundo step llama process-events cada 15 min.
+
+**Resend — email transaccional configurado y probado**
+- Dominio `laperlawines.com.ar` verificado en DNS (Hostinger MX/DKIM/SPF).
+- Variables en Vercel: RESEND_API_KEY, RESEND_FROM_EMAIL=`La Perla Vinos <noreply@laperlawines.com.ar>`, ADMIN_ALERT_EMAIL.
+- `src/lib/orderEmail.ts` — dominio fallback corregido a `laperlawines.com.ar`.
+- Email de confirmación probado y recibido en `pancholangge1@gmail.com` ✅.
+
+**Prueba end-to-end real (2026-06-02)**
+- Compra real de $18.15 con MercadoPago.
+- Webhook → integration_events status: pending → done.
+- Hermes MySQL: stock de producto Codigo=-30208 (ZUCCARDI ALUVIONAL ALTAMIRA MALBEC 2020) decrementó de 6 a 5 ✅.
+- Email de confirmación recibido correctamente ✅.
+
 ### ⏳ Proximas fases
 
-- **Fase 1b** — integration_events / outbox: mover registro en Hermes a worker con reintentos (actualmente es fire-and-forget en webhook).
-- **Fase 1c** — endurecer webhook OpenPay: no permitir modo sin secreto en produccion. ✅ HECHO
 - **Fase 2** — reserva de stock con TTL antes del pago.
 - **Fase 3** — sync incremental + reconciliador diario.
+- **Panel admin eventos** — filtro "Pendiente Hermes" en /admin/pedidos para ver pedidos atascados en pago_aprobado sin hermes_registrado.
+- **Salir de modo mantenimiento** — setear MAINTENANCE_MODE=false en Vercel y redesplegar cuando la tienda esté lista para abrir.
 
 ---
 
@@ -293,4 +316,48 @@ Agregar step al workflow catalog-sync.yml para llamar process-events cada 5 minu
 
 1. ¿El webhook de MP también llama a Hermes hoy? ✅ SÍ — mismo patrón after(fetch...) en mercadopago/webhook/route.ts. Además envía email de confirmación al comprador dentro del mismo after(). Ambos webhooks (MP y OpenPay) necesitan el cambio.
 2. ¿Hay panel admin para ver pedidos fallidos? ✅ SÍ — existe /admin/pedidos con estados visibles (HERMES REGISTRADO, OPENPAY: APPROVED, MP: APPROVED, etc.) y búsqueda por referencia/comprador. Se puede agregar un filtro "Pendiente Hermes" para ver pedidos atascados en pago_aprobado sin hermes_registrado.
-3. ¿Alerta por email cuando un pedido quede en dead (5 reintentos fallidos)? — PENDIENTE RESPUESTA DEL CLIENTE.
+3. ¿Alerta por email cuando un pedido quede en dead (5 reintentos fallidos)? ✅ SÍ — implementado en process-events/route.ts: cuando status=dead envía email a ADMIN_ALERT_EMAIL via Resend.
+
+---
+
+## 14) Checklist para lanzamiento profesional (al 2026-06-02)
+
+### Prioritario para abrir la tienda
+- [ ] **Salir de modo mantenimiento** — setear `MAINTENANCE_MODE=false` en Vercel env vars + redeploy.
+- [ ] **Verificar fotos de todos los productos publicados** — revisar en /admin/productos que no haya productos sin imagen.
+- [ ] **Datos de la tienda completos** — dirección, teléfono, redes sociales actualizados en footer/contacto.
+- [ ] **Keys MercadoPago en producción** — confirmar que no sean de sandbox.
+- [ ] **Restringir policies de Supabase** — eliminar `USING (true)` en UPDATE/DELETE/INSERT. Usar auth.role() = 'authenticated' o similar antes de abrir al público.
+
+### Pagos y envíos
+- [ ] **Andreani real** — si se usa envío a domicilio, probar con orden real de punta a punta.
+- [ ] **Logos de medios de pago** — badges de MercadoPago, OpenPay, transferencia visibles en checkout o footer.
+
+### SEO y performance
+- [ ] **Google Analytics / Tag Manager** — sin tracking no hay datos post-lanzamiento.
+- [ ] **Sitemap** — `sitemap.ts` existe, verificar que indexa productos publicados.
+- [ ] **robots.txt** — confirmar que no bloquea crawlers en producción.
+- [ ] **Open Graph / meta tags por producto** — título y descripción únicos para compartir en redes.
+
+### Operación / admin
+- [ ] **Filtro "Pendiente Hermes" en /admin/pedidos** — para ver pedidos pago_aprobado sin hermes_registrado sin revisar logs.
+- [ ] **ADMIN_ALERT_EMAIL definitivo** — cambiar de marianolangge@gmail.com al email del dueño cuando esté definido.
+- [ ] **`.env.local` en `.gitignore`** — verificar que no se commitea con las keys reales.
+
+---
+
+## 15) Bug conocido — GitHub Actions: process-events se saltea cuando Hermes está caído
+
+**Detectado:** 2026-06-03, run #35.
+
+**Síntoma:** Cuando catalog-sync devuelve HTTP 500 (Hermes MySQL inaccesible), el job de GitHub Actions falla con exit code 1 y el step "Process integration events (outbox retry)" queda en estado **skipped**. Es decir, justo cuando más se necesita reintentar la cola (Hermes intermitente), el worker no corre.
+
+**Causa:** El step de catalog-sync no tiene `continue-on-error: true`, por lo que un fallo lo aborta todo.
+
+**Fix pendiente:** En `.github/workflows/catalog-sync.yml`, agregar al step de catalog-sync:
+```yaml
+continue-on-error: true
+```
+Así process-events siempre corre independientemente del resultado del sync.
+
+**También a revisar:** La búsqueda por categorías en la web aparenta seguir consultando Hermes en tiempo real en vez del snapshot de Supabase. Cuando Hermes está caído, los productos no aparecen en la búsqueda por categorías. Migrar esa ruta al snapshot (mismo patrón que se hizo con checkout en Fase 1).

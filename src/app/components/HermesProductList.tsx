@@ -169,6 +169,12 @@ export default function HermesProductList() {
               >
                 Publicados
               </button>
+              <button
+                className={`rounded-sm px-4 py-2 text-xs font-semibold uppercase tracking-[0.15em] transition-colors ${tab === 'destacados' ? 'bg-[#a68a5c]/20 text-[#c9a96e]' : 'text-[#beb9b1]/50 hover:text-[#beb9b1]'}`}
+                onClick={() => setTab('destacados')}
+              >
+                Destacados
+              </button>
             </div>
           </div>
 
@@ -183,8 +189,8 @@ export default function HermesProductList() {
             <p className="text-[12px] leading-relaxed text-[#beb9b1]/70">
               <span className="font-semibold text-[#c9a96e]/90">Los más vendidos:</span>{' '}
               usá el botón ★ en los productos publicados para elegir cuáles aparecen en esa sección de la home.
-              Se muestran <span className="font-semibold text-[#beb9b1]">máximo 4</span>. Si marcás más de 4, solo
-              se verán los primeros 4 (orden alfabético). El contador de arriba te avisa cuando superás el límite.
+              En home se muestran <span className="font-semibold text-[#beb9b1]">4</span> y el resto quedan disponibles
+              en la sección de productos como destacados.
             </p>
           </div>
         </div>

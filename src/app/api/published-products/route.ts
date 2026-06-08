@@ -57,7 +57,7 @@ export async function GET() {
       const livePrice = parseNumber(liveProduct?.Precio);
       const liveStock = parseNumber(liveProduct?.Stock);
       const liveGroup = typeof liveProduct?.Grupo === 'string' ? liveProduct.Grupo : null;
-      const liveBrand = typeof liveProduct?.Marca === 'string' ? liveProduct.Marca : null;
+      const liveBrand = typeof liveProduct?.Marca === 'string' ? liveProduct.Marca.trim() : null;
 
       return {
         ...product,

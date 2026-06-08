@@ -16,7 +16,7 @@ export function useHermesProductList() {
   const { publishProduct, unpublishProduct, editProduct, toggleDestacado, toggleActivo, loading, error, success } = useProductPublication();
   const [search, setSearch] = useState("");
   const [group, setGroup] = useState("");
-  const [tab, setTab] = useState<'todos' | 'publicados'>("todos");
+  const [tab, setTab] = useState<'todos' | 'publicados' | 'destacados'>("todos");
 
   const groupOptions = useMemo(
     () => Array.from(new Set(
@@ -29,6 +29,12 @@ export function useHermesProductList() {
 
   const isPublished = useCallback(
     (hermes_id: number) => publishedProducts.some((product: ProductoPublicado) => product.hermes_id === hermes_id),
+    [publishedProducts],
+  );
+
+  const isDestacado = useCallback(
+    (hermes_id: number) =>
+      publishedProducts.some((product: ProductoPublicado) => product.hermes_id === hermes_id && product.destacado === true),
     [publishedProducts],
   );
 
@@ -81,10 +87,16 @@ export function useHermesProductList() {
   }, [search, group]);
 
   const filteredProducts = useMemo(() => {
-    return tab === 'todos'
-      ? hermesProducts.filter(filterFn)
-      : hermesProducts.filter((product) => isPublished(product.hermes_id)).filter(filterFn);
-  }, [hermesProducts, tab, filterFn, isPublished]);
+    if (tab === 'todos') {
+      return hermesProducts.filter(filterFn);
+    }
+
+    if (tab === 'publicados') {
+      return hermesProducts.filter((product) => isPublished(product.hermes_id)).filter(filterFn);
+    }
+
+    return hermesProducts.filter((product) => isDestacado(product.hermes_id)).filter(filterFn);
+  }, [hermesProducts, tab, filterFn, isPublished, isDestacado]);
 
   // Total de productos filtrados y total de páginas
   const totalFiltered = filteredProducts.length;
@@ -107,7 +119,7 @@ export function useHermesProductList() {
     setPage(1);
   }, []);
 
-  const setTabAndResetPage = useCallback((value: 'todos' | 'publicados') => {
+  const setTabAndResetPage = useCallback((value: 'todos' | 'publicados' | 'destacados') => {
     setTab(value);
     setPage(1);
   }, []);
