@@ -1,6 +1,7 @@
 import { NextResponse, after } from 'next/server';
 import { requireAdminApiUser } from '@/lib/adminAuth';
 import { getSupabaseAdmin, hasSupabaseAdminConfig } from '@/lib/supabaseAdmin';
+import { sendApprovedSaleNotificationEmail } from '@/lib/orderEmail';
 
 export async function PATCH(
   request: Request,
@@ -69,6 +70,45 @@ export async function PATCH(
       } catch (err: unknown) {
         console.error(
           `[admin/status] Fallo de red al llamar a Hermes order=${orderId}`,
+          err instanceof Error ? err.message : err,
+        );
+      }
+
+      try {
+        const supabase = getSupabaseAdmin();
+        const { data: fullOrder } = await supabase
+          .from('web_orders')
+          .select('id, buyer_name, buyer_email, external_reference, total_amount, currency_id')
+          .eq('id', orderId)
+          .maybeSingle();
+
+        if (!fullOrder?.buyer_email) {
+          return;
+        }
+
+        const { data: items } = await supabase
+          .from('web_order_items')
+          .select('title, quantity, unit_price, line_total')
+          .eq('order_id', orderId);
+
+        await sendApprovedSaleNotificationEmail({
+          sourceLabel: 'Transferencia bancaria',
+          buyerName: fullOrder.buyer_name,
+          buyerEmail: fullOrder.buyer_email,
+          externalReference: fullOrder.external_reference,
+          paymentReference: 'Aprobada manualmente desde admin',
+          totalAmount: fullOrder.total_amount,
+          currencyId: fullOrder.currency_id,
+          items: (items ?? []).map((item) => ({
+            title: item.title,
+            quantity: item.quantity ?? 1,
+            unitPrice: item.unit_price ?? 0,
+            lineTotal: item.line_total ?? 0,
+          })),
+        });
+      } catch (err: unknown) {
+        console.error(
+          `[admin/status] Error enviando aviso interno order=${orderId}`,
           err instanceof Error ? err.message : err,
         );
       }

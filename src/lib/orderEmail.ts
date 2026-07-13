@@ -19,6 +19,22 @@ export interface OrderConfirmationData {
   }[];
 }
 
+export interface ApprovedSaleNotificationData {
+  sourceLabel: string;
+  buyerName: string;
+  buyerEmail: string;
+  externalReference: string;
+  paymentReference?: string | null;
+  totalAmount: number;
+  currencyId: string;
+  items: {
+    title: string;
+    quantity: number;
+    unitPrice: number;
+    lineTotal: number;
+  }[];
+}
+
 function formatARS(amount: number, currencyId = 'ARS') {
   return new Intl.NumberFormat('es-AR', {
     style: 'currency',
@@ -131,6 +147,106 @@ export async function sendOrderConfirmationEmail(order: OrderConfirmationData) {
     console.error('[email] Error enviando confirmación de pedido:', result.error);
   } else {
     console.log(`[email] Confirmación enviada a ${order.buyerEmail} pedido=${order.externalReference}`);
+  }
+}
+
+export async function sendApprovedSaleNotificationEmail(order: ApprovedSaleNotificationData) {
+  if (!RESEND_API_KEY) {
+    console.warn('[email] RESEND_API_KEY no configurada — aviso interno de venta omitido.');
+    return;
+  }
+
+  const notifyEmail = process.env.RESEND_NOTIFY_EMAIL?.trim() ?? 'ventas@laperlawines.com.ar';
+  const resend = new Resend(RESEND_API_KEY);
+
+  const itemsHtml = order.items
+    .map(
+      (item) => `
+      <tr>
+        <td style="padding:10px 0;border-bottom:1px solid #e5e7eb;color:#374151;font-size:14px;">${item.title}</td>
+        <td style="padding:10px 0;border-bottom:1px solid #e5e7eb;color:#6b7280;font-size:14px;text-align:center;">${item.quantity}</td>
+        <td style="padding:10px 0;border-bottom:1px solid #e5e7eb;color:#a68a5c;font-size:14px;text-align:right;">${formatARS(item.lineTotal, order.currencyId)}</td>
+      </tr>`,
+    )
+    .join('');
+
+  const html = `
+    <!DOCTYPE html>
+    <html lang="es">
+    <head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
+    <body style="margin:0;padding:0;background:#f8fafc;font-family:Arial,sans-serif;">
+      <table width="100%" cellpadding="0" cellspacing="0" style="background:#f8fafc;padding:32px 16px;">
+        <tr><td align="center">
+          <table width="620" cellpadding="0" cellspacing="0" style="background:#fff;border:1px solid #e5e7eb;max-width:620px;width:100%;">
+            <tr><td style="height:4px;background:#a68a5c;"></td></tr>
+            <tr><td style="padding:28px 32px 12px;">
+              <p style="margin:0;font-size:11px;letter-spacing:0.2em;text-transform:uppercase;color:#a68a5c;">La Perla Vinos — Venta aprobada</p>
+              <h1 style="margin:8px 0 0;font-size:22px;color:#111827;">Nueva venta aprobada</h1>
+            </td></tr>
+            <tr><td style="padding:0 32px 20px;">
+              <table width="100%" cellpadding="0" cellspacing="0" style="background:#f9fafb;border:1px solid #e5e7eb;">
+                <tr>
+                  <td style="padding:12px 14px;font-size:13px;color:#6b7280;">Origen</td>
+                  <td style="padding:12px 14px;font-size:13px;color:#111827;text-align:right;font-weight:700;">${order.sourceLabel}</td>
+                </tr>
+                <tr>
+                  <td style="padding:12px 14px;font-size:13px;color:#6b7280;">Cliente</td>
+                  <td style="padding:12px 14px;font-size:13px;color:#111827;text-align:right;">${order.buyerName} · ${order.buyerEmail}</td>
+                </tr>
+                <tr>
+                  <td style="padding:12px 14px;font-size:13px;color:#6b7280;">Referencia</td>
+                  <td style="padding:12px 14px;font-size:13px;color:#111827;text-align:right;word-break:break-all;">${order.externalReference}</td>
+                </tr>
+                ${order.paymentReference ? `
+                <tr>
+                  <td style="padding:12px 14px;font-size:13px;color:#6b7280;">Pago</td>
+                  <td style="padding:12px 14px;font-size:13px;color:#111827;text-align:right;word-break:break-all;">${order.paymentReference}</td>
+                </tr>` : ''}
+              </table>
+            </td></tr>
+            <tr><td style="padding:0 32px 20px;">
+              <table width="100%" cellpadding="0" cellspacing="0">
+                <thead>
+                  <tr>
+                    <th style="text-align:left;font-size:11px;letter-spacing:0.1em;text-transform:uppercase;color:#9ca3af;padding-bottom:8px;">Producto</th>
+                    <th style="text-align:center;font-size:11px;letter-spacing:0.1em;text-transform:uppercase;color:#9ca3af;padding-bottom:8px;">Cant.</th>
+                    <th style="text-align:right;font-size:11px;letter-spacing:0.1em;text-transform:uppercase;color:#9ca3af;padding-bottom:8px;">Subtotal</th>
+                  </tr>
+                </thead>
+                <tbody>${itemsHtml}</tbody>
+              </table>
+            </td></tr>
+            <tr><td style="padding:0 32px 28px;">
+              <table width="100%" cellpadding="0" cellspacing="0" style="background:#f9fafb;border:1px solid #e5e7eb;padding:14px 16px;">
+                <tr>
+                  <td style="font-size:14px;color:#6b7280;">Total aprobado</td>
+                  <td style="font-size:16px;font-weight:700;color:#a68a5c;text-align:right;">${formatARS(order.totalAmount, order.currencyId)}</td>
+                </tr>
+              </table>
+            </td></tr>
+            <tr><td style="padding:0 32px 28px;text-align:center;">
+              <a href="${BASE_URL}/admin/pedidos" style="display:inline-block;padding:11px 28px;background:#111827;color:#fff;font-size:11px;font-weight:700;letter-spacing:0.15em;text-transform:uppercase;text-decoration:none;">
+                Abrir panel de pedidos
+              </a>
+            </td></tr>
+          </table>
+        </td></tr>
+      </table>
+    </body>
+    </html>
+  `;
+
+  const result = await resend.emails.send({
+    from: FROM,
+    to: notifyEmail,
+    subject: `Nueva venta aprobada — ${order.buyerName} · ${formatARS(order.totalAmount, order.currencyId)}`,
+    html,
+  });
+
+  if (result.error) {
+    console.error('[email] Error enviando aviso interno de venta:', result.error);
+  } else {
+    console.log(`[email] Aviso interno enviado a ${notifyEmail} pedido=${order.externalReference}`);
   }
 }
 

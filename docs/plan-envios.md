@@ -107,3 +107,8 @@ Admin /admin/envios:
 2. Confirmar precios → crear tabla `shipping_zones` en Supabase
 3. Implementar selector de provincia en checkout + endpoint de cotización
 4. Mostrar costo de envío en carrito y en resumen de pago
+
+## Aviso interno de ventas
+
+- Las ventas aprobadas por Mercado Pago, OpenPay y transferencia manual ahora disparan un aviso interno al mail configurado en `RESEND_NOTIFY_EMAIL`.
+- Si no se define esa variable, el sistema usa `ventas@laperlawines.com.ar` como destino por defecto.

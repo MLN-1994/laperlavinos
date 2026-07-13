@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { HiOutlineShoppingCart, HiOutlineCheckCircle, HiMinus, HiPlus, HiArrowLeft } from "react-icons/hi2";
 import { SiMercadopago, SiVisa, SiMastercard, SiAmericanexpress } from "react-icons/si";
 import { MapPinIcon, BuildingStorefrontIcon } from "@heroicons/react/24/outline";
@@ -13,9 +13,12 @@ interface ProductDetailProps {
   images?: ProductImage[];
 }
 
+const DESCRIPTION_CHAR_LIMIT = 220;
+
 export default function ProductDetail({ product, images = [] }: ProductDetailProps) {
   const [quantity, setQuantity] = useState(1);
   const [added, setAdded] = useState(false);
+  const [showFullDescription, setShowFullDescription] = useState(false);
   const addToCart = useCartStore((s) => s.addToCart);
   const router = useRouter();
   const numericStock = Number(product.stock);
@@ -35,6 +38,15 @@ export default function ProductDetail({ product, images = [] }: ProductDetailPro
 
   const [activeIdx, setActiveIdx] = useState(0);
   const activeImage = allImages[activeIdx] ?? "/placeholder.png";
+  const fullDescription = (product.descripcion ?? "").trim();
+  const shouldCollapseDescription = fullDescription.length > DESCRIPTION_CHAR_LIMIT;
+  const collapsedDescription = shouldCollapseDescription
+    ? `${fullDescription.slice(0, DESCRIPTION_CHAR_LIMIT).trimEnd()}...`
+    : fullDescription;
+
+  useEffect(() => {
+    setShowFullDescription(false);
+  }, [product.id]);
 
   const handleBack = () => {
     if (window.history.length > 1) {
@@ -87,9 +99,9 @@ export default function ProductDetail({ product, images = [] }: ProductDetailPro
         Volver
       </button>
 
-      <div className="mx-auto max-w-5xl grid grid-cols-1 gap-10 lg:grid-cols-2">
+      <div className="mx-auto max-w-5xl grid grid-cols-1 gap-10 lg:grid-cols-2 lg:items-start">
         {/* Galería estilo ML: miniaturas izquierda + imagen principal */}
-        <div className="flex gap-3">
+        <div className="flex self-start gap-3">
           {/* Columna de miniaturas (solo si hay más de 1) */}
           {allImages.length > 1 && (
             <div className="flex flex-col gap-2 overflow-y-auto max-h-[480px] pr-0.5">
@@ -119,7 +131,7 @@ export default function ProductDetail({ product, images = [] }: ProductDetailPro
               key={activeImage}
               src={activeImage}
               alt={product.nombre}
-              className="h-full w-full object-cover opacity-90 transition-opacity duration-300"
+              className="h-full w-full object-contain opacity-90 transition-opacity duration-300"
             />
             {product.categoria_id && (
               <span className="absolute top-4 left-4 bg-[#a68a5c] px-3 py-1 text-[9px] font-bold uppercase tracking-[0.2em] text-white shadow-xl">
@@ -142,8 +154,17 @@ export default function ProductDetail({ product, images = [] }: ProductDetailPro
             </h1>
             <div className="mt-5 border-t border-neutral-200 pt-5">
               <p className="text-sm leading-relaxed text-neutral-500 italic whitespace-pre-line">
-                {product.descripcion}
+                {showFullDescription ? fullDescription : collapsedDescription}
               </p>
+              {shouldCollapseDescription && (
+                <button
+                  type="button"
+                  onClick={() => setShowFullDescription((prev) => !prev)}
+                  className="mt-2 cursor-pointer text-xs font-semibold uppercase tracking-[0.16em] text-[#8E734B] transition-colors hover:text-[#6F583A]"
+                >
+                  {showFullDescription ? 'Ver menos' : 'Ver mas'}
+                </button>
+              )}
             </div>
           </div>
 

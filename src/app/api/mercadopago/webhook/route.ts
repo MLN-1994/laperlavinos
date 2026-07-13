@@ -2,7 +2,7 @@ import { NextResponse, after } from 'next/server';
 import { createHmac, timingSafeEqual } from 'crypto';
 import { fetchMercadoPagoPayment } from '@/lib/mercadoPago';
 import { getSupabaseAdmin, hasSupabaseAdminConfig } from '@/lib/supabaseAdmin';
-import { sendOrderConfirmationEmail } from '@/lib/orderEmail';
+import { sendApprovedSaleNotificationEmail, sendOrderConfirmationEmail } from '@/lib/orderEmail';
 import type { Database, Json } from '@/types/supabase';
 
 type WebOrderUpdate = Database['public']['Tables']['web_orders']['Update'];
@@ -368,6 +368,13 @@ export async function POST(request: Request) {
               .select('title, quantity, unit_price, line_total')
               .eq('order_id', orderId);
 
+            const saleItems = (items ?? []).map((i) => ({
+              title: i.title,
+              quantity: i.quantity ?? 1,
+              unitPrice: i.unit_price ?? 0,
+              lineTotal: i.line_total ?? 0,
+            }));
+
             await sendOrderConfirmationEmail({
               buyerName: fullOrder.buyer_name,
               buyerEmail: fullOrder.buyer_email,
@@ -375,12 +382,18 @@ export async function POST(request: Request) {
               mercadopagoPaymentId: fullOrder.mercadopago_payment_id,
               totalAmount: fullOrder.total_amount,
               currencyId: fullOrder.currency_id,
-              items: (items ?? []).map((i) => ({
-                title: i.title,
-                quantity: i.quantity ?? 1,
-                unitPrice: i.unit_price ?? 0,
-                lineTotal: i.line_total ?? 0,
-              })),
+              items: saleItems,
+            });
+
+            await sendApprovedSaleNotificationEmail({
+              sourceLabel: 'Mercado Pago',
+              buyerName: fullOrder.buyer_name,
+              buyerEmail: fullOrder.buyer_email,
+              externalReference: fullOrder.external_reference,
+              paymentReference: fullOrder.mercadopago_payment_id,
+              totalAmount: fullOrder.total_amount,
+              currencyId: fullOrder.currency_id,
+              items: saleItems,
             });
           }
         } catch (err) {

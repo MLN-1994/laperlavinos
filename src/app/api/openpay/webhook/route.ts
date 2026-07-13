@@ -1,6 +1,7 @@
-import { NextResponse } from 'next/server';
+import { NextResponse, after } from 'next/server';
 import { timingSafeEqual } from 'crypto';
 import { getSupabaseAdmin, hasSupabaseAdminConfig } from '@/lib/supabaseAdmin';
+import { sendApprovedSaleNotificationEmail } from '@/lib/orderEmail';
 import type { Database, Json } from '@/types/supabase';
 
 type WebOrderUpdate = Database['public']['Tables']['web_orders']['Update'];
@@ -193,6 +194,43 @@ export async function POST(request: Request) {
       if (eventError) {
         console.error(`[OpenPay webhook] Error al encolar evento Hermes order=${orderId}`, eventError.message);
       }
+
+      after(async () => {
+        try {
+          const { data: fullOrder } = await supabaseAdmin
+            .from('web_orders')
+            .select('id, buyer_name, buyer_email, external_reference, total_amount, currency_id')
+            .eq('id', orderId)
+            .maybeSingle();
+
+          if (!fullOrder?.buyer_email) {
+            return;
+          }
+
+          const { data: items } = await supabaseAdmin
+            .from('web_order_items')
+            .select('title, quantity, unit_price, line_total')
+            .eq('order_id', orderId);
+
+          await sendApprovedSaleNotificationEmail({
+            sourceLabel: 'OpenPay / BBVA',
+            buyerName: fullOrder.buyer_name,
+            buyerEmail: fullOrder.buyer_email,
+            externalReference: fullOrder.external_reference,
+            paymentReference: paymentId ? String(paymentId) : refNumber ?? null,
+            totalAmount: fullOrder.total_amount,
+            currencyId: fullOrder.currency_id,
+            items: (items ?? []).map((i) => ({
+              title: i.title,
+              quantity: i.quantity ?? 1,
+              unitPrice: i.unit_price ?? 0,
+              lineTotal: i.line_total ?? 0,
+            })),
+          });
+        } catch (err) {
+          console.error(`[OpenPay webhook] Error enviando aviso interno order=${orderId}`, err);
+        }
+      });
     }
 
     return NextResponse.json({ received: true, orderId: order.id, status: mappedStatus });
