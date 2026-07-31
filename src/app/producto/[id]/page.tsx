@@ -21,6 +21,11 @@ function parseStock(value: unknown) {
   return Number.isFinite(parsed) ? parsed : null;
 }
 
+function parsePrice(value: unknown) {
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? parsed : null;
+}
+
 export default async function ProductoPage({ params }: Props) {
   const { id } = await params;
 
@@ -67,7 +72,11 @@ export default async function ProductoPage({ params }: Props) {
         ? hermesProducts.find((entry) => parseHermesId((entry as Record<string, unknown>).Codigo) === data.hermes_id)
         : undefined;
 
+      const livePrice = parsePrice((liveProduct as Record<string, unknown> | undefined)?.Precio);
       const liveStock = parseStock((liveProduct as Record<string, unknown> | undefined)?.Stock);
+      if (livePrice !== null) {
+        product.precio = livePrice;
+      }
       if (liveStock !== null) {
         product.stock = liveStock;
       }
