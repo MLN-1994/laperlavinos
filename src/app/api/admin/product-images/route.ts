@@ -80,27 +80,10 @@ export async function POST(request: Request) {
     for (const file of files) {
       if (!(file instanceof File) || file.size === 0) continue;
 
-      const filePath = `${Date.now()}_${sanitizeFileName(file.name)}`;
-      let url: string;
-
-      try {
-        const upload = await uploadToMediaHost(file, 'productos', {
-          productId,
-          fileName: filePath,
-        });
-        url = upload.url;
-      } catch {
-        const buffer = Buffer.from(await file.arrayBuffer());
-        const { error: uploadError } = await supabase.storage
-          .from('productos')
-          .upload(filePath, buffer, { contentType: file.type || 'application/octet-stream' });
-
-        if (uploadError) {
-          throw new Error(`Error al subir imagen: ${uploadError.message}`);
-        }
-
-        url = supabase.storage.from('productos').getPublicUrl(filePath).data.publicUrl;
-      }
+      const { url } = await uploadToMediaHost(file, 'productos', {
+        productId,
+        fileName: `${Date.now()}_${sanitizeFileName(file.name)}`,
+      });
 
       const { data: row, error: insertError } = await supabase
         .from('producto_imagenes')

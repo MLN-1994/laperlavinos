@@ -89,25 +89,10 @@ export async function POST(request: Request) {
     let imagenUrl: string | null = null;
 
     if (imageValue instanceof File && imageValue.size > 0) {
-      const filePath = `${Date.now()}_${sanitizeFileName(imageValue.name)}`;
-
-      try {
-        const { url } = await uploadToMediaHost(imageValue, 'productos', {
-          fileName: filePath,
-        });
-        imagenUrl = url;
-      } catch {
-        const buffer = Buffer.from(await imageValue.arrayBuffer());
-        const { error: uploadError } = await getSupabaseAdmin().storage.from('productos').upload(filePath, buffer, {
-          contentType: imageValue.type || 'application/octet-stream',
-        });
-
-        if (uploadError) {
-          throw new Error(`Error al subir imagen: ${uploadError.message}`);
-        }
-
-        imagenUrl = getSupabaseAdmin().storage.from('productos').getPublicUrl(filePath).data.publicUrl;
-      }
+      const { url } = await uploadToMediaHost(imageValue, 'productos', {
+        fileName: `${Date.now()}_${sanitizeFileName(imageValue.name)}`,
+      });
+      imagenUrl = url;
     }
 
     if (!imagenUrl) {

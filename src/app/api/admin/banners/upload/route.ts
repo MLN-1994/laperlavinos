@@ -1,7 +1,6 @@
 import { NextResponse } from 'next/server';
 import { requireAdminApiUser } from '@/lib/adminAuth';
 import { uploadToMediaHost } from '@/lib/mediaUpload';
-import { getSupabaseAdmin } from '@/lib/supabaseAdmin';
 
 const ALLOWED_TYPES = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
 const MAX_SIZE_BYTES = 2 * 1024 * 1024; // 2 MB
@@ -26,30 +25,9 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'La imagen no puede superar 2 MB.' }, { status: 400 });
     }
 
-    const filename = `banner-${Date.now()}.${(file.name.split('.').pop()?.toLowerCase() || 'jpg')}`;
-
-    let url: string;
-    try {
-      const upload = await uploadToMediaHost(file, 'banners', {
-        fileName: filename,
-      });
-      url = upload.url;
-    } catch {
-      const buffer = Buffer.from(await file.arrayBuffer());
-      const supabase = getSupabaseAdmin();
-      const { error: uploadError } = await supabase.storage
-        .from('banners')
-        .upload(filename, buffer, {
-          contentType: file.type,
-          upsert: false,
-        });
-
-      if (uploadError) {
-        throw new Error(uploadError.message);
-      }
-
-      url = supabase.storage.from('banners').getPublicUrl(filename).data.publicUrl;
-    }
+    const { url } = await uploadToMediaHost(file, 'banners', {
+      fileName: `banner-${Date.now()}.${(file.name.split('.').pop()?.toLowerCase() || 'jpg')}`,
+    });
 
     return NextResponse.json({ url });
   } catch (error) {
