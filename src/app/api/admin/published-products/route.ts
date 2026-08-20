@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { requireAdminApiUser } from '@/lib/adminAuth';
 import { getSupabaseAdmin } from '@/lib/supabaseAdmin';
+import { uploadToMediaHost } from '@/lib/mediaUpload';
 
 function sanitizeFileName(fileName: string) {
   return fileName.replace(/[^a-zA-Z0-9._-]/g, '_');
@@ -88,17 +89,25 @@ export async function POST(request: Request) {
     let imagenUrl: string | null = null;
 
     if (imageValue instanceof File && imageValue.size > 0) {
-      const buffer = Buffer.from(await imageValue.arrayBuffer());
       const filePath = `${Date.now()}_${sanitizeFileName(imageValue.name)}`;
-      const { error: uploadError } = await getSupabaseAdmin().storage.from('productos').upload(filePath, buffer, {
-        contentType: imageValue.type || 'application/octet-stream',
-      });
 
-      if (uploadError) {
-        throw new Error(`Error al subir imagen: ${uploadError.message}`);
+      try {
+        const { url } = await uploadToMediaHost(imageValue, 'productos', {
+          fileName: filePath,
+        });
+        imagenUrl = url;
+      } catch {
+        const buffer = Buffer.from(await imageValue.arrayBuffer());
+        const { error: uploadError } = await getSupabaseAdmin().storage.from('productos').upload(filePath, buffer, {
+          contentType: imageValue.type || 'application/octet-stream',
+        });
+
+        if (uploadError) {
+          throw new Error(`Error al subir imagen: ${uploadError.message}`);
+        }
+
+        imagenUrl = getSupabaseAdmin().storage.from('productos').getPublicUrl(filePath).data.publicUrl;
       }
-
-      imagenUrl = getSupabaseAdmin().storage.from('productos').getPublicUrl(filePath).data.publicUrl;
     }
 
     if (!imagenUrl) {

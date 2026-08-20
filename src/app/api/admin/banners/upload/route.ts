@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { requireAdminApiUser } from '@/lib/adminAuth';
+import { uploadToMediaHost } from '@/lib/mediaUpload';
 import { getSupabaseAdmin } from '@/lib/supabaseAdmin';
 
 const ALLOWED_TYPES = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
@@ -25,28 +26,32 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'La imagen no puede superar 2 MB.' }, { status: 400 });
     }
 
-    const arrayBuffer = await file.arrayBuffer();
-    const buffer = Buffer.from(arrayBuffer);
+    const filename = `banner-${Date.now()}.${(file.name.split('.').pop()?.toLowerCase() || 'jpg')}`;
 
-    const ext = file.name.split('.').pop()?.toLowerCase() || 'jpg';
-    const filename = `banner-${Date.now()}.${ext}`;
-
-    const supabase = getSupabaseAdmin();
-
-    const { error: uploadError } = await supabase.storage
-      .from('banners')
-      .upload(filename, buffer, {
-        contentType: file.type,
-        upsert: false,
+    let url: string;
+    try {
+      const upload = await uploadToMediaHost(file, 'banners', {
+        fileName: filename,
       });
+      url = upload.url;
+    } catch {
+      const buffer = Buffer.from(await file.arrayBuffer());
+      const supabase = getSupabaseAdmin();
+      const { error: uploadError } = await supabase.storage
+        .from('banners')
+        .upload(filename, buffer, {
+          contentType: file.type,
+          upsert: false,
+        });
 
-    if (uploadError) throw new Error(uploadError.message);
+      if (uploadError) {
+        throw new Error(uploadError.message);
+      }
 
-    const { data: { publicUrl } } = supabase.storage
-      .from('banners')
-      .getPublicUrl(filename);
+      url = supabase.storage.from('banners').getPublicUrl(filename).data.publicUrl;
+    }
 
-    return NextResponse.json({ url: publicUrl });
+    return NextResponse.json({ url });
   } catch (error) {
     const message = error instanceof Error ? error.message : 'No se pudo subir la imagen.';
     return NextResponse.json({ error: message }, { status: 500 });

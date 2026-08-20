@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { requireAdminApiUser } from '@/lib/adminAuth';
 import { getSupabaseAdmin } from '@/lib/supabaseAdmin';
+import { uploadToMediaHost } from '@/lib/mediaUpload';
 
 function sanitizeFileName(fileName: string) {
   return fileName.replace(/[^a-zA-Z0-9._-]/g, '_');
@@ -79,18 +80,27 @@ export async function POST(request: Request) {
     for (const file of files) {
       if (!(file instanceof File) || file.size === 0) continue;
 
-      const buffer = Buffer.from(await file.arrayBuffer());
-      const filePath = `${productId}/${Date.now()}_${sanitizeFileName(file.name)}`;
+      const filePath = `${Date.now()}_${sanitizeFileName(file.name)}`;
+      let url: string;
 
-      const { error: uploadError } = await supabase.storage
-        .from('productos')
-        .upload(filePath, buffer, { contentType: file.type || 'application/octet-stream' });
+      try {
+        const upload = await uploadToMediaHost(file, 'productos', {
+          productId,
+          fileName: filePath,
+        });
+        url = upload.url;
+      } catch {
+        const buffer = Buffer.from(await file.arrayBuffer());
+        const { error: uploadError } = await supabase.storage
+          .from('productos')
+          .upload(filePath, buffer, { contentType: file.type || 'application/octet-stream' });
 
-      if (uploadError) {
-        throw new Error(`Error al subir imagen: ${uploadError.message}`);
+        if (uploadError) {
+          throw new Error(`Error al subir imagen: ${uploadError.message}`);
+        }
+
+        url = supabase.storage.from('productos').getPublicUrl(filePath).data.publicUrl;
       }
-
-      const url = supabase.storage.from('productos').getPublicUrl(filePath).data.publicUrl;
 
       const { data: row, error: insertError } = await supabase
         .from('producto_imagenes')
