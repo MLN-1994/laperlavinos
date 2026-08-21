@@ -12,6 +12,8 @@ export const MEDIA_BASE_URL = (() => {
     : '';
 })();
 
+const MEDIA_UPLOAD_TOKEN = process.env.MEDIA_UPLOAD_TOKEN;
+
 function sanitizeFileName(fileName: string) {
   return fileName.replace(/[^a-zA-Z0-9._-]/g, '_');
 }
@@ -60,6 +62,7 @@ export async function uploadToMediaHost(
       body: formData,
       headers: {
         Accept: 'application/json',
+        ...(MEDIA_UPLOAD_TOKEN ? { 'X-Media-Token': MEDIA_UPLOAD_TOKEN } : {}),
       },
     });
 
