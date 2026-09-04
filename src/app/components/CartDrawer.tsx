@@ -110,6 +110,7 @@ const inputClass =
   'w-full rounded-sm border border-neutral-200 bg-white px-3 py-2.5 text-sm normal-case tracking-normal text-neutral-800 outline-none transition focus:border-neutral-400';
 const labelClass =
   'flex flex-col gap-1 text-[10px] uppercase tracking-[0.2em] text-neutral-400';
+const TRANSFER_DISCOUNT_MIN_SUBTOTAL = 150000;
 
 export default function CartDrawer({ isOpen, setIsOpen }: CartDrawerProps) {
   const { cart, removeFromCart, addToCart, decreaseQuantity } = useCartStore();
@@ -122,6 +123,8 @@ export default function CartDrawer({ isOpen, setIsOpen }: CartDrawerProps) {
   const [deliveryMethod, setDeliveryMethod] = useState<'envio' | 'retiro'>('envio');
 
   const subtotal = cart.reduce((acc: number, item) => acc + item.price * item.quantity, 0);
+  const transferDiscountEligible = subtotal >= TRANSFER_DISCOUNT_MIN_SUBTOTAL;
+  const missingForTransferDiscount = Math.max(TRANSFER_DISCOUNT_MIN_SUBTOTAL - subtotal, 0);
 
   const handleBuyerFieldChange = <K extends keyof CheckoutBuyerInput>(
     field: K,
@@ -726,9 +729,14 @@ export default function CartDrawer({ isOpen, setIsOpen }: CartDrawerProps) {
                         >
                           <span className="absolute inset-0 z-0 bg-[#a68a5c] transition-transform duration-500 translate-y-full group-hover:translate-y-0" />
                           <span className="relative z-10">
-                            {transferLoading ? 'Procesando...' : 'Transferencia — 10% OFF'}
+                            {transferLoading ? 'Procesando...' : 'Transferencia — 10% OFF desde $150.000'}
                           </span>
                         </button>
+                        <p className="mb-2 text-center text-[10px] uppercase tracking-[0.16em] text-neutral-500">
+                          {transferDiscountEligible
+                            ? 'Descuento activo para este carrito por transferencia.'
+                            : `Te faltan $${missingForTransferDiscount.toLocaleString('es-AR')} para el 10% OFF en transferencia.`}
+                        </p>
 
                         {/* Mercado Pago */}
                         <button

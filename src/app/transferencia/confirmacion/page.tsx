@@ -77,7 +77,7 @@ export default async function TransferenciaConfirmacionPage({ searchParams }: Pa
                   <span>{formatARS(productsTotal)}</span>
                 </div>
                 <div className="flex justify-between text-green-600">
-                  <span>Descuento 10% transferencia</span>
+                  <span>Descuento 10% transferencia (desde $150.000)</span>
                   <span>−{formatARS(discountAmount)}</span>
                 </div>
               </>

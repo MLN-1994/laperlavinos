@@ -13,6 +13,8 @@
 
 /** Porcentaje de descuento por pagar con transferencia (solo sobre subtotal de productos) */
 export const TRANSFER_DISCOUNT_PCT = 10;
+/** Monto mínimo de subtotal de productos para aplicar descuento de transferencia */
+export const TRANSFER_DISCOUNT_MIN_SUBTOTAL = 150000;
 
 export interface TransferBankInfo {
   cbu: string;
@@ -38,7 +40,13 @@ export function getBankInfo(): TransferBankInfo {
 export function applyTransferDiscount(subtotal: number): {
   discountAmount: number;
   discountedSubtotal: number;
+  applied: boolean;
 } {
+  const eligible = subtotal >= TRANSFER_DISCOUNT_MIN_SUBTOTAL;
+  if (!eligible) {
+    return { discountAmount: 0, discountedSubtotal: subtotal, applied: false };
+  }
+
   const discountAmount = Math.round(subtotal * TRANSFER_DISCOUNT_PCT / 100);
-  return { discountAmount, discountedSubtotal: subtotal - discountAmount };
+  return { discountAmount, discountedSubtotal: subtotal - discountAmount, applied: true };
 }

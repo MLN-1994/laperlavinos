@@ -269,7 +269,7 @@ export async function POST(request: Request) {
       : (getShippingCost(shippingProvince!, productsTotal, shippingCity, shippingPostalCode) ?? 0);
 
     // Aplicar descuento de transferencia (solo sobre productos)
-    const { discountAmount, discountedSubtotal } = applyTransferDiscount(productsTotal);
+    const { discountAmount, discountedSubtotal, applied } = applyTransferDiscount(productsTotal);
     const totalAmount = discountedSubtotal + shippingAmount;
 
     const externalReference = buildExternalReference();
@@ -294,7 +294,7 @@ export async function POST(request: Request) {
       total_amount: totalAmount,
       currency_id: validatedItems[0]?.currency_id ?? 'ARS',
       discount_amount: discountAmount,
-      discount_type: 'transferencia_10',
+      discount_type: applied ? 'transferencia_10' : null,
       raw_checkout_payload: toJsonValue({ requested: body, buyer, validatedItems }),
       notes: buyer.notes || null,
     };
